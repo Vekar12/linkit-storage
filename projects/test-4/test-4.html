@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkIt Test Demo</title>
+
+<style>
+body {
+  font-family: Arial;
+  background:#f5f7fb;
+  margin:0;
+}
+
+header{
+  background:#2F6FED;
+  color:white;
+  padding:20px;
+  text-align:center;
+}
+
+.container{
+  max-width:700px;
+  margin:40px auto;
+  background:white;
+  padding:30px;
+  border-radius:10px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.08);
+}
+
+button{
+  background:#2F6FED;
+  color:white;
+  border:none;
+  padding:10px 18px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.result{
+  margin-top:20px;
+  padding:15px;
+  background:#eef3ff;
+  border-radius:6px;
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>LinkIt Demo</h1>
+<p>Interactive HTML hosted via LinkIt</p>
+</header>
+
+<div class="container">
+
+<h2>Loan Approval Simulator</h2>
+<p>Click the button to simulate a loan approval.</p>
+
+<button onclick="runDemo()">Run Simulation</button>
+
+<div id="resultBox" class="result" style="display:none;">
+<h3>Loan Approved ✅</h3>
+<p>Amount: ₹5,00,000</p>
+<p>Status: Disbursement Initiated</p>
+</div>
+
+</div>
+
+<script>
+function runDemo(){
+  document.getElementById("resultBox").style.display="block";
+}
+</script>
+
+</body>
+</html>
