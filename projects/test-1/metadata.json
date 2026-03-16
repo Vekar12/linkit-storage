@@ -1,0 +1,16 @@
+{
+  "projectName": "Test 1",
+  "slug": "test-1",
+  "fileType": "jpg",
+  "currentFile": "test-1.jpg",
+  "createdAt": "2026-03-16T21:39:27.414Z",
+  "updatedAt": "2026-03-16T21:39:27.414Z",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "test-1.jpg",
+      "fileURL": "https://vekar12.github.io/linkit-storage/projects/test-1/test-1.jpg",
+      "uploadedAt": "2026-03-16T21:39:27.414Z"
+    }
+  ]
+}
