@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Copy, CheckCircle, Search, Upload, Code2 } from 'lucide-react';
+import { Copy, CheckCircle, Search, Upload, Code2, Lock, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { marked } from 'marked';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -10,6 +10,7 @@ import RecentActivity from '@/components/ActivityPane';
 import { getProjects, createProject } from '@/services/api';
 import { checkAuth } from '@/lib/auth';
 import { addHistory } from '@/lib/history';
+import { setVisibility, getVisibility, type Visibility } from '@/lib/visibility';
 import type { Project } from '@/types';
 
 // ── Module-level cache ──
@@ -75,6 +76,10 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false);
   const [shareLink, setShareLink] = useState('');
   const [copied, setCopied] = useState(false);
+  const [newVisibility, setNewVisibility] = useState<Visibility>('personal');
+
+  // Filter state
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | Visibility>('all');
 
   useEffect(() => {
     const init = async () => {
@@ -115,7 +120,8 @@ export default function Dashboard() {
 
     setUploading(true);
     try {
-      const result = await createProject(projectName.trim(), uploadFile!);
+      const result = await createProject(projectName.trim(), uploadFile!, newVisibility);
+      setVisibility(result.slug, newVisibility);
       setShareLink(result.shareLink);
       toast.success('Link created!');
       addHistory({ type: 'created', projectName: projectName.trim(), slug: result.slug });
@@ -150,10 +156,14 @@ export default function Dashboard() {
     }
   };
 
-  const filteredProjects = projects.filter((p) =>
-    p.projectName.toLowerCase().includes(search.toLowerCase()) ||
-    p.slug.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch =
+      p.projectName.toLowerCase().includes(search.toLowerCase()) ||
+      p.slug.toLowerCase().includes(search.toLowerCase());
+    const matchesVisibility =
+      visibilityFilter === 'all' || getVisibility(p.slug) === visibilityFilter;
+    return matchesSearch && matchesVisibility;
+  });
 
   const visibleProjects = filteredProjects.slice(0, page * PAGE_SIZE);
   const hasMore = visibleProjects.length < filteredProjects.length;
@@ -166,17 +176,15 @@ export default function Dashboard() {
         {view === 'projects' && (
           <div>
             {/* Header */}
-            <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-              <div>
-                <h1 className="text-xl font-bold text-dark-text">
-                  Projects
-                  {!loadingProjects && (
-                    <span className="ml-2 text-sm font-normal text-dark-muted">
-                      {projects.length} total
-                    </span>
-                  )}
-                </h1>
-              </div>
+            <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+              <h1 className="text-xl font-bold text-dark-text">
+                Projects
+                {!loadingProjects && (
+                  <span className="ml-2 text-sm font-normal text-dark-muted">
+                    {projects.length} total
+                  </span>
+                )}
+              </h1>
               <div className="relative">
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-muted" />
                 <input
@@ -187,6 +195,25 @@ export default function Dashboard() {
                   className="dark-input pl-9 pr-4 py-2 text-sm w-56"
                 />
               </div>
+            </div>
+
+            {/* Visibility filter tabs */}
+            <div className="flex gap-1 mb-6" style={{ backgroundColor: '#0d1117', borderRadius: '10px', padding: '4px', display: 'inline-flex' }}>
+              {(['all', 'personal', 'public'] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => { setVisibilityFilter(f); setPage(1); }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    visibilityFilter === f
+                      ? 'bg-dark-raised text-dark-text border border-dark-border'
+                      : 'text-dark-muted hover:text-dark-text'
+                  }`}
+                >
+                  {f === 'personal' && <Lock size={11} />}
+                  {f === 'public' && <Globe size={11} />}
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
             </div>
 
             {/* Grid */}
@@ -335,6 +362,42 @@ export default function Dashboard() {
                         spellCheck={false}
                       />
                     )}
+
+                    {/* Visibility toggle */}
+                    <div>
+                      <p className="text-xs text-dark-muted mb-2 font-medium">Visibility</p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setNewVisibility('personal')}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                            newVisibility === 'personal'
+                              ? 'border-primary text-primary bg-primary/10'
+                              : 'border-dark-border text-dark-muted hover:text-dark-text'
+                          }`}
+                        >
+                          <Lock size={13} />
+                          Personal
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewVisibility('public')}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                            newVisibility === 'public'
+                              ? 'border-primary text-primary bg-primary/10'
+                              : 'border-dark-border text-dark-muted hover:text-dark-text'
+                          }`}
+                        >
+                          <Globe size={13} />
+                          Public
+                        </button>
+                      </div>
+                      <p className="text-xs text-dark-dim mt-1.5">
+                        {newVisibility === 'personal'
+                          ? 'Only visible to you. Share link still works for anyone with it.'
+                          : 'Will appear in public directory (coming soon). Share link works for all.'}
+                      </p>
+                    </div>
 
                     <button
                       type="submit"

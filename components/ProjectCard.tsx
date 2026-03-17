@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2 } from 'lucide-react';
+import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { deleteProject } from '@/services/api';
+import { deleteProject, setProjectVisibility } from '@/services/api';
 import { addHistory } from '@/lib/history';
+import { getVisibility, setVisibility, type Visibility } from '@/lib/visibility';
 import type { Project } from '@/types';
 
 interface ProjectCardProps {
@@ -16,6 +17,20 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [visibility, setVisibilityState] = useState<Visibility>(() => getVisibility(project.slug));
+
+  const handleToggleVisibility = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next: Visibility = visibility === 'personal' ? 'public' : 'personal';
+    setVisibilityState(next);
+    setVisibility(project.slug, next);
+    try {
+      await setProjectVisibility(project.slug, next);
+    } catch {
+      // Backend may not support this yet — localStorage already updated
+    }
+    toast.success(next === 'public' ? 'Set to Public' : 'Set to Personal');
+  };
 
   const shareLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${project.slug}`;
 
@@ -119,6 +134,18 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
           {formattedDate}
         </p>
         <p className="text-xs text-dark-dim mt-0.5 truncate font-mono">{project.slug}</p>
+        <button
+          onClick={handleToggleVisibility}
+          title={visibility === 'personal' ? 'Personal — click to make Public' : 'Public — click to make Personal'}
+          className={`mt-1.5 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
+            visibility === 'public'
+              ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+              : 'bg-dark-border/60 text-dark-muted hover:bg-dark-border'
+          }`}
+        >
+          {visibility === 'public' ? <Globe size={9} /> : <Lock size={9} />}
+          {visibility === 'public' ? 'Public' : 'Personal'}
+        </button>
       </div>
 
       {/* Bottom actions */}

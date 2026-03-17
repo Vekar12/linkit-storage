@@ -35,11 +35,13 @@ api.interceptors.response.use(
 
 export const createProject = async (
   projectName: string,
-  file: File
+  file: File,
+  visibility: 'personal' | 'public' = 'personal'
 ): Promise<CreateProjectResponse> => {
   const formData = new FormData();
   formData.append('projectName', projectName);
   formData.append('file', file);
+  formData.append('visibility', visibility);
   const { data } = await api.post<CreateProjectResponse>('/projects', formData);
   return data;
 };
@@ -71,4 +73,11 @@ export const getProjectMetadata = async (
 
 export const deleteProject = async (slug: string): Promise<void> => {
   await api.delete(`/projects/${slug}`);
+};
+
+export const setProjectVisibility = async (
+  slug: string,
+  visibility: 'personal' | 'public'
+): Promise<void> => {
+  await api.patch(`/projects/${slug}`, { visibility });
 };
