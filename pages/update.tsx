@@ -54,6 +54,8 @@ export default function UpdatePage() {
       addHistory({ type: 'updated', projectName: slug.trim(), slug: slug.trim() });
       setSuccess(true);
       toast.success('Project updated!');
+      // Auto-open the updated link in a new tab
+      window.open(`${window.location.origin}/p/${slug.trim()}`, '_blank');
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       const msg = status === 404

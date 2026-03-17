@@ -161,6 +161,8 @@ export default function Dashboard() {
     }
   };
 
+  const publicProjects = projects.filter((p) => getVisibility(p.slug) === 'public');
+
   const filteredProjects = projects.filter((p) => {
     const matchesSearch =
       p.projectName.toLowerCase().includes(search.toLowerCase()) ||
@@ -266,6 +268,39 @@ export default function Dashboard() {
                   <Upload size={15} />
                   Upload a file
                 </button>
+              </div>
+            )}
+
+            {/* ── Public Projects section ── */}
+            {!loadingProjects && publicProjects.length > 0 && (
+              <div className="mt-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <Globe size={15} className="text-green-400" />
+                  <h2 className="text-base font-bold text-dark-text">
+                    Public Projects
+                    <span className="ml-2 text-sm font-normal text-dark-muted">{publicProjects.length} shared</span>
+                  </h2>
+                </div>
+                <div
+                  className="rounded-2xl border border-green-900/30 p-4"
+                  style={{ backgroundColor: '#0f1f13' }}
+                >
+                  <p className="text-xs text-green-700 mb-4">
+                    These projects are marked public and will appear in the public directory when launched.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {publicProjects.map((project) => (
+                      <ProjectCard
+                        key={project.slug}
+                        project={project}
+                        onDeleted={(slug) => {
+                          invalidateCache();
+                          setProjects((prev) => prev.filter((p) => p.slug !== slug));
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>

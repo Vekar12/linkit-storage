@@ -46,7 +46,9 @@ export default function PublicViewPage() {
   const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'image/png', 'image/jpeg'].includes(fileType);
   const isZip   = fileType === 'application/zip' || fileType === 'zip';
 
-  const latestURL = metadata.versions?.[metadata.versions.length - 1]?.fileURL ?? fileURL;
+  // Cache-bust so browser always fetches the latest file after an update
+  const rawURL = metadata.versions?.[metadata.versions.length - 1]?.fileURL ?? fileURL;
+  const latestURL = `${rawURL}${rawURL.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
 
   return (
     <div className="flex flex-col" style={{ height: '100vh' }}>

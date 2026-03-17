@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowLeft, Download, Clock, Link2, ExternalLink, RefreshCw, FileText } from 'lucide-react';
-import { getProjectMetadata } from '@/services/api';
+import { ArrowLeft, Download, Clock, Link2, ExternalLink, RefreshCw, FileText, Lock, Globe } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { getProjectMetadata, setProjectVisibility } from '@/services/api';
 import type { ProjectMetadata } from '@/types';
+import { getVisibility, setVisibility, type Visibility } from '@/lib/visibility';
 import DashboardLayout from '@/components/DashboardLayout';
 
 export default function VersionHistoryPage() {
@@ -12,6 +14,26 @@ export default function VersionHistoryPage() {
   const [metadata, setMetadata] = useState<ProjectMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [visibility, setVisibilityState] = useState<Visibility>('personal');
+
+  useEffect(() => {
+    if (slug && typeof slug === 'string') {
+      setVisibilityState(getVisibility(slug));
+    }
+  }, [slug]);
+
+  const handleToggleVisibility = async () => {
+    if (!slug || typeof slug !== 'string') return;
+    const next: Visibility = visibility === 'personal' ? 'public' : 'personal';
+    setVisibilityState(next);
+    setVisibility(slug, next);
+    try {
+      await setProjectVisibility(slug, next);
+    } catch {
+      // Backend may not support yet — localStorage updated
+    }
+    toast.success(next === 'public' ? 'Project set to Public' : 'Project set to Personal');
+  };
 
   useEffect(() => {
     if (!slug || typeof slug !== 'string') return;
@@ -87,7 +109,19 @@ export default function VersionHistoryPage() {
               <h1 className="text-xl font-bold text-dark-text">{slug}</h1>
               <p className="text-dark-muted text-sm mt-0.5 font-mono">{slug}</p>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap items-center">
+              {/* Visibility toggle */}
+              <button
+                onClick={handleToggleVisibility}
+                className={`flex items-center gap-1.5 text-sm py-2 px-4 rounded-xl border font-medium transition-all ${
+                  visibility === 'public'
+                    ? 'border-green-500/50 text-green-400 bg-green-900/20 hover:bg-green-900/30'
+                    : 'border-dark-border text-dark-muted hover:text-dark-text hover:border-dark-borderhover'
+                }`}
+              >
+                {visibility === 'public' ? <Globe size={14} /> : <Lock size={14} />}
+                {visibility === 'public' ? 'Public' : 'Personal'}
+              </button>
               <a
                 href={shareLink}
                 target="_blank"
