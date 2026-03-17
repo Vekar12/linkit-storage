@@ -2,53 +2,83 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>iLens Disbursement Demo</title>
+<title>iLens Disbursement OS - Demo</title>
 
 <style>
 body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 
-/* TOP */
-.topbar { background:#a3211f; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; }
+/* ===== HEADER ===== */
+.topbar {
+  background:#a3211f; color:#fff;
+  padding:10px 20px; display:flex; justify-content:space-between;
+}
 .subbar { background:#c0392b; color:#fff; padding:8px 20px; }
 
-/* LAYOUT */
+/* ===== LAYOUT ===== */
 .container { display:flex; }
 .sidebar { width:220px; background:#fff; border-right:1px solid #ddd; }
 .sidebar div { padding:12px; }
 .main { flex:1; padding:15px; }
 
-/* HEADER */
-.header { background:#fff; padding:12px; border-radius:6px; display:flex; justify-content:space-between; }
-
-/* ROLE STRIP */
-.role-strip {
-  margin-top:10px; padding:10px; border-radius:6px;
-  background:#fff; font-weight:600;
+/* ===== HEADER ===== */
+.header {
+  background:#fff; padding:12px;
+  border-radius:6px; display:flex; justify-content:space-between;
 }
 
-/* TABLE */
+/* ===== STRIPS ===== */
+.strip {
+  margin-top:10px; padding:10px;
+  border-radius:6px; font-size:13px;
+}
+.red-bg { background:#fdecea; color:#c62828; }
+.green-bg { background:#e8f5e9; color:#2e7d32; }
+.orange-bg { background:#fff3e0; color:#ef6c00; }
+
+/* ===== TABLE ===== */
 .panel { margin-top:10px; background:#fff; border-radius:6px; }
 .panel-header { background:#1f3a5f; color:#fff; padding:10px; }
 
 table { width:100%; border-collapse:collapse; }
-th,td { padding:10px; border-bottom:1px solid #eee; font-size:13px; }
+th, td {
+  padding:10px; border-bottom:1px solid #eee;
+  font-size:13px; text-align:left;
+}
 th { background:#f0f3f7; }
 
-/* BADGE */
-.badge { padding:4px 8px; border-radius:5px; color:#fff; font-size:11px; }
+/* ===== BADGE ===== */
+.badge {
+  padding:4px 8px; border-radius:5px;
+  font-size:11px; color:#fff;
+}
 .green { background:#2e7d32; }
 .yellow { background:#fbc02d; color:#000; }
 .red { background:#e53935; }
 
-/* BUTTON */
-button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-size:12px; }
+/* ===== BUTTON ===== */
+button {
+  padding:5px 8px; border:none;
+  border-radius:4px; cursor:pointer; font-size:12px;
+}
 .blue { background:#1976d2; color:#fff; }
 .greenBtn { background:#2e7d32; color:#fff; }
+.orangeBtn { background:#f57c00; color:#fff; }
 .gray { background:#ccc; cursor:not-allowed; }
 
-/* LOCKED */
+/* ===== LOCKED ===== */
 .locked { opacity:0.4; pointer-events:none; }
 
+/* ===== PRIORITY ===== */
+.p1 { color:#c62828; font-weight:bold; }
+.p2 { color:#f57c00; }
+.p3 { color:#555; }
+
+/* ===== TIMELINE ===== */
+.timeline {
+  background:#fff; padding:10px;
+  margin-top:10px; border-radius:6px;
+  font-size:12px;
+}
 </style>
 </head>
 
@@ -56,25 +86,26 @@ button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-s
 
 <div class="topbar">
   <div>iLens Mortgage</div>
-  <div>Demo User</div>
+  <div>Demo Mode</div>
 </div>
 
-<div class="subbar">Disbursement Demo Flow</div>
+<div class="subbar">Disbursement Demo + Task Engine</div>
 
 <div class="container">
 
 <div class="sidebar">
-  <div>Common Dashboard</div>
+  <div>Documents Dashboard</div>
 </div>
 
 <div class="main">
 
 <div class="header">
   <div><b>NARENDRA VERMA</b> | ₹17L</div>
-  <div>Status: Demo Flow</div>
+  <div id="stageLabel"></div>
 </div>
 
-<div class="role-strip" id="roleStrip"></div>
+<div id="critical" class="strip"></div>
+<div id="nextAction" class="strip"></div>
 
 <div class="panel">
 <div class="panel-header">Documents Dashboard</div>
@@ -84,7 +115,11 @@ button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-s
 <tr>
 <th>Document</th>
 <th>Status</th>
+<th>Verification</th>
 <th>Owner</th>
+<th>Dependency</th>
+<th>SLA</th>
+<th>Priority</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -98,44 +133,65 @@ button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-s
 
 </div>
 
+<div class="timeline" id="timeline"></div>
+
 </div>
 </div>
 
 <script>
 
 /* ===== DEMO FLOW ===== */
-let currentRole = "Customer";
+let roles = ["Customer","Sales","Credit"];
+let currentStageIndex = 0;
 
-let flowOrder = ["Customer","Sales","Credit"];
-
-/* ===== TASKS ===== */
+/* ===== TASK DATA ===== */
 let tasks = [
- {name:"PAN Upload", owner:"Customer", status:"pending"},
- {name:"Income Proof", owner:"Customer", status:"pending"},
- {name:"Agreement Collection", owner:"Sales", status:"pending"},
- {name:"Property Check", owner:"Sales", status:"pending"},
- {name:"Income Verification", owner:"Credit", status:"pending"}
+ {name:"PAN Upload", owner:"Customer", status:"pending", verify:"-", dep:"Independent", sla:2, priority:"P1"},
+ {name:"Income Proof", owner:"Customer", status:"pending", verify:"-", dep:"Independent", sla:3, priority:"P2"},
+ {name:"Agreement Collection", owner:"Sales", status:"pending", verify:"-", dep:"Hard", sla:2, priority:"P1"},
+ {name:"Property Check", owner:"Sales", status:"pending", verify:"-", dep:"Soft", sla:4, priority:"P2"},
+ {name:"Income Verification", owner:"Credit", status:"pending", verify:"-", dep:"Hard", sla:3, priority:"P1"}
 ];
+
+let timeline = [];
 
 /* ===== RENDER ===== */
 function render(){
 
- document.getElementById("roleStrip").innerText =
- "Current Stage: " + currentRole;
+ let currentRole = roles[currentStageIndex];
+ document.getElementById("stageLabel").innerText = "Current Stage: " + currentRole;
+
+ renderTable(currentRole);
+ renderInsight(currentRole);
+ renderNextAction(currentRole);
+ renderTimeline();
+}
+
+/* ===== TABLE ===== */
+function renderTable(role){
 
  let html="";
 
  tasks.forEach((t,i)=>{
 
- let locked = t.owner !== currentRole ? "locked":"";
+ let locked = t.owner !== role;
+
+ let depIcon = t.dep==="Hard"?"🔒":t.dep==="Soft"?"⚠":"";
+
+ let slaClass = t.sla<=0?"red":t.sla<2?"orange":"green";
 
  html+=`
- <tr class="${locked}">
+ <tr class="${locked?'locked':''}">
   <td>${t.name}</td>
-  <td><span class="badge ${t.status==="pending"?"yellow":"green"}">${t.status}</span></td>
+  <td><span class="badge ${t.status==="done"?"green":"yellow"}">${t.status}</span></td>
+  <td>${t.verify}</td>
   <td>${t.owner}</td>
+  <td>${depIcon} ${t.dep}</td>
+  <td class="${slaClass}">${t.sla}h</td>
+  <td class="${t.priority.toLowerCase()}">${t.priority}</td>
   <td>
-    ${t.owner===currentRole ? `<button class="blue" onclick="complete(${i})">Complete</button>` : `<button class="gray">Locked</button>`}
+    ${locked ? '<button class="gray">Locked</button>' :
+      `<button class="blue" onclick="complete(${i})">Complete</button>`}
   </td>
  </tr>`;
  });
@@ -143,14 +199,23 @@ function render(){
  document.getElementById("table").innerHTML=html;
 }
 
-/* ===== COMPLETE ===== */
+/* ===== ACTION ===== */
 function complete(i){
  tasks[i].status="done";
+ log("Completed " + tasks[i].name);
+
+ /* CASCADE UNLOCK */
+ tasks.forEach(t=>{
+   if(t.dep==="Hard") t.dep="Soft";
+ });
+
  render();
 }
 
 /* ===== SUBMIT ===== */
 function submit(){
+
+ let currentRole = roles[currentStageIndex];
 
  let pending = tasks.filter(t => t.owner===currentRole && t.status!=="done");
 
@@ -159,16 +224,52 @@ function submit(){
    return;
  }
 
- let nextIndex = flowOrder.indexOf(currentRole) + 1;
-
- if(nextIndex < flowOrder.length){
-   currentRole = flowOrder[nextIndex];
-   alert("Moved to "+currentRole+" stage");
+ if(currentStageIndex < roles.length-1){
+   currentStageIndex++;
+   alert("Moved to " + roles[currentStageIndex]);
  } else {
    alert("Disbursement Ready ✅");
  }
 
  render();
+}
+
+/* ===== INSIGHT ===== */
+function renderInsight(role){
+
+ let blocker = tasks.find(t => t.dep==="Hard" && t.status!=="done");
+
+ if(blocker){
+   document.getElementById("critical").className="strip red-bg";
+   document.getElementById("critical").innerText =
+   "BLOCKED: " + blocker.name + " pending with " + blocker.owner;
+ } else {
+   document.getElementById("critical").className="strip green-bg";
+   document.getElementById("critical").innerText = "No blockers";
+ }
+}
+
+/* ===== NEXT ACTION ===== */
+function renderNextAction(role){
+
+ let next = tasks.find(t => t.owner===role && t.status==="pending");
+
+ if(next){
+   document.getElementById("nextAction").className="strip orange-bg";
+   document.getElementById("nextAction").innerText =
+   "Next Action: " + role + " to complete " + next.name;
+ }
+}
+
+/* ===== TIMELINE ===== */
+function log(msg){
+ timeline.unshift(new Date().toLocaleTimeString()+" | "+msg);
+}
+
+function renderTimeline(){
+ let html="<b>Recent Activity</b><br>";
+ timeline.slice(0,6).forEach(t=> html+=`<div>${t}</div>`);
+ document.getElementById("timeline").innerHTML=html;
 }
 
 render();
