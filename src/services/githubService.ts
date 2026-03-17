@@ -22,8 +22,10 @@ async function getFileSHA(path: string): Promise<string | undefined> {
   try {
     const { data } = await getClient().repos.getContent({ ...getRepo(), path });
     if (!Array.isArray(data) && 'sha' in data) return data.sha;
-  } catch {
     return undefined;
+  } catch (err: unknown) {
+    if ((err as { status?: number }).status === 404) return undefined;
+    throw err; // rate limits, network errors — must not be silenced
   }
 }
 
@@ -62,8 +64,9 @@ export async function getFileWithSHA(
       };
     }
     return null;
-  } catch {
-    return null;
+  } catch (err: unknown) {
+    if ((err as { status?: number }).status === 404) return null;
+    throw err;
   }
 }
 
@@ -74,8 +77,9 @@ export async function readJSON<T>(path: string): Promise<T | null> {
       return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8')) as T;
     }
     return null;
-  } catch {
-    return null;
+  } catch (err: unknown) {
+    if ((err as { status?: number }).status === 404) return null;
+    throw err;
   }
 }
 
