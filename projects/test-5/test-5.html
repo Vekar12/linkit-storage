@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Task Dashboard</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+}
+
+.container {
+  display: flex;
+}
+
+.sidebar {
+  width: 220px;
+  background: #111827;
+  color: white;
+  height: 100vh;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.table-container {
+  margin-top: 20px;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.status {
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+}
+
+.green { background: green; }
+.yellow { background: orange; }
+.red { background: red; }
+
+.kanban {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.column {
+  flex: 1;
+  background: #e5e7eb;
+  padding: 10px;
+  border-radius: 10px;
+  min-height: 200px;
+}
+
+.task {
+  background: white;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  cursor: grab;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+}
+
+input, select {
+  width: 100%;
+  margin: 10px 0;
+  padding: 8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="sidebar">
+    <h2>Dashboard</h2>
+    <p>Tasks</p>
+    <p>Analytics</p>
+  </div>
+
+  <div class="main">
+
+    <div class="navbar">
+      <input type="text" id="search" placeholder="Search tasks...">
+      <button onclick="openModal()">+ Add Task</button>
+    </div>
+
+    <div class="cards">
+      <div class="card">Completed: <span id="completed">0</span></div>
+      <div class="card">Pending: <span id="pending">0</span></div>
+      <div class="card">Total: <span id="total">0</span></div>
+      <div class="card">Missed: <span id="missed">0</span></div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Due</th>
+          </tr>
+        </thead>
+        <tbody id="taskTable"></tbody>
+      </table>
+    </div>
+
+    <div class="kanban">
+      <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <h3>To Do</h3>
+      </div>
+      <div class="column" id="progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <h3>In Progress</h3>
+      </div>
+      <div class="column" id="done" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <h3>Done</h3>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3>Add Task</h3>
+    <input id="name" placeholder="Task Name">
+    <select id="status">
+      <option>To Do</option>
+      <option>In Progress</option>
+      <option>Done</option>
+    </select>
+    <select id="priority">
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+    </select>
+    <input type="date" id="date">
+    <button onclick="addTask()">Save</button>
+  </div>
+</div>
+
+<script>
+
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function render() {
+  let table = document.getElementById("taskTable");
+  table.innerHTML = "";
+
+  document.getElementById("todo").innerHTML = "<h3>To Do</h3>";
+  document.getElementById("progress").innerHTML = "<h3>In Progress</h3>";
+  document.getElementById("done").innerHTML = "<h3>Done</h3>";
+
+  let completed = 0;
+
+  tasks.forEach((t, i) => {
+    let row = `
+      <tr>
+        <td>${t.name}</td>
+        <td><span class="status ${getColor(t.status)}">${t.status}</span></td>
+        <td>${t.priority}</td>
+        <td>${t.date}</td>
+      </tr>`;
+    table.innerHTML += row;
+
+    let div = document.createElement("div");
+    div.className = "task";
+    div.draggable = true;
+    div.id = i;
+    div.ondragstart = drag;
+    div.innerText = t.name;
+
+    if (t.status === "To Do") document.getElementById("todo").appendChild(div);
+    if (t.status === "In Progress") document.getElementById("progress").appendChild(div);
+    if (t.status === "Done") {
+      document.getElementById("done").appendChild(div);
+      completed++;
+    }
+  });
+
+  document.getElementById("total").innerText = tasks.length;
+  document.getElementById("completed").innerText = completed;
+  document.getElementById("pending").innerText = tasks.length - completed;
+}
+
+function getColor(status) {
+  if (status === "Done") return "green";
+  if (status === "In Progress") return "yellow";
+  return "red";
+}
+
+function openModal() {
+  document.getElementById("modal").style.display = "flex";
+}
+
+function addTask() {
+  let task = {
+    name: document.getElementById("name").value,
+    status: document.getElementById("status").value,
+    priority: document.getElementById("priority").value,
+    date: document.getElementById("date").value
+  };
+
+  tasks.push(task);
+  saveTasks();
+  render();
+
+  document.getElementById("modal").style.display = "none";
+}
+
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drag(ev) {
+  ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  let id = ev.dataTransfer.getData("text");
+
+  let column = ev.target.closest(".column").id;
+
+  if (column === "todo") tasks[id].status = "To Do";
+  if (column === "progress") tasks[id].status = "In Progress";
+  if (column === "done") tasks[id].status = "Done";
+
+  saveTasks();
+  render();
+}
+
+render();
+
+</script>
+
+</body>
+</html>
