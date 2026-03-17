@@ -78,12 +78,17 @@ export default function UpdatePage() {
         window.open(fullLink, '_blank');
       }
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
+      const axiosErr = err as { response?: { status?: number; data?: unknown } };
+      const status = axiosErr?.response?.status;
+      // Log full response so the backend error is visible in the console
+      console.error('[update] PUT failed', { status, data: axiosErr?.response?.data });
+      const serverMsg = (axiosErr?.response?.data as { message?: string; error?: string })?.message
+        ?? (axiosErr?.response?.data as { message?: string; error?: string })?.error;
       const msg = status === 404
         ? 'No project found with that slug.'
         : status === 403
         ? 'You do not have permission to update this project.'
-        : ((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Update failed. Please try again.');
+        : serverMsg ?? `Update failed (status ${status ?? 'no response'}).`;
       toast.error(msg);
     } finally {
       setLoading(false);
