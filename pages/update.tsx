@@ -60,7 +60,7 @@ export default function UpdatePage() {
 
     setLoading(true);
     try {
-      await updateProject(cleanSlug, uploadFile!);
+      await updateProject(cleanSlug, uploadFile!, ownerId || undefined);
       addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
       setSuccess(true);
       toast.success('Project updated!');
