@@ -1,159 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>iLens Disbursement</title>
+<title>iLens Disbursement System</title>
 
 <style>
-body {
-  margin:0;
-  font-family: "Segoe UI", Arial;
-  background:#f4f6f9;
-}
+body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 
-/* ===== TOP NAV ===== */
+/* ===== TOP ===== */
 .topbar {
-  background:#a3211f;
-  color:#fff;
-  padding:10px 20px;
-  display:flex;
-  justify-content:space-between;
-  font-weight:600;
+  background:#a3211f; color:#fff; padding:10px 20px;
+  display:flex; justify-content:space-between;
 }
-
-.subnav {
-  background:#b8322b;
-  color:#fff;
-  padding:8px 20px;
-  font-size:14px;
+.subbar {
+  background:#c0392b; color:#fff; padding:8px 20px;
 }
 
 /* ===== LAYOUT ===== */
 .container { display:flex; }
 
 .sidebar {
-  width:230px;
-  background:#fff;
-  border-right:1px solid #ddd;
+  width:230px; background:#fff; border-right:1px solid #ddd;
 }
-
 .sidebar div {
-  padding:12px 15px;
-  cursor:pointer;
-  font-size:14px;
+  padding:12px; cursor:pointer;
 }
-
 .sidebar .active {
-  background:#1f3a5f;
-  color:#fff;
-  font-weight:600;
+  background:#1f3a5f; color:#fff;
 }
 
-.main {
-  flex:1;
-  padding:15px;
-}
+.main { flex:1; padding:15px; }
 
 /* ===== HEADER ===== */
 .header {
-  background:#fff;
-  padding:12px;
+  background:#fff; padding:12px;
+  display:flex; justify-content:space-between;
   border-radius:6px;
-  margin-bottom:10px;
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
 }
 
 /* ===== PROGRESS ===== */
 .progress-box {
-  background:#fff;
-  padding:15px;
+  background:#fff; padding:15px; margin-top:10px;
   border-radius:6px;
 }
-
-.progress-bar {
-  height:14px;
-  background:#ddd;
-  border-radius:10px;
+.bar {
+  height:14px; background:#ddd; border-radius:10px;
   overflow:hidden;
-  margin-top:8px;
 }
-
-.progress-fill {
-  height:100%;
-  background:#2e7d32;
-}
+.fill { height:100%; background:#2e7d32; }
 
 /* ===== CARDS ===== */
-.cards {
-  display:flex;
-  gap:12px;
-  margin-top:12px;
-}
-
+.cards { display:flex; gap:10px; margin-top:10px; }
 .card {
-  flex:1;
-  background:#fff;
-  padding:15px;
-  border-radius:6px;
-  text-align:center;
-  cursor:pointer;
+  flex:1; background:#fff; padding:15px;
+  border-radius:6px; text-align:center;
 }
-
-.card:hover { background:#eef4ff; }
-
-.card-title {
-  font-weight:600;
-}
-
-.card-count {
-  font-size:18px;
-  margin-top:5px;
-}
-
-.card-sub {
-  font-size:12px;
-  color:#777;
-}
+.small { font-size:12px; color:#777; }
 
 /* ===== PANEL ===== */
 .panel {
-  margin-top:12px;
-  background:#fff;
-  border-radius:6px;
-  display:none;
+  background:#fff; margin-top:10px; border-radius:6px;
 }
-
 .panel-header {
-  background:#1f3a5f;
-  color:#fff;
-  padding:10px;
-  font-weight:600;
+  background:#1f3a5f; color:#fff; padding:10px;
 }
 
 /* ===== TABLE ===== */
-table {
-  width:100%;
-  border-collapse:collapse;
+table { width:100%; border-collapse:collapse; }
+th,td {
+  padding:10px; border-bottom:1px solid #eee;
 }
-
-th, td {
-  padding:10px;
-  border-bottom:1px solid #eee;
-  font-size:13px;
-}
-
 th { background:#f0f3f7; }
 
-/* ===== STATUS ===== */
+/* ===== BADGE ===== */
 .badge {
-  padding:4px 8px;
-  border-radius:5px;
-  color:white;
+  padding:4px 8px; border-radius:5px; color:#fff;
   font-size:11px;
 }
-
 .pending { background:#e53935; }
 .received { background:#2e7d32; }
 .query { background:#f57c00; }
@@ -161,87 +84,100 @@ th { background:#f0f3f7; }
 
 /* ===== BUTTONS ===== */
 button {
-  padding:5px 8px;
-  border:none;
-  border-radius:4px;
-  cursor:pointer;
-  font-size:12px;
+  padding:5px 8px; border:none; border-radius:4px;
+  cursor:pointer; font-size:12px;
 }
+.blue { background:#1976d2; color:#fff; }
+.green { background:#2e7d32; color:#fff; }
+.orange { background:#f57c00; color:#fff; }
 
-.blue { background:#1976d2; color:white; }
-.green { background:#2e7d32; color:white; }
-.orange { background:#f57c00; color:white; }
-
-.footer {
-  padding:10px;
-  text-align:right;
+/* ===== TIMELINE ===== */
+.timeline {
+  background:#fff; margin-top:10px; padding:10px;
+  border-radius:6px;
 }
+.timeline div { font-size:12px; margin-bottom:6px; }
+
 </style>
 </head>
 
 <body>
 
 <div class="topbar">
-  iLens Mortgage
+  <div>iLens Mortgage</div>
   <div>Maharshi Divekar</div>
 </div>
 
-<div class="subnav">Disbursement Module</div>
+<div class="subbar">Disbursement Module</div>
 
 <div class="container">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <div class="active" onclick="switchScreen('summary')">Disbursement Summary</div>
-  <div onclick="switchScreen('dashboard')">Application Dashboard</div>
+  <div class="active" onclick="show('summary')">Summary</div>
+  <div onclick="show('dashboard')">Dashboard</div>
+  <div onclick="show('sales')">Sales Workspace</div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<!-- HEADER -->
 <div class="header">
-  <div><b>NARENDRA VERMA</b> | ₹17L | Home Loan</div>
-  <div>Status: <span style="color:orange">In Progress</span></div>
+  <div><b>NARENDRA VERMA</b> | ₹17L</div>
+  <div>Status: In Progress</div>
 </div>
 
-<!-- SUMMARY -->
+<!-- ===== SUMMARY ===== -->
 <div id="summary">
 
 <div class="progress-box">
-  Overall Progress
-  <div class="progress-bar">
-    <div id="progressFill" class="progress-fill"></div>
-  </div>
+  Case Readiness: <span id="percent"></span>%
+  <div class="bar"><div class="fill" id="fill"></div></div>
 </div>
 
 <div class="cards" id="summaryCards"></div>
 
+<div class="timeline" id="timeline"></div>
+
 </div>
 
-<!-- DASHBOARD -->
+<!-- ===== DASHBOARD ===== -->
 <div id="dashboard" style="display:none">
 
-<div class="cards" id="dashboardCards"></div>
+<div class="cards" id="roleCards"></div>
 
-<div class="panel" id="panel">
+<div class="panel">
   <div class="panel-header" id="panelTitle"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th><th>Status</th><th>Dependency</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="taskTable"></tbody>
+  </table>
+</div>
+
+</div>
+
+<!-- ===== SALES ===== -->
+<div id="sales" style="display:none">
+
+<div class="panel">
+  <div class="panel-header">Sales Workspace</div>
 
   <table>
     <thead>
       <tr>
-        <th>Task</th>
-        <th>Status</th>
-        <th>Dependency</th>
-        <th>Action</th>
+        <th>Task</th><th>Mode</th><th>Status</th><th>Verification</th><th>Action</th>
       </tr>
     </thead>
-
-    <tbody id="taskTable"></tbody>
+    <tbody id="salesTable"></tbody>
   </table>
 
-  <div class="footer">
+  <div style="padding:10px;text-align:right;">
     <button class="green">Submit Completed</button>
+    <button class="orange">Hold Queries</button>
   </div>
 
 </div>
@@ -253,120 +189,143 @@ button {
 
 <script>
 
-/* ===== CENTRAL STATE ===== */
+/* ===== STATE ===== */
 let tasks = [
- {name:"Agreement to Sale", role:"sales", status:"pending", dep:"Independent"},
- {name:"Property Tax Receipt", role:"sales", status:"received", dep:"Independent"},
- {name:"Builder NOC", role:"sales", status:"query", dep:"Customer"},
- {name:"Salary Slips", role:"credit", status:"verified", dep:"Customer"},
- {name:"PAN Upload", role:"customer", status:"pending", dep:"Independent"}
+ {name:"Agreement to Sale", role:"sales", mode:"Physical", status:"pending"},
+ {name:"Property Tax", role:"sales", mode:"Digital", status:"received"},
+ {name:"Builder NOC", role:"sales", mode:"Physical", status:"query"},
+ {name:"Salary Slips", role:"credit", mode:"Digital", status:"verified"},
+ {name:"PAN", role:"customer", mode:"Digital", status:"pending"}
 ];
 
-let roles = ["customer","sales","credit","rcu"];
-let currentRole = "sales";
-
-/* ===== SCREEN SWITCH ===== */
-function switchScreen(screen){
-  document.getElementById("summary").style.display="none";
-  document.getElementById("dashboard").style.display="none";
-
-  document.getElementById(screen).style.display="block";
-  renderAll();
-}
+let timeline = [];
 
 /* ===== RENDER ===== */
-function renderAll(){
-  renderSummary();
-  renderDashboard();
-  renderTasks();
-  updateProgress();
+function render(){
+ renderSummary();
+ renderDashboard();
+ renderSales();
+ updateProgress();
+ renderTimeline();
 }
 
 /* ===== SUMMARY ===== */
 function renderSummary(){
-  let html="";
+ let roles=["customer","sales","credit","rcu"];
+ let html="";
 
-  roles.forEach(r=>{
-    const roleTasks = tasks.filter(t=>t.role===r);
-    const done = roleTasks.filter(t=>t.status==="verified").length;
-    const total = roleTasks.length;
+ roles.forEach(r=>{
+   let rTasks=tasks.filter(t=>t.role===r);
+   let done=rTasks.filter(t=>t.status==="verified").length;
 
-    html += `
-      <div class="card">
-        <div class="card-title">${r.toUpperCase()}</div>
-        <div class="card-count">${done}/${total}</div>
-        <div class="card-sub">${done===total ? "Complete" : "In Progress"}</div>
-      </div>
-    `;
-  });
+   html+=`<div class="card">
+     ${r.toUpperCase()}
+     <div>${done}/${rTasks.length}</div>
+     <div class="small">${done===rTasks.length?"Done":"In Progress"}</div>
+   </div>`;
+ });
 
-  document.getElementById("summaryCards").innerHTML = html;
+ document.getElementById("summaryCards").innerHTML=html;
 }
 
 /* ===== DASHBOARD ===== */
 function renderDashboard(){
-  let html="";
+ let roles=["sales","customer","credit","rcu"];
+ let html="";
 
-  roles.forEach(r=>{
-    const pending = tasks.filter(t=>t.role===r && t.status!=="verified").length;
+ roles.forEach(r=>{
+   let count=tasks.filter(t=>t.role===r && t.status!=="verified").length;
+   html+=`<div class="card" onclick="openPanel('${r}')">
+     ${r.toUpperCase()}
+     <div>${count}</div>
+   </div>`;
+ });
 
-    html += `
-      <div class="card" onclick="openPanel('${r}')">
-        <div class="card-title">${r.toUpperCase()}</div>
-        <div class="card-count">${pending}</div>
-      </div>
-    `;
-  });
-
-  document.getElementById("dashboardCards").innerHTML = html;
+ document.getElementById("roleCards").innerHTML=html;
 }
 
 /* ===== PANEL ===== */
-function openPanel(role){
-  currentRole = role;
-  document.getElementById("panel").style.display="block";
-  document.getElementById("panelTitle").innerText = role.toUpperCase()+" TASKS";
-  renderTasks();
+let currentRole="sales";
+
+function openPanel(r){
+ currentRole=r;
+ document.getElementById("panelTitle").innerText=r.toUpperCase()+" TASKS";
+ renderTasks();
 }
 
-/* ===== TASK TABLE ===== */
 function renderTasks(){
-  const table = document.getElementById("taskTable");
-  table.innerHTML="";
+ let html="";
+ tasks.filter(t=>t.role===currentRole).forEach((t,i)=>{
+   html+=`
+   <tr>
+     <td>${t.name}</td>
+     <td><span class="badge ${t.status}">${t.status}</span></td>
+     <td>Independent</td>
+     <td>
+       <button class="blue" onclick="update(${i},'received')">Receive</button>
+       <button class="green" onclick="update(${i},'verified')">Verify</button>
+       <button class="orange" onclick="update(${i},'query')">Query</button>
+     </td>
+   </tr>`;
+ });
+ document.getElementById("taskTable").innerHTML=html;
+}
 
-  tasks.filter(t=>t.role===currentRole).forEach((t,i)=>{
-    table.innerHTML += `
-      <tr>
-        <td>${t.name}</td>
-        <td><span class="badge ${t.status}">${t.status}</span></td>
-        <td>${t.dep}</td>
-        <td>
-          <button class="blue" onclick="update(${i},'received')">Receive</button>
-          <button class="green" onclick="update(${i},'verified')">Verify</button>
-          <button class="orange" onclick="update(${i},'query')">Query</button>
-        </td>
-      </tr>
-    `;
-  });
+/* ===== SALES ===== */
+function renderSales(){
+ let html="";
+ tasks.filter(t=>t.role==="sales").forEach((t,i)=>{
+   html+=`
+   <tr>
+     <td>${t.name}</td>
+     <td>${t.mode}</td>
+     <td><span class="badge ${t.status}">${t.status}</span></td>
+     <td>${t.status==="verified"?"Verified":"Pending"}</td>
+     <td>
+       <button class="blue" onclick="update(${i},'received')">Receive</button>
+       <button class="green" onclick="update(${i},'verified')">Verify</button>
+       <button class="orange" onclick="update(${i},'query')">Query</button>
+     </td>
+   </tr>`;
+ });
+ document.getElementById("salesTable").innerHTML=html;
 }
 
 /* ===== UPDATE ===== */
-function update(index,status){
-  const roleTasks = tasks.filter(t=>t.role===currentRole);
-  const actualTask = roleTasks[index];
+function update(i,status){
+ tasks[i].status=status;
 
-  actualTask.status = status;
-  renderAll();
+ timeline.unshift(`${new Date().toLocaleTimeString()} → ${tasks[i].name} marked ${status}`);
+
+ render();
 }
 
 /* ===== PROGRESS ===== */
 function updateProgress(){
-  const total = tasks.length;
-  const done = tasks.filter(t=>t.status==="verified").length;
-  document.getElementById("progressFill").style.width = ((done/total)*100)+"%";
+ let done=tasks.filter(t=>t.status==="verified").length;
+ let percent=Math.round((done/tasks.length)*100);
+
+ document.getElementById("percent").innerText=percent;
+ document.getElementById("fill").style.width=percent+"%";
 }
 
-renderAll();
+/* ===== TIMELINE ===== */
+function renderTimeline(){
+ let html="<b>Recent Activity</b><br>";
+ timeline.slice(0,5).forEach(t=> html+=`<div>${t}</div>`);
+ document.getElementById("timeline").innerHTML=html;
+}
+
+/* ===== NAV ===== */
+function show(s){
+ document.getElementById("summary").style.display="none";
+ document.getElementById("dashboard").style.display="none";
+ document.getElementById("sales").style.display="none";
+
+ document.getElementById(s).style.display="block";
+}
+
+render();
 
 </script>
 
