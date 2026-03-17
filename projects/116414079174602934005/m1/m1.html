@@ -2,11 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>iLens Final System</title>
+<title>iLens Disbursement OS</title>
 
 <style>
 body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 
+/* HEADER */
 .topbar { background:#a3211f; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; }
 .subbar { background:#c0392b; color:#fff; padding:8px 20px; }
 
@@ -20,7 +21,7 @@ body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
   border-radius:6px;
 }
 
-/* ===== ROLE ===== */
+/* ROLE */
 .role-banner {
   margin-top:10px;
   padding:10px;
@@ -30,19 +31,19 @@ body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
   font-weight:600;
 }
 
-/* ===== TRACKER ===== */
+/* COMPLETION */
+.strip { margin-top:10px; padding:10px; border-radius:6px; }
+.green { background:#e8f5e9; color:#2e7d32; }
+.red { background:#fdecea; color:#c62828; }
+.orange { background:#fff3e0; color:#ef6c00; }
+
+/* TRACKER */
 .tracker { background:#fff; margin-top:10px; padding:10px; border-radius:6px; }
 .stage-bar { display:flex; }
 .stage { flex:1; text-align:center; padding:6px; border-right:1px solid #ddd; }
 .stage.active { background:#2e7d32; color:#fff; }
 
-/* ===== STRIPS ===== */
-.strip { margin-top:10px; padding:10px; border-radius:6px; }
-.red { background:#fdecea; color:#c62828; }
-.orange { background:#fff3e0; color:#ef6c00; }
-.green { background:#e8f5e9; color:#2e7d32; }
-
-/* ===== TABLE ===== */
+/* TABLE */
 .panel { background:#fff; margin-top:10px; border-radius:6px; }
 .panel-header { background:#1f3a5f; color:#fff; padding:10px; }
 
@@ -50,7 +51,7 @@ table { width:100%; border-collapse:collapse; }
 th,td { padding:10px; border-bottom:1px solid #eee; font-size:13px; }
 th { background:#f0f3f7; }
 
-/* ===== BADGE ===== */
+/* BADGE */
 .badge { padding:4px 8px; border-radius:5px; font-size:11px; color:#fff; }
 .pending { background:#fbc02d; color:#000; }
 .progress { background:#f57c00; }
@@ -58,7 +59,7 @@ th { background:#f0f3f7; }
 .verified { background:#2e7d32; }
 .query { background:#e53935; }
 
-/* ===== BUTTON ===== */
+/* BUTTON */
 button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-size:12px; }
 .blue { background:#1976d2; color:#fff; }
 .greenBtn { background:#2e7d32; color:#fff; }
@@ -96,6 +97,8 @@ button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-s
 
 <div class="role-banner" id="roleBanner"></div>
 
+<div class="strip green" id="completionBar"></div>
+
 <div class="tracker">
   <div class="stage-bar" id="tracker"></div>
 </div>
@@ -113,8 +116,6 @@ button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-s
 <th>Status</th>
 <th>Verification</th>
 <th>Action Pending At</th>
-<th>Dependency</th>
-<th>SLA</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -139,8 +140,8 @@ let roles=["Customer","Sales","Credit"];
 let stage=0;
 
 let tasks=[
- {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending", dep:"Independent", sla:2},
- {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending", dep:"Hard", sla:3}
+ {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending"},
+ {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending"}
 ];
 
 let timeline=[];
@@ -155,11 +156,22 @@ function render(){
  roles.forEach((r,i)=> t+=`<div class="stage ${i<=stage?'active':''}">${r}</div>`);
  document.getElementById("tracker").innerHTML=t;
 
+ /* COMPLETION */
+ let total=tasks.length;
+ let done=tasks.filter(t=>t.status==="Verified").length;
+ let percent=Math.round((done/total)*100);
+
+ document.getElementById("completionBar").innerText=
+ "Case Completion: "+percent+"% ("+done+"/"+total+")";
+
  /* TABLE */
  let html="";
  tasks.forEach((t,i)=>{
 
- let pendingAt = t.status==="Submitted" ? t.verifier : t.owner;
+ let pendingAt =
+  t.status==="Submitted" ? t.verifier :
+  t.status==="Verified" ? "Completed" :
+  t.owner;
 
  let locked = pendingAt!==role;
 
@@ -169,8 +181,6 @@ function render(){
   <td><span class="badge ${t.status.toLowerCase()}">${t.status}</span></td>
   <td>${t.verifier}</td>
   <td>${pendingAt}</td>
-  <td>${t.dep}</td>
-  <td>${t.sla}h</td>
   <td>${locked?'<button class="gray">Locked</button>':actions(i)}</td>
  </tr>`;
  });
@@ -181,15 +191,18 @@ function render(){
  renderTimeline();
 }
 
+/* ACTION ENGINE */
 function actions(i){
  let t=tasks[i];
 
  if(t.status==="Pending") return `<button class="blue" onclick="start(${i})">Start</button>`;
  if(t.status==="In Progress") return `<button class="greenBtn" onclick="submitTask(${i})">Submit</button>`;
  if(t.status==="Submitted") return `<button class="greenBtn" onclick="verify(${i})">Verify</button>`;
+ if(t.status==="Query") return `<button class="blue" onclick="reupload(${i})">Re-upload</button>`;
  return "";
 }
 
+/* ACTIONS */
 function start(i){
  tasks[i].status="In Progress";
  log("Started "+tasks[i].name);
@@ -208,13 +221,24 @@ function verify(i){
  render();
 }
 
+function reupload(i){
+ tasks[i].status="Submitted";
+ log("Re-uploaded "+tasks[i].name);
+ render();
+}
+
+/* SUBMIT FLOW */
 function submit(){
 
  let role=roles[stage];
- let pending=tasks.filter(t=>t.owner===role && t.status!=="Verified");
+
+ let pending = tasks.filter(t =>
+   t.owner===role &&
+   !(t.status==="Submitted" || t.status==="Verified")
+ );
 
  if(pending.length>0){
-  alert("Finish all tasks");
+  alert("Complete all tasks first");
   return;
  }
 
@@ -226,25 +250,28 @@ function submit(){
  render();
 }
 
+/* INSIGHTS */
 function renderInsights(role){
 
- let blocker = tasks.find(t=>t.dep==="Hard" && t.status!=="Verified");
+ let blocker = tasks.find(t=>t.status!=="Verified" && t.owner!==role);
 
  if(blocker){
   document.getElementById("blocker").className="strip red";
-  document.getElementById("blocker").innerText="BLOCKER: "+blocker.name;
+  document.getElementById("blocker").innerText="BLOCKER: "+blocker.name+" pending with "+blocker.owner;
  } else {
   document.getElementById("blocker").className="strip green";
   document.getElementById("blocker").innerText="No blockers";
  }
 
- let next=tasks.find(t=>t.status!=="Verified");
+ let next=tasks.find(t=>t.owner===role && t.status!=="Verified");
+
  if(next){
   document.getElementById("nextAction").className="strip orange";
   document.getElementById("nextAction").innerText="Next Action: "+next.name;
  }
 }
 
+/* TIMELINE */
 function log(msg){
  timeline.unshift(new Date().toLocaleTimeString()+" | "+msg);
 }
