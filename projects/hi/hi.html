@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>iLens Disbursement System</title>
+<title>iLens Disbursement</title>
 
 <style>
 body {
@@ -11,31 +11,28 @@ body {
   background:#f4f6f9;
 }
 
-/* TOP NAV */
+/* ===== TOP NAV ===== */
 .topbar {
   background:#a3211f;
   color:#fff;
   padding:10px 20px;
   display:flex;
   justify-content:space-between;
+  font-weight:600;
 }
 
-/* SUB NAV */
 .subnav {
-  background:#c0392b;
-  color:white;
+  background:#b8322b;
+  color:#fff;
   padding:8px 20px;
   font-size:14px;
 }
 
-/* LAYOUT */
-.container {
-  display:flex;
-}
+/* ===== LAYOUT ===== */
+.container { display:flex; }
 
-/* SIDEBAR */
 .sidebar {
-  width:220px;
+  width:230px;
   background:#fff;
   border-right:1px solid #ddd;
 }
@@ -43,20 +40,21 @@ body {
 .sidebar div {
   padding:12px 15px;
   cursor:pointer;
+  font-size:14px;
 }
 
 .sidebar .active {
   background:#1f3a5f;
-  color:white;
+  color:#fff;
+  font-weight:600;
 }
 
-/* MAIN */
 .main {
   flex:1;
   padding:15px;
 }
 
-/* HEADER */
+/* ===== HEADER ===== */
 .header {
   background:#fff;
   padding:12px;
@@ -64,16 +62,17 @@ body {
   margin-bottom:10px;
   display:flex;
   justify-content:space-between;
+  font-size:14px;
 }
 
-/* PROGRESS */
-.progress {
+/* ===== PROGRESS ===== */
+.progress-box {
   background:#fff;
   padding:15px;
   border-radius:6px;
 }
 
-.bar {
+.progress-bar {
   height:14px;
   background:#ddd;
   border-radius:10px;
@@ -81,42 +80,46 @@ body {
   margin-top:8px;
 }
 
-.fill {
+.progress-fill {
   height:100%;
   background:#2e7d32;
 }
 
-/* CARDS */
+/* ===== CARDS ===== */
 .cards {
   display:flex;
-  gap:10px;
-  margin-top:10px;
+  gap:12px;
+  margin-top:12px;
 }
 
 .card {
   flex:1;
   background:#fff;
   padding:15px;
-  text-align:center;
   border-radius:6px;
+  text-align:center;
   cursor:pointer;
 }
 
 .card:hover { background:#eef4ff; }
 
-.count {
-  background:#ff6f00;
-  color:white;
-  border-radius:50%;
-  width:50px;
-  height:50px;
-  line-height:50px;
-  margin:auto;
+.card-title {
+  font-weight:600;
 }
 
-/* PANEL */
+.card-count {
+  font-size:18px;
+  margin-top:5px;
+}
+
+.card-sub {
+  font-size:12px;
+  color:#777;
+}
+
+/* ===== PANEL ===== */
 .panel {
-  margin-top:10px;
+  margin-top:12px;
   background:#fff;
   border-radius:6px;
   display:none;
@@ -124,11 +127,12 @@ body {
 
 .panel-header {
   background:#1f3a5f;
-  color:white;
+  color:#fff;
   padding:10px;
+  font-weight:600;
 }
 
-/* TABLE */
+/* ===== TABLE ===== */
 table {
   width:100%;
   border-collapse:collapse;
@@ -137,16 +141,17 @@ table {
 th, td {
   padding:10px;
   border-bottom:1px solid #eee;
+  font-size:13px;
 }
 
 th { background:#f0f3f7; }
 
-/* BADGES */
+/* ===== STATUS ===== */
 .badge {
-  padding:5px 8px;
+  padding:4px 8px;
   border-radius:5px;
   color:white;
-  font-size:12px;
+  font-size:11px;
 }
 
 .pending { background:#e53935; }
@@ -154,12 +159,13 @@ th { background:#f0f3f7; }
 .query { background:#f57c00; }
 .verified { background:#2e7d32; }
 
-/* BUTTONS */
+/* ===== BUTTONS ===== */
 button {
-  padding:5px 10px;
+  padding:5px 8px;
   border:none;
   border-radius:4px;
   cursor:pointer;
+  font-size:12px;
 }
 
 .blue { background:#1976d2; color:white; }
@@ -176,7 +182,7 @@ button {
 <body>
 
 <div class="topbar">
-  <div>iLens Mortgage</div>
+  iLens Mortgage
   <div>Maharshi Divekar</div>
 </div>
 
@@ -186,9 +192,8 @@ button {
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <div class="active" onclick="showScreen('summary')">Disbursement Summary</div>
-  <div onclick="showScreen('dashboard')">Application Dashboard</div>
-  <div onclick="showScreen('sales')">Sales Workspace</div>
+  <div class="active" onclick="switchScreen('summary')">Disbursement Summary</div>
+  <div onclick="switchScreen('dashboard')">Application Dashboard</div>
 </div>
 
 <!-- MAIN -->
@@ -196,43 +201,51 @@ button {
 
 <!-- HEADER -->
 <div class="header">
-  <div><b>NARENDRA VERMA</b> | ₹17L</div>
-  <div>In Progress</div>
+  <div><b>NARENDRA VERMA</b> | ₹17L | Home Loan</div>
+  <div>Status: <span style="color:orange">In Progress</span></div>
 </div>
 
 <!-- SUMMARY -->
 <div id="summary">
 
-<div class="progress">
+<div class="progress-box">
   Overall Progress
-  <div class="bar">
-    <div class="fill" id="progressFill"></div>
+  <div class="progress-bar">
+    <div id="progressFill" class="progress-fill"></div>
   </div>
 </div>
 
-<div class="cards" id="cards"></div>
+<div class="cards" id="summaryCards"></div>
 
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard" style="display:none">
-  <div class="cards" id="dashboardCards"></div>
-  <div class="panel" id="panel">
-    <div class="panel-header" id="panelTitle"></div>
-    <table>
-      <thead>
-        <tr>
-          <th>Task</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="taskTable"></tbody>
-    </table>
-    <div class="footer">
-      <button class="green" onclick="submitTasks()">Submit Completed</button>
-    </div>
+
+<div class="cards" id="dashboardCards"></div>
+
+<div class="panel" id="panel">
+  <div class="panel-header" id="panelTitle"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Status</th>
+        <th>Dependency</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody id="taskTable"></tbody>
+  </table>
+
+  <div class="footer">
+    <button class="green">Submit Completed</button>
   </div>
+
+</div>
+
 </div>
 
 </div>
@@ -240,19 +253,20 @@ button {
 
 <script>
 
-/* GLOBAL STATE */
+/* ===== CENTRAL STATE ===== */
 let tasks = [
- {name:"Agreement to Sale", role:"sales", status:"pending"},
- {name:"Property Tax Receipt", role:"sales", status:"received"},
- {name:"Builder NOC", role:"sales", status:"query"},
- {name:"Salary Slips", role:"credit", status:"verified"},
- {name:"PAN Upload", role:"customer", status:"pending"}
+ {name:"Agreement to Sale", role:"sales", status:"pending", dep:"Independent"},
+ {name:"Property Tax Receipt", role:"sales", status:"received", dep:"Independent"},
+ {name:"Builder NOC", role:"sales", status:"query", dep:"Customer"},
+ {name:"Salary Slips", role:"credit", status:"verified", dep:"Customer"},
+ {name:"PAN Upload", role:"customer", status:"pending", dep:"Independent"}
 ];
 
+let roles = ["customer","sales","credit","rcu"];
 let currentRole = "sales";
 
-/* SCREEN SWITCH */
-function showScreen(screen){
+/* ===== SCREEN SWITCH ===== */
+function switchScreen(screen){
   document.getElementById("summary").style.display="none";
   document.getElementById("dashboard").style.display="none";
 
@@ -260,40 +274,54 @@ function showScreen(screen){
   renderAll();
 }
 
-/* RENDER */
+/* ===== RENDER ===== */
 function renderAll(){
-  renderCards();
-  renderDashboardCards();
+  renderSummary();
+  renderDashboard();
   renderTasks();
   updateProgress();
 }
 
-/* CARDS */
-function renderCards(){
-  const roles = ["customer","sales","credit","rcu"];
+/* ===== SUMMARY ===== */
+function renderSummary(){
   let html="";
 
   roles.forEach(r=>{
-    const count = tasks.filter(t=>t.role===r && t.status!=="verified").length;
-    html += `<div class="card">${r}<div class="count">${count}</div></div>`;
+    const roleTasks = tasks.filter(t=>t.role===r);
+    const done = roleTasks.filter(t=>t.status==="verified").length;
+    const total = roleTasks.length;
+
+    html += `
+      <div class="card">
+        <div class="card-title">${r.toUpperCase()}</div>
+        <div class="card-count">${done}/${total}</div>
+        <div class="card-sub">${done===total ? "Complete" : "In Progress"}</div>
+      </div>
+    `;
   });
 
-  document.getElementById("cards").innerHTML = html;
+  document.getElementById("summaryCards").innerHTML = html;
 }
 
-function renderDashboardCards(){
-  const roles = ["sales","customer","credit","rcu"];
+/* ===== DASHBOARD ===== */
+function renderDashboard(){
   let html="";
 
   roles.forEach(r=>{
-    const count = tasks.filter(t=>t.role===r && t.status!=="verified").length;
-    html += `<div class="card" onclick="openPanel('${r}')">${r}<div class="count">${count}</div></div>`;
+    const pending = tasks.filter(t=>t.role===r && t.status!=="verified").length;
+
+    html += `
+      <div class="card" onclick="openPanel('${r}')">
+        <div class="card-title">${r.toUpperCase()}</div>
+        <div class="card-count">${pending}</div>
+      </div>
+    `;
   });
 
   document.getElementById("dashboardCards").innerHTML = html;
 }
 
-/* PANEL */
+/* ===== PANEL ===== */
 function openPanel(role){
   currentRole = role;
   document.getElementById("panel").style.display="block";
@@ -301,6 +329,7 @@ function openPanel(role){
   renderTasks();
 }
 
+/* ===== TASK TABLE ===== */
 function renderTasks(){
   const table = document.getElementById("taskTable");
   table.innerHTML="";
@@ -310,35 +339,31 @@ function renderTasks(){
       <tr>
         <td>${t.name}</td>
         <td><span class="badge ${t.status}">${t.status}</span></td>
+        <td>${t.dep}</td>
         <td>
-          <button class="blue" onclick="update(${i},'received')">Mark Received</button>
+          <button class="blue" onclick="update(${i},'received')">Receive</button>
           <button class="green" onclick="update(${i},'verified')">Verify</button>
-          <button class="orange" onclick="update(${i},'query')">Raise Query</button>
+          <button class="orange" onclick="update(${i},'query')">Query</button>
         </td>
       </tr>
     `;
   });
 }
 
-/* ACTION */
+/* ===== UPDATE ===== */
 function update(index,status){
-  const filtered = tasks.filter(t=>t.role===currentRole);
-  const task = filtered[index];
-  task.status = status;
+  const roleTasks = tasks.filter(t=>t.role===currentRole);
+  const actualTask = roleTasks[index];
+
+  actualTask.status = status;
   renderAll();
 }
 
-/* PROGRESS */
+/* ===== PROGRESS ===== */
 function updateProgress(){
   const total = tasks.length;
   const done = tasks.filter(t=>t.status==="verified").length;
-  const percent = Math.round((done/total)*100);
-  document.getElementById("progressFill").style.width = percent+"%";
-}
-
-/* SUBMIT */
-function submitTasks(){
-  alert("Submitted successfully (simulation)");
+  document.getElementById("progressFill").style.width = ((done/total)*100)+"%";
 }
 
 renderAll();
