@@ -164,39 +164,56 @@ export default function Dashboard() {
       }
     }
 
+    const attemptCreate = async (attemptsLeft: number): Promise<void> => {
+      try {
+        const result = await createProject(projectName.trim(), uploadFile!, newVisibility);
+        setVisibility(result.slug, newVisibility);
+        toast.success('Link created!');
+        addHistory({ type: 'created', projectName: projectName.trim(), slug: result.slug });
+        invalidateCache();
+        const data = await fetchWithCache();
+        setProjects(data);
+        const newProject = data.find((p) => p.slug === result.slug);
+        const correctLink = newProject
+          ? (newProject.shareLink ?? `${window.location.origin}/p/${newProject.ownerId}/${newProject.slug}`)
+          : result.shareLink;
+        setShareLink(correctLink);
+        setProjectName('');
+        setFile(null);
+        setHtmlCode('');
+        setRecentHistory(getHistory());
+        if (previewWindow) {
+          previewWindow.location.href = correctLink;
+        } else {
+          window.open(correctLink, '_blank');
+        }
+      } catch (err: unknown) {
+        const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
+        const status = axiosErr?.response?.status;
+
+        // 500 = transient GitHub error — auto-retry once after 3 s
+        if (status === 500 && attemptsLeft > 0) {
+          toast.loading('GitHub is busy — retrying in 3 s…', { id: 'retry' });
+          await new Promise((r) => setTimeout(r, 3000));
+          toast.dismiss('retry');
+          return attemptCreate(attemptsLeft - 1);
+        }
+
+        previewWindow?.close();
+        const msg = status === 409
+          ? 'A project with this name already exists.'
+          : status === 403
+          ? 'You do not have permission to create this project.'
+          : status === 500
+          ? 'GitHub is temporarily unavailable. Please try again in a moment.'
+          : axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message ?? `Upload failed (${status ?? 'no response'})`;
+        toast.error(msg);
+      }
+    };
+
     setUploading(true);
     try {
-      const result = await createProject(projectName.trim(), uploadFile!, newVisibility);
-      setVisibility(result.slug, newVisibility);
-      toast.success('Link created!');
-      addHistory({ type: 'created', projectName: projectName.trim(), slug: result.slug });
-      invalidateCache();
-      const data = await fetchWithCache();
-      setProjects(data);
-      const newProject = data.find((p) => p.slug === result.slug);
-      const correctLink = newProject
-        ? (newProject.shareLink ?? `${window.location.origin}/p/${newProject.ownerId}/${newProject.slug}`)
-        : result.shareLink;
-      setShareLink(correctLink);
-      setProjectName('');
-      setFile(null);
-      setHtmlCode('');
-      setRecentHistory(getHistory());
-      if (previewWindow) {
-        previewWindow.location.href = correctLink;
-      } else {
-        window.open(correctLink, '_blank');
-      }
-    } catch (err: unknown) {
-      previewWindow?.close(); // close the blank tab on failure
-      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
-      const status = axiosErr?.response?.status;
-      const msg = status === 409
-        ? 'A project with this name already exists.'
-        : status === 403
-        ? 'You do not have permission to create this project.'
-        : axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message ?? `Upload failed (${status ?? 'no response'})`;
-      toast.error(msg);
+      await attemptCreate(1); // 1 automatic retry on 500
     } finally {
       setUploading(false);
     }

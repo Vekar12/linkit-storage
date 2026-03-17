@@ -64,32 +64,49 @@ export default function UpdatePage() {
       }
     }
 
+    const attemptUpdate = async (attemptsLeft: number): Promise<void> => {
+      try {
+        await updateProject(cleanSlug, uploadFile!);
+        addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
+        setSuccess(true);
+        toast.success('Project updated!');
+        const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
+        const fullLink = `${window.location.origin}${linkPath}`;
+        if (previewWindow) {
+          previewWindow.location.href = fullLink;
+        } else {
+          window.open(fullLink, '_blank');
+        }
+      } catch (err: unknown) {
+        const axiosErr = err as { response?: { status?: number; data?: unknown } };
+        const status = axiosErr?.response?.status;
+        console.error('[update] PUT failed', { status, data: axiosErr?.response?.data });
+
+        // 500 = transient GitHub error — auto-retry once after 3 s
+        if (status === 500 && attemptsLeft > 0) {
+          toast.loading('GitHub is busy — retrying in 3 s…', { id: 'retry' });
+          await new Promise((r) => setTimeout(r, 3000));
+          toast.dismiss('retry');
+          return attemptUpdate(attemptsLeft - 1);
+        }
+
+        previewWindow?.close();
+        const serverMsg = (axiosErr?.response?.data as { message?: string; error?: string })?.message
+          ?? (axiosErr?.response?.data as { message?: string; error?: string })?.error;
+        const msg = status === 404
+          ? 'No project found with that slug.'
+          : status === 403
+          ? 'You do not have permission to update this project.'
+          : status === 500
+          ? 'GitHub is temporarily unavailable. Please try again in a moment.'
+          : serverMsg ?? `Update failed (status ${status ?? 'no response'}).`;
+        toast.error(msg);
+      }
+    };
+
     setLoading(true);
     try {
-      await updateProject(cleanSlug, uploadFile!);
-      addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
-      setSuccess(true);
-      toast.success('Project updated!');
-      const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
-      const fullLink = `${window.location.origin}${linkPath}`;
-      if (previewWindow) {
-        previewWindow.location.href = fullLink;
-      } else {
-        window.open(fullLink, '_blank');
-      }
-    } catch (err: unknown) {
-      previewWindow?.close(); // close the blank tab on failure
-      const axiosErr = err as { response?: { status?: number; data?: unknown } };
-      const status = axiosErr?.response?.status;
-      console.error('[update] PUT failed', { status, data: axiosErr?.response?.data });
-      const serverMsg = (axiosErr?.response?.data as { message?: string; error?: string })?.message
-        ?? (axiosErr?.response?.data as { message?: string; error?: string })?.error;
-      const msg = status === 404
-        ? 'No project found with that slug.'
-        : status === 403
-        ? 'You do not have permission to update this project.'
-        : serverMsg ?? `Update failed (status ${status ?? 'no response'}).`;
-      toast.error(msg);
+      await attemptUpdate(1); // 1 automatic retry on 500
     } finally {
       setLoading(false);
     }
