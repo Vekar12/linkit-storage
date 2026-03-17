@@ -53,3 +53,37 @@ export async function deleteFilesFromGitHub(
     paths.map((p) => deleteFile(p, `chore: delete file from project ${projectId}`))
   );
 }
+
+// ─── JSON helpers ─────────────────────────────────────────────────────────────
+
+export async function readJSON<T>(path: string): Promise<T | null> {
+  try {
+    const { data } = await getClient().repos.getContent({ ...getRepo(), path });
+    if (!Array.isArray(data) && 'content' in data) {
+      return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8')) as T;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export async function writeJSON(
+  path: string,
+  data: unknown,
+  message: string
+): Promise<void> {
+  await uploadFile(path, Buffer.from(JSON.stringify(data, null, 2)), message);
+}
+
+export async function listProjectIds(): Promise<string[]> {
+  try {
+    const { data } = await getClient().repos.getContent({ ...getRepo(), path: 'projects' });
+    if (Array.isArray(data)) {
+      return data.filter((item) => item.type === 'dir').map((item) => item.name);
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
