@@ -2,68 +2,67 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>iLens Disbursement Dashboard</title>
+<title>iLens Disbursement OS</title>
 
 <style>
 body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 
-/* TOP */
+/* ===== TOP ===== */
 .topbar {
   background:#a3211f; color:#fff; padding:10px 20px;
   display:flex; justify-content:space-between;
 }
 .subbar { background:#c0392b; color:#fff; padding:8px 20px; }
 
-/* LAYOUT */
+/* ===== LAYOUT ===== */
 .container { display:flex; }
 .sidebar {
-  width:220px; background:#fff; border-right:1px solid #ddd;
+  width:240px; background:#fff; border-right:1px solid #ddd;
 }
-.sidebar div { padding:12px; cursor:pointer; }
-.sidebar .active { background:#1f3a5f; color:#fff; }
+.sidebar div {
+  padding:12px; cursor:pointer;
+}
+.sidebar .active {
+  background:#1f3a5f; color:#fff;
+}
 
 .main { flex:1; padding:15px; }
 
-/* HEADER */
+/* ===== HEADER ===== */
 .header {
   background:#fff; padding:12px; border-radius:6px;
   display:flex; justify-content:space-between;
 }
 
-/* STAGE TRACKER */
+/* ===== INSIGHT STRIP ===== */
+.insight {
+  margin-top:10px; padding:10px;
+  border-radius:6px; font-size:13px;
+}
+.insight.red { background:#fdecea; color:#c62828; }
+.insight.green { background:#e8f5e9; color:#2e7d32; }
+.insight.orange { background:#fff3e0; color:#ef6c00; }
+
+/* ===== STAGE ===== */
 .stage-bar {
-  background:#fff; padding:10px; margin-top:10px;
+  margin-top:10px; background:#fff; padding:10px;
   border-radius:6px;
 }
-.stage-container {
-  display:flex; font-size:12px;
-}
+.stage-container { display:flex; font-size:12px; }
 .stage {
-  flex:1; text-align:center; padding:5px;
+  flex:1; text-align:center; padding:6px;
   border-right:1px solid #ddd;
 }
 .stage.active { background:#2e7d32; color:#fff; }
 
-/* STATUS STRIP */
-.strip {
-  margin-top:10px;
-}
-.badge {
-  padding:5px 10px; border-radius:5px; color:#fff;
-  font-size:12px;
-}
-.green { background:#2e7d32; }
-.yellow { background:#fbc02d; color:#000; }
-.red { background:#e53935; }
-.orange { background:#f57c00; }
-
-/* TABLE */
+/* ===== TABLE ===== */
 .panel {
-  background:#fff; margin-top:10px; border-radius:6px;
+  margin-top:10px; background:#fff; border-radius:6px;
 }
 .panel-header {
   background:#1f3a5f; color:#fff; padding:10px;
 }
+
 table { width:100%; border-collapse:collapse; }
 th,td {
   padding:10px; border-bottom:1px solid #eee;
@@ -71,7 +70,17 @@ th,td {
 }
 th { background:#f0f3f7; }
 
-/* BUTTON */
+/* ===== BADGES ===== */
+.badge {
+  padding:4px 8px; border-radius:5px; color:#fff;
+  font-size:11px;
+}
+.green { background:#2e7d32; }
+.yellow { background:#fbc02d; color:#000; }
+.red { background:#e53935; }
+.orange { background:#f57c00; }
+
+/* ===== BUTTONS ===== */
 button {
   padding:5px 8px; border:none; border-radius:4px;
   cursor:pointer; font-size:12px;
@@ -80,7 +89,12 @@ button {
 .greenBtn { background:#2e7d32; color:#fff; }
 .orangeBtn { background:#f57c00; color:#fff; }
 
-/* TIMELINE */
+/* ===== PRIORITY ===== */
+.p1 { color:#c62828; font-weight:bold; }
+.p2 { color:#f57c00; }
+.p3 { color:#555; }
+
+/* ===== TIMELINE ===== */
 .timeline {
   background:#fff; padding:10px; margin-top:10px;
   border-radius:6px; font-size:12px;
@@ -96,15 +110,15 @@ button {
   <div>Maharshi Divekar</div>
 </div>
 
-<div class="subbar">Disbursement Module</div>
+<div class="subbar">Disbursement Task Engine</div>
 
 <div class="container">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="active">Common Dashboard</div>
+  <div>Role View</div>
   <div>Sales Workspace</div>
-  <div>Credit Workspace</div>
 </div>
 
 <!-- MAIN -->
@@ -116,20 +130,17 @@ button {
   <div>Status: <span style="color:orange">In Progress</span></div>
 </div>
 
-<!-- STAGE TRACKER -->
+<!-- INSIGHT -->
+<div id="insight" class="insight"></div>
+
+<!-- STAGE -->
 <div class="stage-bar">
   <div class="stage-container" id="stageBar"></div>
 </div>
 
-<!-- STATUS STRIP -->
-<div class="strip">
-  <span class="badge green" id="legalStatus">Legal: Completed</span>
-  <span class="badge green" id="techStatus">Technical: Completed</span>
-</div>
-
 <!-- TABLE -->
 <div class="panel">
-<div class="panel-header">Documents & Tasks</div>
+<div class="panel-header">Master Task Engine</div>
 
 <table>
 <thead>
@@ -137,9 +148,11 @@ button {
 <th>Document</th>
 <th>Status</th>
 <th>Verification</th>
-<th>Action Pending At</th>
-<th>Action</th>
+<th>Owner</th>
+<th>Next Action</th>
 <th>Dependency</th>
+<th>SLA</th>
+<th>Priority</th>
 </tr>
 </thead>
 
@@ -148,7 +161,7 @@ button {
 </table>
 
 <div style="padding:10px;text-align:right;">
-  <button class="greenBtn" onclick="submit()">Submit</button>
+  <button class="greenBtn" onclick="submit()">Submit Completed</button>
 </div>
 
 </div>
@@ -161,16 +174,15 @@ button {
 
 <script>
 
-/* ===== STAGES ===== */
-let stages = ["Login","Underwriting","Sanction","File Login","Post Legal","DM","RCU","Disbursed"];
+/* ===== DATA ===== */
+let stages=["Login","Underwriting","Sanction","File Login","Post Legal","DM","RCU","Disbursed"];
 
-/* ===== TASKS ===== */
-let tasks = [
- {name:"Agreement to Sale", status:"pending", verify:"-", role:"Sales", dep:"Independent"},
- {name:"Property Tax", status:"uploaded", verify:"Pending", role:"Credit", dep:"Soft"},
- {name:"Builder NOC", status:"query", verify:"Pending", role:"Customer", dep:"Hard"},
- {name:"Salary Slips", status:"uploaded", verify:"Verified", role:"Credit", dep:"Independent"},
- {name:"Bank Statement", status:"uploaded", verify:"Pending", role:"Credit", dep:"Soft"}
+let tasks=[
+ {name:"Agreement to Sale",status:"pending",verify:"-",owner:"Sales",dep:"Independent",sla:2,priority:"P1"},
+ {name:"Property Tax",status:"uploaded",verify:"Pending",owner:"Credit",dep:"Soft",sla:5,priority:"P2"},
+ {name:"Builder NOC",status:"query",verify:"Pending",owner:"Customer",dep:"Hard",sla:1,priority:"P1"},
+ {name:"Salary Slips",status:"uploaded",verify:"Verified",owner:"Credit",dep:"Independent",sla:0,priority:"P3"},
+ {name:"Bank Statement",status:"uploaded",verify:"Pending",owner:"Credit",dep:"Soft",sla:3,priority:"P2"}
 ];
 
 let timeline=[];
@@ -178,46 +190,85 @@ let timeline=[];
 /* ===== RENDER ===== */
 function render(){
 
- /* STAGE BAR */
+ renderStage();
+ renderTable();
+ renderInsight();
+ renderTimeline();
+
+}
+
+/* ===== STAGE ===== */
+function renderStage(){
+ let done=tasks.filter(t=>t.verify==="Verified").length;
+ let percent=Math.floor((done/tasks.length)*stages.length);
+
  let html="";
  stages.forEach((s,i)=>{
-   let active = i < progressStage() ? "active":"";
-   html+=`<div class="stage ${active}">${s}</div>`;
+   html+=`<div class="stage ${i<percent?"active":""}">${s}</div>`;
  });
- document.getElementById("stageBar").innerHTML=html;
 
- /* TABLE */
- let table="";
+ document.getElementById("stageBar").innerHTML=html;
+}
+
+/* ===== TABLE ===== */
+function renderTable(){
+
+ let html="";
+
  tasks.forEach((t,i)=>{
 
-   let statusClass = t.status=="uploaded"?"green":t.status=="pending"?"yellow":t.status=="query"?"red":"orange";
+ let statusClass=t.status==="uploaded"?"green":t.status==="pending"?"yellow":"red";
 
-   let disabled = t.dep=="Hard" && t.status!="uploaded" ? "disabled":"";
+ let depIcon=t.dep==="Hard"?"🔒":t.dep==="Soft"?"⚠":"";
 
-   table+=`
-   <tr>
-     <td>${t.name}</td>
-     <td><span class="badge ${statusClass}">${t.status}</span></td>
-     <td>${t.verify}</td>
-     <td>${t.role}</td>
-     <td>
-       <button class="blue" onclick="upload(${i})" ${disabled}>Upload</button>
-       <button class="greenBtn" onclick="verify(${i})">Verify</button>
-       <button class="orangeBtn" onclick="query(${i})">Query</button>
-     </td>
-     <td>${t.dep}</td>
-   </tr>`;
+ html+=`
+ <tr>
+  <td>${t.name}</td>
+  <td><span class="badge ${statusClass}">${t.status}</span></td>
+  <td>${t.verify}</td>
+  <td>${t.owner}</td>
+  <td>
+    ${getActions(i)}
+  </td>
+  <td>${depIcon} ${t.dep}</td>
+  <td>${t.sla} hrs</td>
+  <td class="${t.priority.toLowerCase()}">${t.priority}</td>
+ </tr>`;
  });
 
- document.getElementById("taskTable").innerHTML=table;
+ document.getElementById("taskTable").innerHTML=html;
+}
 
- renderTimeline();
+/* ===== ACTION ENGINE ===== */
+function getActions(i){
+ let t=tasks[i];
+
+ if(t.owner==="Customer"){
+   return `<button class="blue" onclick="upload(${i})">Upload</button>`;
+ }
+
+ if(t.owner==="Sales"){
+   return `<button class="blue" onclick="receive(${i})">Receive</button>`;
+ }
+
+ if(t.owner==="Credit"){
+   return `<button class="greenBtn" onclick="verify(${i})">Verify</button>
+           <button class="orangeBtn" onclick="query(${i})">Query</button>`;
+ }
+
+ return "-";
 }
 
 /* ===== ACTIONS ===== */
 function upload(i){
  tasks[i].status="uploaded";
  log(tasks[i].name+" uploaded");
+ render();
+}
+
+function receive(i){
+ tasks[i].status="uploaded";
+ log(tasks[i].name+" received");
  render();
 }
 
@@ -233,15 +284,32 @@ function query(i){
  render();
 }
 
-/* ===== PROGRESS ===== */
-function progressStage(){
- let done = tasks.filter(t=>t.verify=="Verified").length;
- return Math.floor((done/tasks.length)*stages.length);
+/* ===== INSIGHT ENGINE ===== */
+function renderInsight(){
+
+ let blocker=tasks.find(t=>t.dep==="Hard" && t.status!=="uploaded");
+
+ if(blocker){
+   document.getElementById("insight").className="insight red";
+   document.getElementById("insight").innerText=
+   "Blocked: Waiting for "+blocker.name+" ("+blocker.owner+")";
+   return;
+ }
+
+ let pending=tasks.filter(t=>t.verify!=="Verified").length;
+
+ if(pending===0){
+   document.getElementById("insight").className="insight green";
+   document.getElementById("insight").innerText="All tasks complete";
+ } else {
+   document.getElementById("insight").className="insight orange";
+   document.getElementById("insight").innerText=pending+" tasks pending";
+ }
 }
 
 /* ===== TIMELINE ===== */
 function log(msg){
- timeline.unshift(new Date().toLocaleTimeString()+" - "+msg);
+ timeline.unshift(new Date().toLocaleTimeString()+" | "+msg);
 }
 
 function renderTimeline(){
@@ -255,7 +323,6 @@ function submit(){
  alert("Submitted successfully (partial allowed)");
 }
 
-/* INIT */
 render();
 
 </script>
