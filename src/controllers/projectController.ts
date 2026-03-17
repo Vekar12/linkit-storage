@@ -193,21 +193,15 @@ export async function getProjectMetadata(
   }
 }
 
-// GET /projects/public — all public projects across all users (paginated)
+// GET /projects/public — all public projects across all users
 export async function getPublicProjects(
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? '20'), 10) || 20));
-
-    const all = await getAllPublicProjects();
-    const total = all.length;
-    const items = all.slice((page - 1) * limit, page * limit);
-
-    res.status(200).json({ total, page, limit, items });
+    const projects = await getAllPublicProjects();
+    res.status(200).json(projects);
   } catch (err) {
     next(err);
   }
