@@ -188,6 +188,7 @@ export default function Dashboard() {
         window.open(correctLink, '_blank');
       }
     } catch (err: unknown) {
+      previewWindow?.close(); // close the blank tab on failure
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
       const status = axiosErr?.response?.status;
       const msg = status === 409
