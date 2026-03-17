@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import projectRoutes from './routes/projectRoutes';
+import fileRoutes from './routes/fileRoutes';
 import authRoutes from './routes/authRoutes';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -14,6 +15,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 app.use('/projects', projectRoutes);
+app.use('/', fileRoutes);
 app.use('/auth', authRoutes);
 
 app.use(errorHandler);

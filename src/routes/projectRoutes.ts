@@ -1,19 +1,16 @@
 import { Router } from 'express';
 import {
-  createProject,
-  updateProject,
-  getProjects,
-  getProjectMetadata,
-  deleteProject,
+  createProjectHandler,
+  getProjectsHandler,
+  getProjectHandler,
+  deleteProjectHandler,
 } from '../controllers/projectController';
-import { upload } from '../middleware/upload';
 
 const router = Router();
 
-router.post('/', upload.single('file'), createProject);
-router.put('/:slug', upload.single('file'), updateProject);
-router.get('/', getProjects);
-router.get('/:slug/metadata', getProjectMetadata);
-router.delete('/:slug', deleteProject);
+router.post('/', createProjectHandler);
+router.get('/', getProjectsHandler);
+router.get('/:id', getProjectHandler);
+router.delete('/:id', deleteProjectHandler);
 
 export default router;

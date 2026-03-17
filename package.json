@@ -1,6 +1,6 @@
 {
   "name": "linkit-backend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Backend for LinkIt - file sharing via GitHub Pages",
   "main": "dist/index.js",
   "scripts": {
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@octokit/rest": "^20.0.2",
+    "@supabase/supabase-js": "^2.39.3",
     "axios": "^1.13.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -18,7 +19,6 @@
     "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
-    "@types/axios": "^0.9.36",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/morgan": "^1.9.9",
