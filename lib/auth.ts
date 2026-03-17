@@ -25,11 +25,23 @@ export const saveToken = (token: string): void => {
 };
 
 /**
- * Returns true if a token exists in localStorage.
+ * Returns true if a valid, non-expired token exists in localStorage.
  */
 export const checkAuth = (): boolean => {
   if (typeof window === 'undefined') return false;
-  return !!localStorage.getItem('linkit_token');
+  const token = localStorage.getItem('linkit_token');
+  if (!token) return false;
+  // Lazy import to avoid circular deps — inline the expiry check
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (payload.exp && Date.now() / 1000 > payload.exp) {
+      localStorage.removeItem('linkit_token');
+      return false;
+    }
+  } catch {
+    // Non-JWT token (e.g. raw GitHub token) — treat as valid
+  }
+  return true;
 };
 
 /**

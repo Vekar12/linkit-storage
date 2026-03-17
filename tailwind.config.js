@@ -12,6 +12,17 @@ module.exports = {
         'primary-light': '#8B5CF6',
         secondary: '#EDE9FE',
         background: '#F5F3FF',
+        // Light theme tokens
+        li: {
+          bg: '#f4f6fb',
+          card: '#ffffff',
+          border: '#e5e7eb',
+          raised: '#f9fafb',
+          text: '#111827',
+          muted: '#6b7280',
+          dim: '#9ca3af',
+        },
+        // Dark theme tokens (kept for non-dashboard pages)
         dark: {
           bg: '#0d1117',
           surface: '#161b22',

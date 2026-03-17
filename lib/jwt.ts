@@ -1,5 +1,6 @@
 export interface TokenPayload {
   sub: string;
+  exp?: number;
   name?: string;
   login?: string;       // GitHub
   email?: string;       // Google
@@ -20,9 +21,21 @@ export function decodeToken(token: string): TokenPayload | null {
   }
 }
 
+/** Returns true if the token is present and not expired. */
+export function isTokenValid(token: string): boolean {
+  const payload = decodeToken(token);
+  if (!payload) return false;
+  if (payload.exp && Date.now() / 1000 > payload.exp) return false;
+  return true;
+}
+
 export function getTokenPayload(): TokenPayload | null {
   if (typeof window === 'undefined') return null;
   const token = localStorage.getItem('linkit_token');
   if (!token) return null;
+  if (!isTokenValid(token)) {
+    localStorage.removeItem('linkit_token');
+    return null;
+  }
   return decodeToken(token);
 }

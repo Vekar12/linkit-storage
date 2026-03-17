@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -7,12 +7,23 @@ import { addHistory } from '@/lib/history';
 import { getVisibility, setVisibility, type Visibility } from '@/lib/visibility';
 import type { Project } from '@/types';
 
+const typeColors: Record<string, { bg: string; text: string }> = {
+  html: { bg: 'bg-orange-100', text: 'text-orange-600' },
+  pdf:  { bg: 'bg-red-100',    text: 'text-red-500' },
+  md:   { bg: 'bg-blue-100',   text: 'text-blue-600' },
+  png:  { bg: 'bg-emerald-100',text: 'text-emerald-600' },
+  jpg:  { bg: 'bg-emerald-100',text: 'text-emerald-600' },
+  jpeg: { bg: 'bg-emerald-100',text: 'text-emerald-600' },
+  zip:  { bg: 'bg-sky-100',    text: 'text-sky-600' },
+  pptx: { bg: 'bg-amber-100', text: 'text-amber-600' },
+};
+
 interface ProjectCardProps {
   project: Project;
   onDeleted: (slug: string) => void;
 }
 
-export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
+function ProjectCard({ project, onDeleted }: ProjectCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -21,15 +32,18 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
 
   const handleToggleVisibility = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    const prev = visibility;
     const next: Visibility = visibility === 'personal' ? 'public' : 'personal';
     setVisibilityState(next);
     setVisibility(project.slug, next);
     try {
       await setProjectVisibility(project.slug, next);
+      toast.success(next === 'public' ? 'Set to Public' : 'Set to Personal');
     } catch {
-      // Backend may not support this yet — localStorage already updated
+      setVisibilityState(prev);
+      setVisibility(project.slug, prev);
+      toast.error('Could not update visibility. Please try again.');
     }
-    toast.success(next === 'public' ? 'Set to Public' : 'Set to Personal');
   };
 
   const shareLink = project.shareLink
@@ -78,7 +92,6 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
       onDeleted(project.slug);
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
-      console.error('Delete error:', axiosErr?.response?.status, axiosErr?.response?.data);
       const msg = axiosErr?.response?.data?.error
         ?? axiosErr?.response?.data?.message
         ?? `Delete failed (${axiosErr?.response?.status ?? 'no response'})`;
@@ -89,23 +102,24 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     }
   };
 
-  const typeColors: Record<string, string> = {
-    html: 'bg-orange-900/40 text-orange-400',
-    pdf:  'bg-red-900/40 text-red-400',
-    md:   'bg-blue-900/40 text-blue-400',
-    png:  'bg-green-900/40 text-green-400',
-    jpg:  'bg-green-900/40 text-green-400',
-    jpeg: 'bg-green-900/40 text-green-400',
-    zip:  'bg-sky-900/40 text-sky-400',
-  };
-  const badgeClass = typeColors[project.fileType?.toLowerCase()] ?? 'bg-dark-dim/40 text-dark-muted';
+  const fileKey = project.fileType?.toLowerCase();
+  const badge = typeColors[fileKey] ?? { bg: 'bg-gray-100', text: 'text-gray-500' };
 
   return (
     <div
       onClick={() => router.push(`/projects/${project.slug}?owner=${project.ownerId}`)}
-      className="bg-dark-raised border border-dark-border rounded-2xl flex flex-col justify-between hover:border-primary/50 hover:shadow-glow transition-all duration-200 aspect-square cursor-pointer overflow-hidden"
+      className="bg-white rounded-2xl flex flex-col justify-between aspect-square cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
+      style={{
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.15)';
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)';
+      }}
     >
-      {/* Top bar: delete (left) + file type badge (right) */}
+      {/* Top bar */}
       <div className="flex items-center justify-between px-3 pt-3">
         <button
           onClick={handleDelete}
@@ -114,34 +128,34 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
           className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
             confirmDelete
               ? 'bg-red-500 text-white'
-              : 'bg-red-900/30 text-red-400 hover:bg-red-900/60'
+              : 'bg-red-50 text-red-400 hover:bg-red-100'
           }`}
         >
           <Trash2 size={12} />
         </button>
 
-        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${badgeClass}`}>
+        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${badge.bg} ${badge.text}`}>
           {project.fileType?.toUpperCase()}
         </span>
       </div>
 
       {/* Middle: project info */}
       <div className="flex-1 px-3 py-2">
-        <h3 className="font-semibold text-dark-text text-sm leading-snug line-clamp-2">
+        <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2">
           {project.projectName}
         </h3>
-        <p className="flex items-center gap-1 text-xs text-dark-muted mt-1">
+        <p className="flex items-center gap-1 text-xs text-gray-400 mt-1">
           <Calendar size={11} />
           {formattedDate}
         </p>
-        <p className="text-xs text-dark-dim mt-0.5 truncate font-mono">{project.slug}</p>
+        <p className="text-xs text-gray-300 mt-0.5 truncate font-mono">{project.slug}</p>
         <button
           onClick={handleToggleVisibility}
           title={visibility === 'personal' ? 'Personal — click to make Public' : 'Public — click to make Personal'}
           className={`mt-1.5 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
             visibility === 'public'
-              ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
-              : 'bg-dark-border/60 text-dark-muted hover:bg-dark-border'
+              ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+              : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
           }`}
         >
           {visibility === 'public' ? <Globe size={9} /> : <Lock size={9} />}
@@ -151,46 +165,49 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
 
       {/* Bottom actions */}
       <div className="px-3 pb-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
-        {/* Open link — full width */}
         <a
           href={shareLink}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center justify-center gap-1.5 dark-btn-primary text-xs py-1.5 w-full"
+          className="flex items-center justify-center gap-1.5 li-btn-primary text-xs py-1.5 w-full rounded-xl"
         >
           <ExternalLink size={12} />
           Open Link
         </a>
 
-        {/* Icon-only row: Copy · Download · Update */}
         <div className="flex gap-1.5">
           <button
             onClick={handleCopy}
             title={copied ? 'Copied!' : 'Copy link'}
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-dark-border bg-dark-surface hover:border-dark-borderhover hover:bg-dark-raised transition-colors"
+            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
           >
-            {copied ? <CheckCircle size={13} className="text-primary" /> : <Copy size={13} className="text-dark-muted" />}
+            {copied
+              ? <CheckCircle size={13} className="text-primary" />
+              : <Copy size={13} className="text-gray-400" />
+            }
           </button>
 
           <button
             onClick={handleDownload}
             disabled={!latestFileURL}
             title="Download"
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-dark-border bg-dark-surface hover:border-dark-borderhover hover:bg-dark-raised transition-colors disabled:opacity-40"
+            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-40"
           >
-            <Download size={13} className="text-dark-muted" />
+            <Download size={13} className="text-gray-400" />
           </button>
 
           <button
             onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}&owner=${project.ownerId}`); }}
             title="Upload update"
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-dark-border bg-dark-surface hover:border-dark-borderhover hover:bg-dark-raised transition-colors"
+            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
           >
-            <RefreshCw size={13} className="text-dark-muted" />
+            <RefreshCw size={13} className="text-gray-400" />
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+export default memo(ProjectCard);

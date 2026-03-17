@@ -19,6 +19,20 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // Restricts browser features (camera, mic, etc.)
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          // Content Security Policy — tightened for dashboard pages
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline'",   // unsafe-inline needed for Next.js inline scripts
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https:",
+              "connect-src 'self' https://linkit-backend-tuj9.onrender.com",
+              "frame-src 'self' https://storage.googleapis.com https:",  // allow file iframes
+              "object-src 'none'",
+              "base-uri 'self'",
+            ].join('; '),
+          },
         ],
       },
     ];

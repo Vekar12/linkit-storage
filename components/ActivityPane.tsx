@@ -2,6 +2,38 @@ import { useEffect, useState } from 'react';
 import { Clock, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { getHistory, type HistoryEntry } from '@/lib/history';
 
+function timeAgo(iso: string) {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function icon(type: HistoryEntry['type']) {
+  if (type === 'created') return <Plus size={13} className="text-violet-600" />;
+  if (type === 'updated') return <RefreshCw size={13} className="text-amber-500" />;
+  return <Trash2 size={13} className="text-red-500" />;
+}
+
+function iconBg(type: HistoryEntry['type']) {
+  if (type === 'created') return 'bg-violet-100';
+  if (type === 'updated') return 'bg-amber-100';
+  return 'bg-red-100';
+}
+
+function labelColor(type: HistoryEntry['type']) {
+  if (type === 'created') return 'text-violet-600';
+  if (type === 'updated') return 'text-amber-500';
+  return 'text-red-500';
+}
+
+function label(type: HistoryEntry['type']) {
+  if (type === 'created') return 'Created';
+  if (type === 'updated') return 'Updated';
+  return 'Deleted';
+}
+
 export default function RecentActivity() {
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
 
@@ -12,71 +44,38 @@ export default function RecentActivity() {
     return () => window.removeEventListener('storage', handler);
   }, []);
 
-  const icon = (type: HistoryEntry['type']) => {
-    if (type === 'created') return <Plus size={12} className="text-primary" />;
-    if (type === 'updated') return <RefreshCw size={12} className="text-amber-400" />;
-    return <Trash2 size={12} className="text-red-400" />;
-  };
-
-  const label = (type: HistoryEntry['type']) => {
-    if (type === 'created') return 'Created';
-    if (type === 'updated') return 'Updated';
-    return 'Deleted';
-  };
-
-  const labelColor = (type: HistoryEntry['type']) => {
-    if (type === 'created') return 'text-primary';
-    if (type === 'updated') return 'text-amber-400';
-    return 'text-red-400';
-  };
-
-  const timeAgo = (iso: string) => {
-    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
   return (
-    <div className="w-full">
-      <div className="flex items-center gap-2 mb-6">
-        <Clock size={18} className="text-primary" />
-        <h2 className="text-lg font-bold text-dark-text">Recent Activity</h2>
+    <div className="w-full max-w-2xl">
+      <div className="mb-7">
+        <h1 className="text-2xl font-extrabold text-gray-900">Recent Activity</h1>
+        <p className="text-gray-400 text-sm mt-1">Your last {entries.length} actions across all projects.</p>
       </div>
 
       {entries.length === 0 ? (
-        <div
-          className="rounded-2xl border border-dark-border p-12 text-center"
-          style={{ backgroundColor: '#161b22' }}
-        >
-          <Clock size={32} className="text-dark-dim mx-auto mb-3" />
-          <p className="text-dark-muted text-sm">No activity yet.</p>
-          <p className="text-dark-dim text-xs mt-1">
-            Actions like creating, updating, or deleting projects will appear here.
+        <div className="li-card text-center py-16">
+          <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Clock size={24} className="text-gray-300" />
+          </div>
+          <p className="text-gray-600 font-semibold text-base mb-1">No activity yet</p>
+          <p className="text-gray-400 text-sm">
+            Creating, updating, or deleting projects will appear here.
           </p>
         </div>
       ) : (
-        <div
-          className="rounded-2xl border border-dark-border overflow-hidden"
-          style={{ backgroundColor: '#161b22' }}
-        >
-          <ul className="divide-y divide-dark-border">
+        <div className="li-card !p-0 overflow-hidden">
+          <ul className="divide-y divide-gray-50">
             {entries.map((e, i) => (
-              <li key={i} className="px-5 py-4 flex items-center gap-4 hover:bg-dark-raised transition-colors">
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: '#1c2333' }}
-                >
+              <li key={i} className="px-6 py-4 flex items-center gap-4 hover:bg-gray-50/60 transition-colors">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${iconBg(e.type)}`}>
                   {icon(e.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-dark-text truncate">{e.projectName}</p>
-                  <p className="text-xs text-dark-muted mt-0.5 font-mono">{e.slug}</p>
+                  <p className="text-sm font-semibold text-gray-800 truncate">{e.projectName}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 font-mono">{e.slug}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className={`text-xs font-semibold ${labelColor(e.type)}`}>{label(e.type)}</p>
-                  <p className="text-xs text-dark-dim mt-0.5">{timeAgo(e.at)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{timeAgo(e.at)}</p>
                 </div>
               </li>
             ))}

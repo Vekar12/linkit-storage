@@ -24,15 +24,18 @@ export default function VersionHistoryPage() {
 
   const handleToggleVisibility = async () => {
     if (!slug || typeof slug !== 'string') return;
+    const prev = visibility;
     const next: Visibility = visibility === 'personal' ? 'public' : 'personal';
     setVisibilityState(next);
     setVisibility(slug, next);
     try {
       await setProjectVisibility(slug, next);
+      toast.success(next === 'public' ? 'Project set to Public' : 'Project set to Personal');
     } catch {
-      // Backend may not support yet — localStorage updated
+      setVisibilityState(prev);
+      setVisibility(slug, prev);
+      toast.error('Could not update visibility.');
     }
-    toast.success(next === 'public' ? 'Project set to Public' : 'Project set to Personal');
   };
 
   useEffect(() => {
@@ -59,8 +62,12 @@ export default function VersionHistoryPage() {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-          <h1 className="text-xl font-bold text-dark-text mb-2">Project not found</h1>
-          <button onClick={() => router.push('/dashboard')} className="mt-4 dark-btn-primary px-6 py-2.5">
+          <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Link2 size={24} className="text-gray-300" />
+          </div>
+          <h1 className="text-xl font-bold text-gray-800 mb-2">Project not found</h1>
+          <p className="text-gray-400 text-sm mb-6">This project may have been deleted or doesn&apos;t exist.</p>
+          <button onClick={() => router.push('/dashboard')} className="li-btn-primary px-6 py-2.5">
             Back to Dashboard
           </button>
         </div>
@@ -70,7 +77,7 @@ export default function VersionHistoryPage() {
 
   const versions = [...(metadata.versions ?? [])].reverse();
 
-  const handleDownloadPDF = async (url: string, filename: string) => {
+  const handleDownloadPDF = async (url: string) => {
     try {
       const res = await fetch(url);
       const html = await res.text();
@@ -81,7 +88,6 @@ export default function VersionHistoryPage() {
       win.focus();
       setTimeout(() => win.print(), 800);
     } catch {
-      // Fallback: open file URL directly and let user print manually
       const win = window.open(url, '_blank');
       if (win) {
         win.focus();
@@ -96,27 +102,26 @@ export default function VersionHistoryPage() {
         {/* Back */}
         <button
           onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-1.5 text-dark-muted hover:text-primary text-sm mb-6 transition-colors"
+          className="flex items-center gap-1.5 text-gray-400 hover:text-primary text-sm mb-6 transition-colors"
         >
           <ArrowLeft size={15} />
           Back to Dashboard
         </button>
 
         {/* Project header */}
-        <div className="dark-card mb-6">
+        <div className="li-card mb-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-xl font-bold text-dark-text">{slug}</h1>
-              <p className="text-dark-muted text-sm mt-0.5 font-mono">{slug}</p>
+              <h1 className="text-xl font-bold text-gray-900">{slug}</h1>
+              <p className="text-gray-400 text-sm mt-0.5 font-mono">{slug}</p>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-              {/* Visibility toggle */}
               <button
                 onClick={handleToggleVisibility}
                 className={`flex items-center gap-1.5 text-sm py-2 px-4 rounded-xl border font-medium transition-all ${
                   visibility === 'public'
-                    ? 'border-green-500/50 text-green-400 bg-green-900/20 hover:bg-green-900/30'
-                    : 'border-dark-border text-dark-muted hover:text-dark-text hover:border-dark-borderhover'
+                    ? 'border-emerald-300 text-emerald-600 bg-emerald-50 hover:bg-emerald-100'
+                    : 'border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 {visibility === 'public' ? <Globe size={14} /> : <Lock size={14} />}
@@ -126,14 +131,14 @@ export default function VersionHistoryPage() {
                 href={shareLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 dark-btn-primary text-sm py-2 px-4"
+                className="flex items-center gap-1.5 li-btn-primary text-sm py-2 px-4 rounded-xl"
               >
                 <ExternalLink size={14} />
                 Open Link
               </a>
               <button
                 onClick={() => router.push(`/update?slug=${slug}&owner=${ownerId}`)}
-                className="flex items-center gap-1.5 dark-btn-ghost text-sm py-2 px-4 border border-dark-border rounded-xl"
+                className="flex items-center gap-1.5 text-sm py-2 px-4 rounded-xl border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all"
               >
                 <RefreshCw size={14} />
                 Upload Update
@@ -143,46 +148,39 @@ export default function VersionHistoryPage() {
         </div>
 
         {/* Version history */}
-        <div
-          className="rounded-2xl border border-dark-border overflow-hidden"
-          style={{ backgroundColor: '#161b22' }}
-        >
-          <div
-            className="px-6 py-4 border-b border-dark-border flex items-center gap-2"
-            style={{ backgroundColor: '#1c2333' }}
-          >
+        <div className="li-card !p-0 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2" style={{ backgroundColor: '#fafafa' }}>
             <Clock size={15} className="text-primary" />
-            <h2 className="font-bold text-dark-text text-base">
+            <h2 className="font-bold text-gray-800 text-base">
               Version History
-              <span className="ml-2 text-sm font-normal text-dark-muted">
+              <span className="ml-2 text-sm font-normal text-gray-400">
                 {versions.length} version{versions.length !== 1 ? 's' : ''}
               </span>
             </h2>
           </div>
 
           {versions.length === 0 ? (
-            <p className="text-dark-muted text-sm text-center py-10">No versions found.</p>
+            <p className="text-gray-400 text-sm text-center py-10">No versions found.</p>
           ) : (
-            <ul className="divide-y divide-dark-border">
+            <ul className="divide-y divide-gray-50">
               {versions.map((v, i) => (
-                <li key={v.version} className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-dark-raised transition-colors">
+                <li key={v.version} className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-gray-50/60 transition-colors">
                   <div className="flex items-center gap-3">
-                    {/* Version badge */}
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                      i === 0 ? 'bg-primary text-white' : 'bg-dark-raised text-primary border border-dark-border'
+                      i === 0 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500 border border-gray-200'
                     }`}>
                       v{v.version}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-dark-text flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-800 flex items-center gap-2">
                         {v.filename}
                         {i === 0 && (
-                          <span className="text-xs bg-green-900/40 text-green-400 px-2 py-0.5 rounded-full font-medium">
+                          <span className="text-xs bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-medium">
                             Latest
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-dark-muted mt-0.5">
+                      <p className="text-xs text-gray-400 mt-0.5">
                         {new Date(v.uploadedAt).toLocaleDateString('en-US', {
                           year: 'numeric', month: 'long', day: 'numeric',
                           hour: '2-digit', minute: '2-digit',
@@ -191,22 +189,21 @@ export default function VersionHistoryPage() {
                     </div>
                   </div>
 
-                  {/* Download buttons */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <a
                       href={v.fileURL}
                       download
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-dark-border text-dark-muted hover:border-dark-borderhover hover:text-dark-text transition-colors"
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
                       title="Download HTML file"
                     >
                       <Download size={12} />
                       HTML
                     </a>
                     <button
-                      onClick={() => handleDownloadPDF(v.fileURL, v.filename)}
-                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-dark-border text-dark-muted hover:border-dark-borderhover hover:text-dark-text transition-colors"
+                      onClick={() => handleDownloadPDF(v.fileURL)}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
                       title="Download as PDF"
                     >
                       <FileText size={12} />
