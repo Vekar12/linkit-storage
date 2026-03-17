@@ -131,25 +131,17 @@ export default function Dashboard() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // MUST be first — browsers drop the user-gesture flag after any other code
-    const previewWindow = window.open('', '_blank');
-
-    // Validation (close the blank tab if we bail early)
-    if (!projectName.trim()) {
-      previewWindow?.close();
-      toast.error('Enter a project name.');
-      return;
-    }
+    if (!projectName.trim()) { toast.error('Enter a project name.'); return; }
 
     let uploadFile: File | null = file;
 
     if (uploadMode === 'html') {
-      if (!htmlCode.trim()) { previewWindow?.close(); toast.error('Paste some HTML code first.'); return; }
+      if (!htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
       const blob = new Blob([htmlCode], { type: 'text/html' });
       const safeName = projectName.trim().toLowerCase().replace(/\s+/g, '-');
       uploadFile = new File([blob], `${safeName}.html`, { type: 'text/html' });
     } else {
-      if (!uploadFile) { previewWindow?.close(); toast.error('Select a file.'); return; }
+      if (!uploadFile) { toast.error('Select a file.'); return; }
       if (uploadFile.name.endsWith('.md')) {
         try {
           const text = await uploadFile.text();
@@ -157,7 +149,6 @@ export default function Dashboard() {
           const blob = new Blob([html], { type: 'text/html' });
           uploadFile = new File([blob], uploadFile.name.replace('.md', '.html'), { type: 'text/html' });
         } catch {
-          previewWindow?.close();
           toast.error('Failed to parse Markdown. Please check your file and try again.');
           return;
         }
@@ -182,16 +173,10 @@ export default function Dashboard() {
         setFile(null);
         setHtmlCode('');
         setRecentHistory(getHistory());
-        if (previewWindow) {
-          previewWindow.location.href = correctLink;
-        } else {
-          window.open(correctLink, '_blank');
-        }
       } catch (err: unknown) {
         const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
         const status = axiosErr?.response?.status;
 
-        // 500 = transient GitHub error — auto-retry once after 3 s
         if (status === 500 && attemptsLeft > 0) {
           toast.loading('GitHub is busy — retrying in 3 s…', { id: 'retry' });
           await new Promise((r) => setTimeout(r, 3000));
@@ -199,7 +184,6 @@ export default function Dashboard() {
           return attemptCreate(attemptsLeft - 1);
         }
 
-        previewWindow?.close();
         const msg = status === 409
           ? 'A project with this name already exists.'
           : status === 403
@@ -213,7 +197,7 @@ export default function Dashboard() {
 
     setUploading(true);
     try {
-      await attemptCreate(1); // 1 automatic retry on 500
+      await attemptCreate(1);
     } finally {
       setUploading(false);
     }
@@ -537,13 +521,22 @@ export default function Dashboard() {
                       {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
                     </button>
                   </div>
+                  <a
+                    href={shareLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="li-btn-primary w-full py-2.5 flex items-center justify-center gap-2 mb-3 rounded-xl"
+                  >
+                    <ExternalLink size={15} />
+                    Open Link
+                  </a>
                   <div className="flex gap-3">
-                    <button onClick={handleCopy} className="li-btn-primary flex-1 py-2.5">
+                    <button onClick={handleCopy} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
                       {copied ? 'Copied!' : 'Copy Link'}
                     </button>
                     <button
                       onClick={() => setShareLink('')}
-                      className="li-btn-ghost flex-1 py-2.5 border border-gray-200 rounded-xl"
+                      className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       Upload Another
                     </button>

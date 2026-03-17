@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { CheckCircle, ArrowLeft, Upload, Code2 } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Upload, Code2, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { marked } from 'marked';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -17,7 +17,7 @@ export default function UpdatePage() {
   const [file, setFile] = useState<File | null>(null);
   const [htmlCode, setHtmlCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [shareLink, setShareLink] = useState('');
 
   useEffect(() => {
     if (router.query.slug) setSlug(router.query.slug as string);
@@ -31,13 +31,9 @@ export default function UpdatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // MUST be first — browsers drop the user-gesture flag after any other code
-    const previewWindow = window.open('', '_blank');
-
     const cleanSlug = slug.trim().toLowerCase();
-    if (!cleanSlug) { previewWindow?.close(); toast.error('Please enter the project slug.'); return; }
+    if (!cleanSlug) { toast.error('Please enter the project slug.'); return; }
     if (!/^[a-z0-9-]+$/.test(cleanSlug)) {
-      previewWindow?.close();
       toast.error('Slug can only contain lowercase letters, numbers, and hyphens.');
       return;
     }
@@ -45,11 +41,11 @@ export default function UpdatePage() {
     let uploadFile: File | null = file;
 
     if (uploadMode === 'html') {
-      if (!htmlCode.trim()) { previewWindow?.close(); toast.error('Paste some HTML code first.'); return; }
+      if (!htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
       const blob = new Blob([htmlCode], { type: 'text/html' });
       uploadFile = new File([blob], `${cleanSlug}.html`, { type: 'text/html' });
     } else {
-      if (!uploadFile) { previewWindow?.close(); toast.error('Please select a file to upload.'); return; }
+      if (!uploadFile) { toast.error('Please select a file to upload.'); return; }
       if (uploadFile.name.endsWith('.md')) {
         try {
           const text = await uploadFile.text();
@@ -57,7 +53,6 @@ export default function UpdatePage() {
           const blob = new Blob([html], { type: 'text/html' });
           uploadFile = new File([blob], uploadFile.name.replace('.md', '.html'), { type: 'text/html' });
         } catch {
-          previewWindow?.close();
           toast.error('Failed to parse Markdown. Please check your file.');
           return;
         }
@@ -68,21 +63,14 @@ export default function UpdatePage() {
       try {
         await updateProject(cleanSlug, uploadFile!);
         addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
-        setSuccess(true);
-        toast.success('Project updated!');
         const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
-        const fullLink = `${window.location.origin}${linkPath}`;
-        if (previewWindow) {
-          previewWindow.location.href = fullLink;
-        } else {
-          window.open(fullLink, '_blank');
-        }
+        setShareLink(`${window.location.origin}${linkPath}`);
+        toast.success('Project updated!');
       } catch (err: unknown) {
         const axiosErr = err as { response?: { status?: number; data?: unknown } };
         const status = axiosErr?.response?.status;
         console.error('[update] PUT failed', { status, data: axiosErr?.response?.data });
 
-        // 500 = transient GitHub error — auto-retry once after 3 s
         if (status === 500 && attemptsLeft > 0) {
           toast.loading('GitHub is busy — retrying in 3 s…', { id: 'retry' });
           await new Promise((r) => setTimeout(r, 3000));
@@ -90,7 +78,6 @@ export default function UpdatePage() {
           return attemptUpdate(attemptsLeft - 1);
         }
 
-        previewWindow?.close();
         const serverMsg = (axiosErr?.response?.data as { message?: string; error?: string })?.message
           ?? (axiosErr?.response?.data as { message?: string; error?: string })?.error;
         const msg = status === 404
@@ -106,13 +93,13 @@ export default function UpdatePage() {
 
     setLoading(true);
     try {
-      await attemptUpdate(1); // 1 automatic retry on 500
+      await attemptUpdate(1);
     } finally {
       setLoading(false);
     }
   };
 
-  if (success) {
+  if (shareLink) {
     return (
       <DashboardLayout>
         <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-20">
@@ -121,8 +108,20 @@ export default function UpdatePage() {
               <CheckCircle size={36} className="text-primary" />
             </div>
             <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Project updated!</h2>
-            <p className="text-gray-400 text-sm mb-8">The same share link now serves your new file.</p>
-            <button onClick={() => router.push('/dashboard')} className="li-btn-primary px-8 py-3">
+            <p className="text-gray-400 text-sm mb-6">The same share link now serves your new file.</p>
+            <a
+              href={shareLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="li-btn-primary w-full py-3 flex items-center justify-center gap-2 rounded-xl mb-3"
+            >
+              <ExternalLink size={15} />
+              Open Updated Link
+            </a>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            >
               Back to Dashboard
             </button>
           </div>
@@ -161,7 +160,6 @@ export default function UpdatePage() {
               <p className="text-xs text-gray-400 mt-1.5">Find this on your project card in the dashboard.</p>
             </div>
 
-            {/* Mode switcher */}
             <div
               className="flex gap-1 rounded-xl p-1 border border-gray-100"
               style={{ backgroundColor: '#f3f4f6' }}
