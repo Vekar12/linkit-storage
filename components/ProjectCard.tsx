@@ -51,7 +51,6 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     e.stopPropagation();
     if (!confirmDelete) {
       setConfirmDelete(true);
-      // auto-cancel confirm after 3 seconds
       setTimeout(() => setConfirmDelete(false), 3000);
       return;
     }
@@ -75,21 +74,22 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
   };
 
   const typeColors: Record<string, string> = {
-    html: 'bg-orange-100 text-orange-600',
-    pdf:  'bg-red-100 text-red-600',
-    png:  'bg-green-100 text-green-600',
-    jpg:  'bg-green-100 text-green-600',
-    jpeg: 'bg-green-100 text-green-600',
-    zip:  'bg-blue-100 text-blue-600',
+    html: 'bg-orange-900/40 text-orange-400',
+    pdf:  'bg-red-900/40 text-red-400',
+    md:   'bg-blue-900/40 text-blue-400',
+    png:  'bg-green-900/40 text-green-400',
+    jpg:  'bg-green-900/40 text-green-400',
+    jpeg: 'bg-green-900/40 text-green-400',
+    zip:  'bg-sky-900/40 text-sky-400',
   };
-  const badgeClass = typeColors[project.fileType?.toLowerCase()] ?? 'bg-gray-100 text-gray-500';
+  const badgeClass = typeColors[project.fileType?.toLowerCase()] ?? 'bg-dark-dim/40 text-dark-muted';
 
   return (
     <div
       onClick={() => router.push(`/projects/${project.slug}`)}
-      className="bg-white border-2 border-purple-100 rounded-2xl flex flex-col justify-between hover:border-primary hover:shadow-purple transition-all duration-200 aspect-square cursor-pointer overflow-hidden"
+      className="bg-dark-raised border border-dark-border rounded-2xl flex flex-col justify-between hover:border-primary/50 hover:shadow-glow transition-all duration-200 aspect-square cursor-pointer overflow-hidden"
     >
-      {/* ── Top bar: delete (left) + file type badge (right) ── */}
+      {/* Top bar: delete (left) + file type badge (right) */}
       <div className="flex items-center justify-between px-3 pt-3">
         <button
           onClick={handleDelete}
@@ -98,7 +98,7 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
           className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
             confirmDelete
               ? 'bg-red-500 text-white'
-              : 'bg-red-50 text-red-400 hover:bg-red-100'
+              : 'bg-red-900/30 text-red-400 hover:bg-red-900/60'
           }`}
         >
           <Trash2 size={12} />
@@ -109,19 +109,19 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
         </span>
       </div>
 
-      {/* ── Middle: project info ── */}
+      {/* Middle: project info */}
       <div className="flex-1 px-3 py-2">
-        <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2">
+        <h3 className="font-semibold text-dark-text text-sm leading-snug line-clamp-2">
           {project.projectName}
         </h3>
-        <p className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+        <p className="flex items-center gap-1 text-xs text-dark-muted mt-1">
           <Calendar size={11} />
           {formattedDate}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5 truncate font-mono">{project.slug}</p>
+        <p className="text-xs text-dark-dim mt-0.5 truncate font-mono">{project.slug}</p>
       </div>
 
-      {/* ── Bottom actions ── */}
+      {/* Bottom actions */}
       <div className="px-3 pb-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
         {/* Open link — full width */}
         <a
@@ -129,7 +129,7 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center justify-center gap-1.5 btn-primary text-xs py-1.5 w-full"
+          className="flex items-center justify-center gap-1.5 dark-btn-primary text-xs py-1.5 w-full"
         >
           <ExternalLink size={12} />
           Open Link
@@ -140,26 +140,26 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
           <button
             onClick={handleCopy}
             title={copied ? 'Copied!' : 'Copy link'}
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border-2 border-purple-100 bg-secondary hover:bg-purple-200 transition-colors"
+            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-dark-border bg-dark-surface hover:border-dark-borderhover hover:bg-dark-raised transition-colors"
           >
-            {copied ? <CheckCircle size={13} className="text-primary" /> : <Copy size={13} className="text-primary" />}
+            {copied ? <CheckCircle size={13} className="text-primary" /> : <Copy size={13} className="text-dark-muted" />}
           </button>
 
           <button
             onClick={handleDownload}
             disabled={!latestFileURL}
             title="Download"
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border-2 border-purple-100 bg-secondary hover:bg-purple-200 transition-colors disabled:opacity-40"
+            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-dark-border bg-dark-surface hover:border-dark-borderhover hover:bg-dark-raised transition-colors disabled:opacity-40"
           >
-            <Download size={13} className="text-primary" />
+            <Download size={13} className="text-dark-muted" />
           </button>
 
           <button
             onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}`); }}
             title="Upload update"
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border-2 border-purple-100 bg-secondary hover:bg-purple-200 transition-colors"
+            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-dark-border bg-dark-surface hover:border-dark-borderhover hover:bg-dark-raised transition-colors"
           >
-            <RefreshCw size={13} className="text-primary" />
+            <RefreshCw size={13} className="text-dark-muted" />
           </button>
         </div>
       </div>

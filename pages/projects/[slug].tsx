@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowLeft, Download, Clock, Link2, ExternalLink, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, Clock, Link2, ExternalLink, RefreshCw, FileText } from 'lucide-react';
 import { getProjectMetadata } from '@/services/api';
 import type { ProjectMetadata } from '@/types';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import DashboardLayout from '@/components/DashboardLayout';
 
 export default function VersionHistoryPage() {
   const router = useRouter();
@@ -26,59 +25,68 @@ export default function VersionHistoryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Link2 size={28} className="text-primary animate-pulse" />
-      </div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Link2 size={28} className="text-primary animate-pulse" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (notFound || !metadata) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Project not found</h1>
-        <button onClick={() => router.push('/dashboard')} className="mt-4 btn-primary">
-          Back to Dashboard
-        </button>
-      </div>
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+          <h1 className="text-xl font-bold text-dark-text mb-2">Project not found</h1>
+          <button onClick={() => router.push('/dashboard')} className="mt-4 dark-btn-primary px-6 py-2.5">
+            Back to Dashboard
+          </button>
+        </div>
+      </DashboardLayout>
     );
   }
 
   const versions = [...(metadata.versions ?? [])].reverse();
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+  const handleDownloadPDF = (url: string) => {
+    const win = window.open(url, '_blank');
+    if (win) {
+      win.focus();
+    }
+  };
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
+  return (
+    <DashboardLayout>
+      <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
         {/* Back */}
         <button
           onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-1.5 text-gray-500 hover:text-primary text-sm mb-6 transition-colors"
+          className="flex items-center gap-1.5 text-dark-muted hover:text-primary text-sm mb-6 transition-colors"
         >
           <ArrowLeft size={15} />
           Back to Dashboard
         </button>
 
         {/* Project header */}
-        <div className="card shadow-purple mb-6">
+        <div className="dark-card mb-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{slug}</h1>
-              <p className="text-gray-400 text-sm mt-0.5 font-mono">{slug}</p>
+              <h1 className="text-xl font-bold text-dark-text">{slug}</h1>
+              <p className="text-dark-muted text-sm mt-0.5 font-mono">{slug}</p>
             </div>
             <div className="flex gap-2 flex-wrap">
               <a
                 href={shareLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 btn-primary text-sm py-2"
+                className="flex items-center gap-1.5 dark-btn-primary text-sm py-2 px-4"
               >
                 <ExternalLink size={14} />
                 Open Link
               </a>
               <button
                 onClick={() => router.push(`/update?slug=${slug}`)}
-                className="flex items-center gap-1.5 btn-outline text-sm py-2"
+                className="flex items-center gap-1.5 dark-btn-ghost text-sm py-2 px-4 border border-dark-border rounded-xl"
               >
                 <RefreshCw size={14} />
                 Upload Update
@@ -88,38 +96,46 @@ export default function VersionHistoryPage() {
         </div>
 
         {/* Version history */}
-        <div className="bg-white rounded-2xl border border-purple-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-purple-50 flex items-center gap-2">
+        <div
+          className="rounded-2xl border border-dark-border overflow-hidden"
+          style={{ backgroundColor: '#161b22' }}
+        >
+          <div
+            className="px-6 py-4 border-b border-dark-border flex items-center gap-2"
+            style={{ backgroundColor: '#1c2333' }}
+          >
             <Clock size={15} className="text-primary" />
-            <h2 className="font-bold text-gray-900 text-base">
+            <h2 className="font-bold text-dark-text text-base">
               Version History
-              <span className="ml-2 text-sm font-normal text-gray-400">{versions.length} version{versions.length !== 1 ? 's' : ''}</span>
+              <span className="ml-2 text-sm font-normal text-dark-muted">
+                {versions.length} version{versions.length !== 1 ? 's' : ''}
+              </span>
             </h2>
           </div>
 
           {versions.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-10">No versions found.</p>
+            <p className="text-dark-muted text-sm text-center py-10">No versions found.</p>
           ) : (
-            <ul className="divide-y divide-purple-50">
+            <ul className="divide-y divide-dark-border">
               {versions.map((v, i) => (
-                <li key={v.version} className="px-6 py-4 flex items-center justify-between gap-4">
+                <li key={v.version} className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-dark-raised transition-colors">
                   <div className="flex items-center gap-3">
                     {/* Version badge */}
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                      i === 0 ? 'bg-primary text-white' : 'bg-secondary text-primary'
+                      i === 0 ? 'bg-primary text-white' : 'bg-dark-raised text-primary border border-dark-border'
                     }`}>
                       v{v.version}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-800">
+                      <p className="text-sm font-medium text-dark-text flex items-center gap-2">
                         {v.filename}
                         {i === 0 && (
-                          <span className="ml-2 text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-medium">
+                          <span className="text-xs bg-green-900/40 text-green-400 px-2 py-0.5 rounded-full font-medium">
                             Latest
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-dark-muted mt-0.5">
                         {new Date(v.uploadedAt).toLocaleDateString('en-US', {
                           year: 'numeric', month: 'long', day: 'numeric',
                           hour: '2-digit', minute: '2-digit',
@@ -127,24 +143,35 @@ export default function VersionHistoryPage() {
                       </p>
                     </div>
                   </div>
-                  <a
-                    href={v.fileURL}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 btn-secondary text-xs py-1.5 px-3 flex-shrink-0"
-                  >
-                    <Download size={13} />
-                    Download
-                  </a>
+
+                  {/* Download buttons */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <a
+                      href={v.fileURL}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-dark-border text-dark-muted hover:border-dark-borderhover hover:text-dark-text transition-colors"
+                      title="Download HTML file"
+                    >
+                      <Download size={12} />
+                      HTML
+                    </a>
+                    <button
+                      onClick={() => handleDownloadPDF(v.fileURL)}
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-dark-border text-dark-muted hover:border-dark-borderhover hover:text-dark-text transition-colors"
+                      title="Open in new tab to print as PDF"
+                    >
+                      <FileText size={12} />
+                      PDF
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

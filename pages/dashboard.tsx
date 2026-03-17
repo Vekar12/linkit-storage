@@ -2,23 +2,72 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Copy, CheckCircle, Search, Upload, Code2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import { marked } from 'marked';
+import DashboardLayout from '@/components/DashboardLayout';
 import ProjectCard from '@/components/ProjectCard';
 import FileDropzone from '@/components/FileDropzone';
+import RecentActivity from '@/components/ActivityPane';
 import { getProjects, createProject } from '@/services/api';
 import { checkAuth } from '@/lib/auth';
 import { addHistory } from '@/lib/history';
-import ActivityPane from '@/components/ActivityPane';
 import type { Project } from '@/types';
+
+// ── Module-level cache ──
+let _cache: { data: Project[]; ts: number } | null = null;
+const CACHE_TTL = 30_000;
+
+async function fetchWithCache(): Promise<Project[]> {
+  if (_cache && Date.now() - _cache.ts < CACHE_TTL) return _cache.data;
+  const data = await getProjects();
+  _cache = { data, ts: Date.now() };
+  return data;
+}
+
+function invalidateCache() {
+  _cache = null;
+}
+
+const PAGE_SIZE = 20;
+
+// ── Skeleton card ──
+function SkeletonCard() {
+  return (
+    <div
+      className="border border-dark-border rounded-2xl aspect-square flex flex-col justify-between p-3 animate-pulse"
+      style={{ backgroundColor: '#1c2333' }}
+    >
+      <div className="flex items-center justify-between">
+        <div className="w-6 h-6 rounded-lg bg-dark-border" />
+        <div className="w-10 h-4 rounded-full bg-dark-border" />
+      </div>
+      <div className="flex-1 px-0 py-3">
+        <div className="h-3.5 bg-dark-border rounded w-3/4 mb-2" />
+        <div className="h-3 bg-dark-border rounded w-1/2 mb-1.5" />
+        <div className="h-2.5 bg-dark-border rounded w-2/3" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <div className="h-7 bg-dark-border rounded-xl" />
+        <div className="flex gap-1.5">
+          <div className="flex-1 h-7 bg-dark-border rounded-xl" />
+          <div className="flex-1 h-7 bg-dark-border rounded-xl" />
+          <div className="flex-1 h-7 bg-dark-border rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const router = useRouter();
+  const view = (router.query.view as string) || 'projects';
 
+  // Projects state
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
+  // Upload state
   const [uploadMode, setUploadMode] = useState<'file' | 'html'>('file');
   const [projectName, setProjectName] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -31,7 +80,7 @@ export default function Dashboard() {
     const init = async () => {
       if (!checkAuth()) { router.replace('/login'); return; }
       try {
-        const data = await getProjects();
+        const data = await fetchWithCache();
         setProjects(data);
       } catch {
         toast.error('Failed to load projects.');
@@ -46,16 +95,22 @@ export default function Dashboard() {
     e.preventDefault();
     if (!projectName.trim()) { toast.error('Enter a project name.'); return; }
 
-    let uploadFile = file;
+    let uploadFile: File | null = file;
 
     if (uploadMode === 'html') {
       if (!htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
-      // Convert pasted HTML string into a .html File object
       const blob = new Blob([htmlCode], { type: 'text/html' });
       const safeName = projectName.trim().toLowerCase().replace(/\s+/g, '-');
       uploadFile = new File([blob], `${safeName}.html`, { type: 'text/html' });
     } else {
       if (!uploadFile) { toast.error('Select a file.'); return; }
+      // Convert markdown to HTML before upload
+      if (uploadFile.name.endsWith('.md')) {
+        const text = await uploadFile.text();
+        const html = await marked(text);
+        const blob = new Blob([html], { type: 'text/html' });
+        uploadFile = new File([blob], uploadFile.name.replace('.md', '.html'), { type: 'text/html' });
+      }
     }
 
     setUploading(true);
@@ -64,11 +119,14 @@ export default function Dashboard() {
       setShareLink(result.shareLink);
       toast.success('Link created!');
       addHistory({ type: 'created', projectName: projectName.trim(), slug: result.slug });
-      const data = await getProjects();
+      invalidateCache();
+      const data = await fetchWithCache();
       setProjects(data);
       setProjectName('');
       setFile(null);
       setHtmlCode('');
+      // Auto-open the new link
+      window.open(`${window.location.origin}/p/${result.slug}`, '_blank');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
       const msg = axiosErr?.response?.data?.error
@@ -97,169 +155,207 @@ export default function Dashboard() {
     p.slug.toLowerCase().includes(search.toLowerCase())
   );
 
+  const visibleProjects = filteredProjects.slice(0, page * PAGE_SIZE);
+  const hasMore = visibleProjects.length < filteredProjects.length;
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+    <DashboardLayout>
+      <div className="px-6 sm:px-8 py-8 max-w-6xl mx-auto">
 
-      <main className="flex-1 w-full px-4 sm:px-8 py-8 max-w-7xl mx-auto flex gap-6 items-start">
-
-        {/* ── Left: Activity pane ── */}
-        <ActivityPane />
-
-        {/* ── Right: Upload + Projects ── */}
-        <div className="flex-1 flex flex-col gap-6 min-w-0">
-
-        {/* ── Upload card ── */}
-        <div className="card shadow-purple">
-
-          {shareLink ? (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center mx-auto mb-3">
-                <CheckCircle size={28} className="text-primary" />
+        {/* ── Projects view ── */}
+        {view === 'projects' && (
+          <div>
+            {/* Header */}
+            <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+              <div>
+                <h1 className="text-xl font-bold text-dark-text">
+                  Projects
+                  {!loadingProjects && (
+                    <span className="ml-2 text-sm font-normal text-dark-muted">
+                      {projects.length} total
+                    </span>
+                  )}
+                </h1>
               </div>
-              <p className="font-semibold text-gray-900 mb-1">Your link is ready</p>
-              <p className="text-gray-400 text-sm mb-4">
-                This link always points to the latest version.
-              </p>
-              <div className="flex items-center gap-2 bg-secondary rounded-xl px-4 py-3 mb-4 border-2 border-purple-100">
-                <span className="text-primary text-sm truncate flex-1 text-left font-medium">
-                  {shareLink}
-                </span>
-                <button onClick={handleCopy} className="text-primary hover:text-primary-dark transition-colors flex-shrink-0">
-                  {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
-                </button>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={handleCopy} className="btn-primary flex-1 py-2.5">
-                  {copied ? 'Copied!' : 'Copy Link'}
-                </button>
-                <button onClick={() => setShareLink('')} className="btn-secondary flex-1 py-2.5">
-                  Upload Another
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Tab switcher */}
-              <div className="flex gap-1 bg-background rounded-xl p-1 mb-5 border border-purple-100">
-                <button
-                  type="button"
-                  onClick={() => setUploadMode('file')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    uploadMode === 'file'
-                      ? 'bg-white text-primary shadow-sm border border-purple-100'
-                      : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  <Upload size={14} />
-                  Upload File
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUploadMode('html')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
-                    uploadMode === 'html'
-                      ? 'bg-white text-primary shadow-sm border border-purple-100'
-                      : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  <Code2 size={14} />
-                  Paste HTML
-                </button>
-              </div>
-
-              <form onSubmit={handleUpload} className="flex flex-col gap-5">
+              <div className="relative">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-muted" />
                 <input
                   type="text"
-                  className="input"
-                  placeholder="Project name  (e.g. My Resume)"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  maxLength={80}
+                  placeholder="Search projects..."
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  className="dark-input pl-9 pr-4 py-2 text-sm w-56"
                 />
+              </div>
+            </div>
 
-                {uploadMode === 'file' ? (
-                  <FileDropzone file={file} onFileSelect={setFile} />
-                ) : (
-                  <textarea
-                    className="input font-mono text-xs resize-none"
-                    rows={10}
-                    placeholder={'Paste your HTML code here…\n\n<!DOCTYPE html>\n<html>\n  <body>\n    <h1>Hello</h1>\n  </body>\n</html>'}
-                    value={htmlCode}
-                    onChange={(e) => setHtmlCode(e.target.value)}
-                    spellCheck={false}
-                  />
+            {/* Grid */}
+            {loadingProjects ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            ) : filteredProjects.length > 0 ? (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {visibleProjects.map((project) => (
+                    <ProjectCard
+                      key={project.slug}
+                      project={project}
+                      onDeleted={(slug) => {
+                        invalidateCache();
+                        setProjects((prev) => prev.filter((p) => p.slug !== slug));
+                      }}
+                    />
+                  ))}
+                </div>
+                {hasMore && (
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={() => setPage((p) => p + 1)}
+                      className="dark-btn-primary px-6 py-2.5 text-sm"
+                    >
+                      Load more
+                    </button>
+                  </div>
                 )}
-
+              </>
+            ) : search ? (
+              <p className="text-dark-muted text-sm">No projects match &quot;{search}&quot;.</p>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-dark-muted text-base mb-2">No projects yet.</p>
+                <p className="text-dark-dim text-sm">
+                  Upload your first file to get started.
+                </p>
                 <button
-                  type="submit"
-                  disabled={uploading || (uploadMode === 'html' && !htmlCode.trim())}
-                  className="btn-primary w-full py-3 text-base"
+                  onClick={() => router.push('/dashboard?view=upload')}
+                  className="dark-btn-primary mt-5 px-6 py-2.5 text-sm inline-flex items-center gap-2"
                 >
-                  {uploading ? 'Uploading…' : 'Upload & Generate Link'}
+                  <Upload size={15} />
+                  Upload a file
                 </button>
-              </form>
-            </>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* ── Projects — full width, grid ── */}
-        <div className="bg-white rounded-2xl border border-purple-100 shadow-sm p-6">
-          {/* Header row */}
-          <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
-            <h2 className="text-lg font-bold text-gray-900">
-              Projects
-              {!loadingProjects && (
-                <span className="ml-2 text-sm font-normal text-gray-400">
-                  {projects.length} total
-                </span>
+        {/* ── Upload view ── */}
+        {view === 'upload' && (
+          <div className="max-w-xl">
+            <h1 className="text-xl font-bold text-dark-text mb-6">Upload File</h1>
+
+            <div className="dark-card shadow-glow">
+              {shareLink ? (
+                <div className="text-center py-4">
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3"
+                    style={{ backgroundColor: '#1c2333' }}
+                  >
+                    <CheckCircle size={28} className="text-primary" />
+                  </div>
+                  <p className="font-semibold text-dark-text mb-1">Your link is ready</p>
+                  <p className="text-dark-muted text-sm mb-4">
+                    This link always points to the latest version.
+                  </p>
+                  <div
+                    className="flex items-center gap-2 rounded-xl px-4 py-3 mb-4 border border-dark-border"
+                    style={{ backgroundColor: '#1c2333' }}
+                  >
+                    <span className="text-primary text-sm truncate flex-1 text-left font-medium">
+                      {shareLink}
+                    </span>
+                    <button onClick={handleCopy} className="text-primary hover:text-primary-dark transition-colors flex-shrink-0">
+                      {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
+                    </button>
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={handleCopy} className="dark-btn-primary flex-1 py-2.5">
+                      {copied ? 'Copied!' : 'Copy Link'}
+                    </button>
+                    <button
+                      onClick={() => setShareLink('')}
+                      className="dark-btn-ghost flex-1 py-2.5 border border-dark-border rounded-xl"
+                    >
+                      Upload Another
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Tab switcher */}
+                  <div
+                    className="flex gap-1 rounded-xl p-1 mb-5 border border-dark-border"
+                    style={{ backgroundColor: '#0d1117' }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setUploadMode('file')}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
+                        uploadMode === 'file'
+                          ? 'bg-dark-raised text-dark-text border border-dark-border'
+                          : 'text-dark-muted hover:text-dark-text'
+                      }`}
+                    >
+                      <Upload size={14} />
+                      Upload File
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUploadMode('html')}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${
+                        uploadMode === 'html'
+                          ? 'bg-dark-raised text-dark-text border border-dark-border'
+                          : 'text-dark-muted hover:text-dark-text'
+                      }`}
+                    >
+                      <Code2 size={14} />
+                      Paste HTML
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleUpload} className="flex flex-col gap-5">
+                    <input
+                      type="text"
+                      className="dark-input"
+                      placeholder="Project name (e.g. My Resume)"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      maxLength={80}
+                    />
+
+                    {uploadMode === 'file' ? (
+                      <FileDropzone file={file} onFileSelect={setFile} />
+                    ) : (
+                      <textarea
+                        className="dark-input font-mono text-xs resize-none"
+                        rows={10}
+                        placeholder={'Paste your HTML code here...\n\n<!DOCTYPE html>\n<html>\n  <body>\n    <h1>Hello</h1>\n  </body>\n</html>'}
+                        value={htmlCode}
+                        onChange={(e) => setHtmlCode(e.target.value)}
+                        spellCheck={false}
+                      />
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={uploading || (uploadMode === 'html' && !htmlCode.trim())}
+                      className="dark-btn-primary w-full py-3 text-base"
+                    >
+                      {uploading ? 'Uploading...' : 'Upload & Generate Link'}
+                    </button>
+                  </form>
+                </>
               )}
-            </h2>
-
-            {/* Search */}
-            <div className="relative">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search projects…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-4 py-2 text-sm border-2 border-purple-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary bg-background w-56"
-              />
             </div>
           </div>
+        )}
 
-          {/* Grid */}
-          {loadingProjects ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="animate-pulse border border-purple-50 rounded-xl p-4 aspect-square flex flex-col justify-between">
-                  <div className="h-4 bg-purple-50 rounded w-2/3 mb-2" />
-                  <div className="h-3 bg-purple-50 rounded w-1/2" />
-                </div>
-              ))}
-            </div>
-          ) : filteredProjects.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProjects.map((project) => (
-                <ProjectCard
-                  key={project.slug}
-                  project={project}
-                  onDeleted={(slug) => setProjects((prev) => prev.filter((p) => p.slug !== slug))}
-                />
-              ))}
-            </div>
-          ) : search ? (
-            <p className="text-gray-400 text-sm">No projects match &quot;{search}&quot;.</p>
-          ) : (
-            <p className="text-gray-400 text-sm">No projects yet — upload your first file above.</p>
-          )}
-        </div>
+        {/* ── Recent view ── */}
+        {view === 'recent' && (
+          <RecentActivity />
+        )}
 
-        </div>{/* end right column */}
-        </main>
-
-      <Footer />
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

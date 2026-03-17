@@ -6,9 +6,7 @@ import toast from 'react-hot-toast';
 const ACCEPTED_TYPES = {
   'text/html': ['.html'],
   'application/pdf': ['.pdf'],
-  'image/png': ['.png'],
-  'image/jpeg': ['.jpg', '.jpeg'],
-  'application/zip': ['.zip'],
+  'text/markdown': ['.md'],
 };
 
 const MAX_SIZE = 15 * 1024 * 1024; // 15 MB
@@ -26,7 +24,7 @@ export default function FileDropzone({ file, onFileSelect }: FileDropzoneProps) 
         if (code === 'file-too-large') {
           toast.error('File too large. Maximum size is 15 MB.');
         } else if (code === 'file-invalid-type') {
-          toast.error('Invalid file type. Allowed: .html .pdf .png .jpg .zip');
+          toast.error('Only HTML, Markdown, and PDF files are allowed.');
         } else {
           toast.error('Upload failed. Please try again.');
         }
@@ -52,10 +50,10 @@ export default function FileDropzone({ file, onFileSelect }: FileDropzoneProps) 
       className={`
         border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors duration-200
         ${isDragActive
-          ? 'border-primary bg-secondary'
+          ? 'border-primary bg-dark-raised'
           : file
-          ? 'border-green-400 bg-green-50'
-          : 'border-gray-300 bg-white hover:border-primary hover:bg-secondary'
+          ? 'border-green-500 bg-dark-raised'
+          : 'border-dark-border bg-dark-raised hover:border-primary'
         }
       `}
     >
@@ -63,9 +61,9 @@ export default function FileDropzone({ file, onFileSelect }: FileDropzoneProps) 
 
       {file ? (
         <div className="flex flex-col items-center gap-3">
-          <FileCheck size={40} className="text-green-500" />
-          <p className="font-medium text-gray-800">{file.name}</p>
-          <p className="text-sm text-gray-500">
+          <FileCheck size={40} className="text-green-400" />
+          <p className="font-medium text-dark-text">{file.name}</p>
+          <p className="text-sm text-dark-muted">
             {(file.size / 1024 / 1024).toFixed(2)} MB — click or drag to replace
           </p>
         </div>
@@ -73,14 +71,14 @@ export default function FileDropzone({ file, onFileSelect }: FileDropzoneProps) 
         <div className="flex flex-col items-center gap-3">
           <UploadCloud
             size={40}
-            className={isDragActive ? 'text-primary' : 'text-gray-400'}
+            className={isDragActive ? 'text-primary' : 'text-dark-muted'}
           />
-          <p className="font-medium text-gray-700">
+          <p className="font-medium text-dark-text">
             {isDragActive ? 'Drop your file here' : 'Drag & drop your file here'}
           </p>
-          <p className="text-sm text-gray-400">or click to browse</p>
-          <p className="text-xs text-gray-400 mt-1">
-            Supported: .html .pdf .png .jpg .zip — Max 15 MB
+          <p className="text-sm text-dark-muted">or click to browse</p>
+          <p className="text-xs text-dark-dim mt-1">
+            Supported: .html .md .pdf — Max 15 MB
           </p>
         </div>
       )}
