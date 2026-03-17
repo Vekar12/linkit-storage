@@ -144,7 +144,7 @@ export default function Dashboard() {
       setFile(null);
       setHtmlCode('');
       // Auto-open the new link
-      window.open(`${window.location.origin}/p/${result.slug}`, '_blank');
+      window.open(result.shareLink, '_blank');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
       const status = axiosErr?.response?.status;
