@@ -1,50 +1,99 @@
-import { readJSON, writeJSON } from './githubService';
+import { getFileWithSHA, uploadFile } from './githubService';
+
+const CSV_PATH = 'users/users.csv';
+const CSV_HEADER = 'sub,provider,name,email,avatar,firstLoginAt,lastLoginAt,loginCount';
 
 export interface UserRecord {
   sub: string;
   provider: 'github' | 'google';
   name: string;
-  email?: string;
-  avatar?: string;
+  email: string;
+  avatar: string;
   firstLoginAt: string;
   lastLoginAt: string;
   loginCount: number;
 }
 
-// Upsert user record on every login — creates on first visit, updates lastLoginAt thereafter
+// Wrap a value in quotes if it contains commas, quotes, or newlines
+function escapeField(value: string): string {
+  if (/[,"\n\r]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+  return value;
+}
+
+function toRow(u: UserRecord): string {
+  return [
+    u.sub, u.provider, u.name, u.email, u.avatar,
+    u.firstLoginAt, u.lastLoginAt, String(u.loginCount),
+  ].map(escapeField).join(',');
+}
+
+// Minimal CSV line parser — handles quoted fields
+function parseRow(line: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      fields.push(current); current = '';
+    } else {
+      current += ch;
+    }
+  }
+  fields.push(current);
+  return fields;
+}
+
+function parseCSV(raw: string): UserRecord[] {
+  const lines = raw.trim().split('\n').slice(1); // skip header
+  return lines
+    .filter((l) => l.trim())
+    .map((line) => {
+      const [sub, provider, name, email, avatar, firstLoginAt, lastLoginAt, loginCount] = parseRow(line);
+      return {
+        sub, provider: provider as 'github' | 'google',
+        name, email, avatar, firstLoginAt, lastLoginAt,
+        loginCount: parseInt(loginCount, 10) || 1,
+      };
+    });
+}
+
 export async function upsertUserRecord(
   sub: string,
   provider: 'github' | 'google',
   name: string,
-  email?: string,
-  avatar?: string
+  email = '',
+  avatar = ''
 ): Promise<void> {
-  const path = `users/${sub}.json`;
-  const now = new Date().toISOString();
-
   try {
-    const existing = await readJSON<UserRecord>(path);
+    const now = new Date().toISOString();
+    const file = await getFileWithSHA(CSV_PATH);
 
-    if (existing) {
-      await writeJSON(path, {
-        ...existing,
-        name,         // update in case they changed their display name
-        email,
-        avatar,
-        lastLoginAt: now,
-        loginCount: (existing.loginCount ?? 1) + 1,
-      }, `chore: update user record ${sub}`);
+    if (file) {
+      // Decode existing CSV
+      const raw = Buffer.from(file.content, 'base64').toString('utf-8');
+      const users = parseCSV(raw);
+      const idx = users.findIndex((u) => u.sub === sub);
+
+      if (idx >= 0) {
+        // Update existing row
+        users[idx] = { ...users[idx], name, email, avatar, lastLoginAt: now, loginCount: users[idx].loginCount + 1 };
+      } else {
+        // Append new row
+        users.push({ sub, provider, name, email, avatar, firstLoginAt: now, lastLoginAt: now, loginCount: 1 });
+      }
+
+      const updated = [CSV_HEADER, ...users.map(toRow)].join('\n') + '\n';
+      await uploadFile(CSV_PATH, Buffer.from(updated, 'utf-8'), `chore: update user ${sub}`, file.sha);
     } else {
-      await writeJSON(path, {
-        sub,
-        provider,
-        name,
-        email,
-        avatar,
-        firstLoginAt: now,
-        lastLoginAt: now,
-        loginCount: 1,
-      }, `chore: register user ${sub}`);
+      // Create the CSV for the first time
+      const firstRow = toRow({ sub, provider, name, email, avatar, firstLoginAt: now, lastLoginAt: now, loginCount: 1 });
+      const content = [CSV_HEADER, firstRow].join('\n') + '\n';
+      await uploadFile(CSV_PATH, Buffer.from(content, 'utf-8'), `chore: create users sheet, first user ${sub}`);
     }
   } catch {
     // Never block login due to a user-record write failure
