@@ -58,16 +58,23 @@ export default function UpdatePage() {
       }
     }
 
+    // Open the tab immediately while still in user-gesture context.
+    // Browsers block window.open() called after await.
+    const previewWindow = window.open('', '_blank');
+
     setLoading(true);
     try {
       await updateProject(cleanSlug, uploadFile!, ownerId || undefined);
       addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
       setSuccess(true);
       toast.success('Project updated!');
-      const linkPath = ownerId
-        ? `/p/${ownerId}/${cleanSlug}`
-        : `/p/${cleanSlug}`;
-      window.open(`${window.location.origin}${linkPath}`, '_blank');
+      const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
+      const fullLink = `${window.location.origin}${linkPath}`;
+      if (previewWindow) {
+        previewWindow.location.href = fullLink;
+      } else {
+        window.open(fullLink, '_blank');
+      }
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       const msg = status === 404

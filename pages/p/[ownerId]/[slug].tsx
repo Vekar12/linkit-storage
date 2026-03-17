@@ -45,6 +45,7 @@ export default function PublicViewPage() {
   const isPDF   = fileType === 'application/pdf' || fileType === 'pdf';
   const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'image/png', 'image/jpeg'].includes(fileType);
   const isZip   = fileType === 'application/zip' || fileType === 'zip';
+  const isPPTX  = fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || fileType === 'pptx';
 
   const rawURL = metadata.versions?.[metadata.versions.length - 1]?.fileURL ?? fileURL;
   const latestURL = `${rawURL}${rawURL.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
@@ -75,6 +76,17 @@ export default function PublicViewPage() {
             <a href={latestURL} download target="_blank" rel="noopener noreferrer" className="btn-primary flex items-center gap-2">
               <Download size={16} />
               Download ZIP
+            </a>
+          </div>
+        )}
+
+        {isPPTX && (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-background gap-4">
+            <Download size={48} className="text-gray-300" />
+            <p className="text-gray-600 font-medium">PowerPoint Presentation — cannot be previewed in browser</p>
+            <a href={latestURL} download target="_blank" rel="noopener noreferrer" className="btn-primary flex items-center gap-2">
+              <Download size={16} />
+              Download PPTX
             </a>
           </div>
         )}

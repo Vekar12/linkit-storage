@@ -154,6 +154,10 @@ export default function Dashboard() {
       }
     }
 
+    // Open the tab immediately while still in the user-gesture context.
+    // Browsers block window.open() called after await — this avoids that.
+    const previewWindow = window.open('', '_blank');
+
     setUploading(true);
     try {
       const result = await createProject(projectName.trim(), uploadFile!, newVisibility);
@@ -172,7 +176,11 @@ export default function Dashboard() {
       setFile(null);
       setHtmlCode('');
       setRecentHistory(getHistory());
-      window.open(correctLink, '_blank');
+      if (previewWindow) {
+        previewWindow.location.href = correctLink;
+      } else {
+        window.open(correctLink, '_blank');
+      }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
       const status = axiosErr?.response?.status;
