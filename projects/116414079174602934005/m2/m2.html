@@ -47,14 +47,19 @@ body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 .panel { background:#fff; margin-top:10px; border-radius:6px; }
 .panel-header { background:#1f3a5f; color:#fff; padding:10px; }
 
-table { width:100%; border-collapse:collapse; }
-th,td { padding:10px; border-bottom:1px solid #eee; font-size:13px; text-align:left; }
-th { background:#f0f3f7; }
+table { width:100%; border-collapse:collapse; table-layout:fixed; }
+th,td { padding:10px; border-bottom:1px solid #eee; font-size:13px; }
+th { background:#f0f3f7; text-align:left; }
 
-td:last-child { min-width:220px; }
+th:nth-child(1){width:18%;}
+th:nth-child(2){width:12%;}
+th:nth-child(3){width:12%;}
+th:nth-child(4){width:18%;}
+th:nth-child(5){width:10%;}
+th:nth-child(6){width:30%;}
 
 /* BADGE */
-.badge { padding:4px 8px; border-radius:5px; font-size:11px; color:#fff; display:inline-block; }
+.badge { padding:4px 8px; border-radius:5px; font-size:11px; color:#fff; }
 .pending { background:#fbc02d; color:#000; }
 .progress { background:#f57c00; }
 .submitted { background:#1976d2; }
@@ -62,13 +67,22 @@ td:last-child { min-width:220px; }
 .query { background:#e53935; }
 
 /* BUTTON */
-button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-size:12px; margin-right:4px;}
+button {
+  padding:5px 7px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:11px;
+  margin:2px;
+}
 .blue { background:#1976d2; color:#fff; }
 .greenBtn { background:#2e7d32; color:#fff; }
 .orangeBtn { background:#f57c00; color:#fff; }
 .gray { background:#ccc; cursor:not-allowed; }
 
 .locked { opacity:0.4; pointer-events:none; }
+
+.doc-icon { font-size:16px; }
 
 .timeline { background:#fff; padding:10px; margin-top:10px; border-radius:6px; font-size:12px; }
 
@@ -118,6 +132,7 @@ button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-s
 <th>Status</th>
 <th>Verification</th>
 <th>Action Pending At</th>
+<th>Docs</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -142,14 +157,14 @@ let roles=["Customer","Sales","Credit"];
 let stage=0;
 
 let tasks=[
- {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending"},
- {name:"Aadhaar", owner:"Customer", verifier:"Credit", status:"Pending"},
- {name:"Salary Slips", owner:"Customer", verifier:"Credit", status:"Pending"},
- {name:"Bank Statement", owner:"Customer", verifier:"Credit", status:"Pending"},
- {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending"},
- {name:"Property Docs", owner:"Sales", verifier:"Credit", status:"Pending"},
- {name:"Credit Assessment", owner:"Credit", verifier:"Credit", status:"Pending"},
- {name:"Final Approval", owner:"Credit", verifier:"Credit", status:"Pending"}
+ {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Aadhaar", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Salary Slips", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Bank Statement", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Property Docs", owner:"Sales", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Credit Assessment", owner:"Credit", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Final Approval", owner:"Credit", verifier:"Credit", status:"Pending", doc:false}
 ];
 
 let timeline=[];
@@ -165,12 +180,11 @@ function render(){
 
  let total=tasks.length;
  let done=tasks.filter(t=>t.status==="Verified").length;
- let percent=Math.round((done/total)*100);
-
  document.getElementById("completionBar").innerText=
- "Case Completion: "+percent+"% ("+done+"/"+total+")";
+ "Case Completion: "+Math.round((done/total)*100)+"% ("+done+"/"+total+")";
 
  let html="";
+
  tasks.forEach((t,i)=>{
 
  let pendingAt =
@@ -180,12 +194,15 @@ function render(){
 
  let locked = pendingAt!==role;
 
+ let icon = t.doc ? "📄" : "—";
+
  html+=`
  <tr class="${locked?'locked':''}">
   <td>${t.name}</td>
   <td><span class="badge ${t.status.toLowerCase()}">${t.status}</span></td>
   <td>${t.verifier}</td>
   <td>${pendingAt}</td>
+  <td class="doc-icon">${icon}</td>
   <td>${locked?'<button class="gray">Locked</button>':actions(i)}</td>
  </tr>`;
  });
@@ -197,81 +214,52 @@ function render(){
 }
 
 function actions(i){
+
  let t=tasks[i];
 
  if(t.owner==="Customer"){
-   if(t.status==="Pending") return `<button class="blue" onclick="start(${i})">Start</button><button class="orangeBtn" onclick="raiseQuery(${i})">Query</button>`;
-   if(t.status==="In Progress") return `<button class="greenBtn" onclick="submitTask(${i})">Submit</button>`;
+   if(t.status==="Pending") return `<button class="blue" onclick="upload(${i})">Upload</button>`;
    if(t.status==="Query") return `<button class="blue" onclick="reupload(${i})">Re-upload</button>`;
  }
 
  if(t.owner==="Sales"){
-   if(t.status==="Pending") return `<button class="blue" onclick="start(${i})">Receive</button>`;
-   if(t.status==="In Progress") return `<button class="greenBtn" onclick="submitTask(${i})">Submit to Credit</button>`;
+   if(t.status==="Pending") return `<button class="blue" onclick="receive(${i})">Receive</button>`;
+   if(t.status==="In Progress") return `<button class="greenBtn" onclick="submitTask(${i})">Submit</button>`;
  }
 
  if(t.owner==="Credit"){
-   if(t.status==="Submitted") return `<button class="greenBtn" onclick="verify(${i})">Verify</button><button class="orangeBtn" onclick="raiseQuery(${i})">Query</button>`;
+   if(t.status==="Submitted") return `
+     <button class="greenBtn" onclick="verify(${i})">Verify</button>
+     <button class="orangeBtn" onclick="raiseQuery(${i})">Send Back</button>`;
  }
 
  return "";
 }
 
 /* ACTIONS */
-function start(i){ tasks[i].status="In Progress"; log("Started "+tasks[i].name); render(); }
+function upload(i){ tasks[i].status="Submitted"; tasks[i].doc=true; log("Uploaded "+tasks[i].name); render(); }
+function reupload(i){ tasks[i].status="Submitted"; log("Re-upload "+tasks[i].name); render(); }
+function receive(i){ tasks[i].status="In Progress"; log("Sales received "+tasks[i].name); render(); }
 function submitTask(i){ tasks[i].status="Submitted"; log("Submitted "+tasks[i].name); render(); }
 function verify(i){ tasks[i].status="Verified"; log("Verified "+tasks[i].name); render(); }
 function raiseQuery(i){ tasks[i].status="Query"; log("Query "+tasks[i].name); render(); }
-function reupload(i){ tasks[i].status="Submitted"; log("Re-upload "+tasks[i].name); render(); }
-
-/* DEMO FIX */
-function clearBlocker(){
- let blocker = tasks.find(t=>t.status!=="Verified");
- if(blocker){ blocker.status="Verified"; log("Override "+blocker.name); }
- render();
-}
 
 function submit(){
-
  let role=roles[stage];
-
- let pending = tasks.filter(t =>
-   t.owner===role &&
-   !(t.status==="Submitted" || t.status==="Verified")
- );
-
- if(pending.length>0){
-  alert("Complete all tasks first");
-  return;
- }
-
- if(stage<roles.length-1){
-  stage++;
- }
-
+ let pending = tasks.filter(t => t.owner===role && !(t.status==="Submitted"||t.status==="Verified"));
+ if(pending.length>0){ alert("Complete all tasks"); return; }
+ if(stage<roles.length-1){ stage++; }
  render();
 }
 
 function renderInsights(role){
-
  let blocker = tasks.find(t=>t.status!=="Verified" && t.owner!==role);
-
- if(blocker){
-  document.getElementById("blocker").className="strip red";
-  document.getElementById("blocker").innerHTML=
-  `BLOCKER: ${blocker.name} pending with ${blocker.owner}
-   <br><button class="orangeBtn" onclick="clearBlocker()">⚡ Clear Blocker</button>`;
- } else {
-  document.getElementById("blocker").className="strip green";
-  document.getElementById("blocker").innerText="No blockers";
- }
+ document.getElementById("blocker").className=blocker?"strip red":"strip green";
+ document.getElementById("blocker").innerText=blocker?`BLOCKER: ${blocker.name}`:"No blockers";
 
  let next=tasks.find(t=>t.owner===role && t.status!=="Verified");
-
- if(next){
-  document.getElementById("nextAction").className="strip orange";
-  document.getElementById("nextAction").innerText="Next Action: "+next.name;
- }
+ document.getElementById("nextAction").className="strip orange";
+ document.getElementById("nextAction").innerText=next?"Next Action: "+next.name:"";
 }
 
 function log(msg){
