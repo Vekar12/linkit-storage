@@ -30,9 +30,14 @@ export default function UpdatePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // MUST be first — browsers drop the user-gesture flag after any other code
+    const previewWindow = window.open('', '_blank');
+
     const cleanSlug = slug.trim().toLowerCase();
-    if (!cleanSlug) { toast.error('Please enter the project slug.'); return; }
+    if (!cleanSlug) { previewWindow?.close(); toast.error('Please enter the project slug.'); return; }
     if (!/^[a-z0-9-]+$/.test(cleanSlug)) {
+      previewWindow?.close();
       toast.error('Slug can only contain lowercase letters, numbers, and hyphens.');
       return;
     }
@@ -40,11 +45,11 @@ export default function UpdatePage() {
     let uploadFile: File | null = file;
 
     if (uploadMode === 'html') {
-      if (!htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
+      if (!htmlCode.trim()) { previewWindow?.close(); toast.error('Paste some HTML code first.'); return; }
       const blob = new Blob([htmlCode], { type: 'text/html' });
       uploadFile = new File([blob], `${cleanSlug}.html`, { type: 'text/html' });
     } else {
-      if (!uploadFile) { toast.error('Please select a file to upload.'); return; }
+      if (!uploadFile) { previewWindow?.close(); toast.error('Please select a file to upload.'); return; }
       if (uploadFile.name.endsWith('.md')) {
         try {
           const text = await uploadFile.text();
@@ -52,15 +57,12 @@ export default function UpdatePage() {
           const blob = new Blob([html], { type: 'text/html' });
           uploadFile = new File([blob], uploadFile.name.replace('.md', '.html'), { type: 'text/html' });
         } catch {
+          previewWindow?.close();
           toast.error('Failed to parse Markdown. Please check your file.');
           return;
         }
       }
     }
-
-    // Open the tab immediately while still in user-gesture context.
-    // Browsers block window.open() called after await.
-    const previewWindow = window.open('', '_blank');
 
     setLoading(true);
     try {

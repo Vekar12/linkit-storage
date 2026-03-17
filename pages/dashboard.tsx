@@ -130,17 +130,26 @@ export default function Dashboard() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!projectName.trim()) { toast.error('Enter a project name.'); return; }
+
+    // MUST be first — browsers drop the user-gesture flag after any other code
+    const previewWindow = window.open('', '_blank');
+
+    // Validation (close the blank tab if we bail early)
+    if (!projectName.trim()) {
+      previewWindow?.close();
+      toast.error('Enter a project name.');
+      return;
+    }
 
     let uploadFile: File | null = file;
 
     if (uploadMode === 'html') {
-      if (!htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
+      if (!htmlCode.trim()) { previewWindow?.close(); toast.error('Paste some HTML code first.'); return; }
       const blob = new Blob([htmlCode], { type: 'text/html' });
       const safeName = projectName.trim().toLowerCase().replace(/\s+/g, '-');
       uploadFile = new File([blob], `${safeName}.html`, { type: 'text/html' });
     } else {
-      if (!uploadFile) { toast.error('Select a file.'); return; }
+      if (!uploadFile) { previewWindow?.close(); toast.error('Select a file.'); return; }
       if (uploadFile.name.endsWith('.md')) {
         try {
           const text = await uploadFile.text();
@@ -148,15 +157,12 @@ export default function Dashboard() {
           const blob = new Blob([html], { type: 'text/html' });
           uploadFile = new File([blob], uploadFile.name.replace('.md', '.html'), { type: 'text/html' });
         } catch {
+          previewWindow?.close();
           toast.error('Failed to parse Markdown. Please check your file and try again.');
           return;
         }
       }
     }
-
-    // Open the tab immediately while still in the user-gesture context.
-    // Browsers block window.open() called after await — this avoids that.
-    const previewWindow = window.open('', '_blank');
 
     setUploading(true);
     try {
