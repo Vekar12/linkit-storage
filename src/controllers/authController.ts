@@ -31,12 +31,14 @@ export async function githubCallback(
     const data = tokenResponse.data as Record<string, string>;
     const { access_token, error, error_description } = data;
 
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+
     if (error) {
-      res.redirect(`http://localhost:3001/auth/callback?error=${encodeURIComponent(error_description || error)}`);
+      res.redirect(`${frontendUrl}/auth/callback?error=${encodeURIComponent(error_description || error)}`);
       return;
     }
 
-    res.redirect(`http://localhost:3001/auth/callback?token=${access_token}`);
+    res.redirect(`${frontendUrl}/auth/callback?token=${access_token}`);
   } catch (err) {
     next(err);
   }
