@@ -81,3 +81,8 @@ export const setProjectVisibility = async (
 ): Promise<void> => {
   await api.patch(`/projects/${slug}`, { visibility });
 };
+
+export const getPublicProjects = async (): Promise<Project[]> => {
+  const { data } = await api.get<Project[]>('/projects/public');
+  return data;
+};

@@ -7,7 +7,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import ProjectCard from '@/components/ProjectCard';
 import FileDropzone from '@/components/FileDropzone';
 import RecentActivity from '@/components/ActivityPane';
-import { getProjects, createProject } from '@/services/api';
+import { getProjects, createProject, getPublicProjects } from '@/services/api';
 import { checkAuth } from '@/lib/auth';
 import { addHistory } from '@/lib/history';
 import { setVisibility, getVisibility, type Visibility } from '@/lib/visibility';
@@ -67,6 +67,8 @@ export default function Dashboard() {
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [publicProjects, setPublicProjects] = useState<Project[]>([]);
+  const [loadingPublic, setLoadingPublic] = useState(true);
 
   // Upload state
   const [uploadMode, setUploadMode] = useState<'file' | 'html'>('file');
@@ -84,6 +86,7 @@ export default function Dashboard() {
   useEffect(() => {
     const init = async () => {
       if (!checkAuth()) { router.replace('/login'); return; }
+      // Load own projects
       try {
         const data = await fetchWithCache();
         setProjects(data);
@@ -91,6 +94,15 @@ export default function Dashboard() {
         toast.error('Failed to load projects.');
       } finally {
         setLoadingProjects(false);
+      }
+      // Load all public projects from all users
+      try {
+        const pub = await getPublicProjects();
+        setPublicProjects(pub);
+      } catch {
+        // Endpoint not yet implemented — silently ignore
+      } finally {
+        setLoadingPublic(false);
       }
     };
     init();
@@ -160,8 +172,6 @@ export default function Dashboard() {
       toast.error('Could not copy.');
     }
   };
-
-  const publicProjects = projects.filter((p) => getVisibility(p.slug) === 'public');
 
   const filteredProjects = projects.filter((p) => {
     const matchesSearch =
@@ -271,23 +281,31 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* ── Public Projects section ── */}
-            {!loadingProjects && publicProjects.length > 0 && (
-              <div className="mt-10">
-                <div className="flex items-center gap-2 mb-4">
-                  <Globe size={15} className="text-green-400" />
-                  <h2 className="text-base font-bold text-dark-text">
-                    Public Projects
-                    <span className="ml-2 text-sm font-normal text-dark-muted">{publicProjects.length} shared</span>
-                  </h2>
-                </div>
-                <div
-                  className="rounded-2xl border border-green-900/30 p-4"
-                  style={{ backgroundColor: '#0f1f13' }}
-                >
-                  <p className="text-xs text-green-700 mb-4">
-                    These projects are marked public and will appear in the public directory when launched.
-                  </p>
+            {/* ── Public Projects section — visible to all users ── */}
+            <div className="mt-10">
+              <div className="flex items-center gap-2 mb-4">
+                <Globe size={15} className="text-green-400" />
+                <h2 className="text-base font-bold text-dark-text">
+                  Public Projects
+                  {!loadingPublic && (
+                    <span className="ml-2 text-sm font-normal text-dark-muted">
+                      {publicProjects.length} shared by all users
+                    </span>
+                  )}
+                </h2>
+              </div>
+              <div
+                className="rounded-2xl border border-green-900/30 p-4"
+                style={{ backgroundColor: '#0d1a0f' }}
+              >
+                <p className="text-xs text-green-800 mb-4">
+                  Projects marked as Public by any user are visible here to everyone.
+                </p>
+                {loadingPublic ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+                  </div>
+                ) : publicProjects.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {publicProjects.map((project) => (
                       <ProjectCard
@@ -296,13 +314,18 @@ export default function Dashboard() {
                         onDeleted={(slug) => {
                           invalidateCache();
                           setProjects((prev) => prev.filter((p) => p.slug !== slug));
+                          setPublicProjects((prev) => prev.filter((p) => p.slug !== slug));
                         }}
                       />
                     ))}
                   </div>
-                </div>
+                ) : (
+                  <p className="text-green-900 text-sm text-center py-6">
+                    No public projects yet. Set a project to Public to share it here.
+                  </p>
+                )}
               </div>
-            )}
+            </div>
           </div>
         )}
 
