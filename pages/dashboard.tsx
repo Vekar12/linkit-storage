@@ -99,8 +99,12 @@ export default function Dashboard() {
       try {
         const pub = await getPublicProjects();
         setPublicProjects(pub);
-      } catch {
-        // Endpoint not yet implemented — silently ignore
+      } catch (err: unknown) {
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status !== 404 && status !== 501) {
+          // Only log unexpected errors; 404/501 means endpoint not yet live
+          console.warn('GET /projects/public not available yet:', status);
+        }
       } finally {
         setLoadingPublic(false);
       }
@@ -134,17 +138,22 @@ export default function Dashboard() {
     try {
       const result = await createProject(projectName.trim(), uploadFile!, newVisibility);
       setVisibility(result.slug, newVisibility);
-      setShareLink(result.shareLink);
       toast.success('Link created!');
       addHistory({ type: 'created', projectName: projectName.trim(), slug: result.slug });
       invalidateCache();
       const data = await fetchWithCache();
       setProjects(data);
+      // Use the share link from the freshly fetched project (has correct ownerId format)
+      // Fallback to result.shareLink if not found
+      const newProject = data.find((p) => p.slug === result.slug);
+      const correctLink = newProject
+        ? (newProject.shareLink ?? `${window.location.origin}/p/${newProject.ownerId}/${newProject.slug}`)
+        : result.shareLink;
+      setShareLink(correctLink);
       setProjectName('');
       setFile(null);
       setHtmlCode('');
-      // Auto-open the new link
-      window.open(result.shareLink, '_blank');
+      window.open(correctLink, '_blank');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
       const status = axiosErr?.response?.status;
@@ -320,8 +329,9 @@ export default function Dashboard() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-green-900 text-sm text-center py-6">
-                    No public projects yet. Set a project to Public to share it here.
+                  <p className="text-sm text-center py-6" style={{ color: '#2d5a35' }}>
+                    No public projects yet — or the public directory is not live yet.
+                    Set any project to Public to have it appear here for all users.
                   </p>
                 )}
               </div>
