@@ -48,10 +48,23 @@ export default function VersionHistoryPage() {
 
   const versions = [...(metadata.versions ?? [])].reverse();
 
-  const handleDownloadPDF = (url: string) => {
-    const win = window.open(url, '_blank');
-    if (win) {
+  const handleDownloadPDF = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      const html = await res.text();
+      const win = window.open('', '_blank');
+      if (!win) { alert('Please allow popups to download as PDF.'); return; }
+      win.document.write(html);
+      win.document.close();
       win.focus();
+      setTimeout(() => win.print(), 800);
+    } catch {
+      // Fallback: open file URL directly and let user print manually
+      const win = window.open(url, '_blank');
+      if (win) {
+        win.focus();
+        alert('Press Ctrl+P (or Cmd+P) and choose "Save as PDF".');
+      }
     }
   };
 
@@ -158,9 +171,9 @@ export default function VersionHistoryPage() {
                       HTML
                     </a>
                     <button
-                      onClick={() => handleDownloadPDF(v.fileURL)}
+                      onClick={() => handleDownloadPDF(v.fileURL, v.filename)}
                       className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-dark-border text-dark-muted hover:border-dark-borderhover hover:text-dark-text transition-colors"
-                      title="Open in new tab to print as PDF"
+                      title="Download as PDF"
                     >
                       <FileText size={12} />
                       PDF
