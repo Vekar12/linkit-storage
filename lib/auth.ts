@@ -1,13 +1,20 @@
 const CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 /**
  * Redirects the browser to GitHub OAuth login.
- * GitHub redirects to backend /auth/callback, which then
- * redirects to the frontend /auth/callback?token=...
  */
 export const loginWithGitHub = (): void => {
   window.location.href =
     `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&scope=repo`;
+};
+
+/**
+ * Redirects the browser to Google OAuth login via backend.
+ */
+export const loginWithGoogle = (): void => {
+  window.location.href = `${API_URL}/auth/google`;
 };
 
 /**
