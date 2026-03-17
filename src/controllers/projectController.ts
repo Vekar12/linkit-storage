@@ -164,7 +164,7 @@ export async function deleteProject(
       return;
     }
 
-    if (metadata.ownerId !== req.user!.id) {
+    if (metadata.ownerId && metadata.ownerId !== req.user!.id) {
       res.status(403).json({ error: 'Forbidden: you do not own this project' });
       return;
     }
