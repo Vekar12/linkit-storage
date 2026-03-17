@@ -28,7 +28,8 @@ export async function githubCallback(
       }
     );
 
-    const { access_token, error, error_description } = tokenResponse.data;
+    const data = tokenResponse.data as Record<string, string>;
+    const { access_token, error, error_description } = data;
 
     if (error) {
       res.redirect(`http://localhost:3001/auth/callback?error=${encodeURIComponent(error_description || error)}`);
