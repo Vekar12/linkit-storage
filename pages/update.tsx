@@ -66,7 +66,7 @@ export default function UpdatePage() {
 
     setLoading(true);
     try {
-      await updateProject(cleanSlug, uploadFile!, ownerId || undefined);
+      await updateProject(cleanSlug, uploadFile!);
       addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
       setSuccess(true);
       toast.success('Project updated!');
