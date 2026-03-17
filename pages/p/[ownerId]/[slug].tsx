@@ -81,14 +81,11 @@ export default function PublicViewPage() {
         )}
 
         {isPPTX && (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-background gap-4">
-            <Download size={48} className="text-gray-300" />
-            <p className="text-gray-600 font-medium">PowerPoint Presentation — cannot be previewed in browser</p>
-            <a href={latestURL} download target="_blank" rel="noopener noreferrer" className="btn-primary flex items-center gap-2">
-              <Download size={16} />
-              Download PPTX
-            </a>
-          </div>
+          <iframe
+            src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(rawURL)}`}
+            title={slug as string}
+            className="w-full h-full border-0"
+          />
         )}
       </div>
 

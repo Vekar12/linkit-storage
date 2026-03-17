@@ -28,7 +28,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "connect-src 'self' https://linkit-backend-tuj9.onrender.com",
-              "frame-src 'self' https://storage.googleapis.com https:",  // allow file iframes
+              "frame-src 'self' https://view.officeapps.live.com https://storage.googleapis.com https:",  // allow file iframes + Office viewer
               "object-src 'none'",
               "base-uri 'self'",
             ].join('; '),
