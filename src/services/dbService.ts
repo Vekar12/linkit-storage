@@ -1,4 +1,4 @@
-import { ProjectMetadata } from '../types';
+import { ProjectMetadata, Visibility } from '../types';
 import { readJSON, writeJSON, listProjectSlugs, deleteFile } from './githubService';
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
@@ -36,7 +36,8 @@ export async function createProjectMetadata(
   filename: string,
   fileType: string,
   fileURL: string,
-  ownerId: string
+  ownerId: string,
+  visibility: Visibility = 'personal'
 ): Promise<ProjectMetadata> {
   const now = new Date().toISOString();
   const metadata: ProjectMetadata = {
@@ -45,6 +46,7 @@ export async function createProjectMetadata(
     fileType,
     currentFile: filename,
     ownerId,
+    visibility,
     createdAt: now,
     updatedAt: now,
     versions: [{ version: 1, filename, fileURL, uploadedAt: now }],

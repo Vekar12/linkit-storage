@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
+import { Visibility } from '../types';
 import { generateSlug } from '../utils/slugUtils';
 import {
   createProjectMetadata,
@@ -51,6 +52,10 @@ export async function createProject(
       return;
     }
 
+    const rawVisibility = req.body.visibility;
+    const visibility: Visibility =
+      rawVisibility === 'public' ? 'public' : 'personal';
+
     const ext = path.extname(file.originalname).toLowerCase() || '.html';
     const filename = `${slug}${ext}`;
     const filePath = `projects/${slug}/${filename}`;
@@ -60,7 +65,7 @@ export async function createProject(
     await uploadFile(filePath, file.buffer, `feat: create project ${slug}`);
     const metadata = await createProjectMetadata(
       projectName, slug, filename,
-      ext.replace('.', ''), fileURL, ownerId
+      ext.replace('.', ''), fileURL, ownerId, visibility
     );
 
     res.status(201).json({
@@ -191,6 +196,39 @@ export async function getProjectMetadata(
       fileURL: buildPagesUrl(slug, metadata.currentFile),
       versions: metadata.versions,
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// PATCH /projects/:slug/visibility
+export async function updateVisibility(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { slug } = req.params;
+    const { visibility } = req.body;
+
+    if (visibility !== 'personal' && visibility !== 'public') {
+      res.status(400).json({ error: 'visibility must be "personal" or "public"' });
+      return;
+    }
+
+    const metadata = await getProjectBySlug(slug);
+    if (!metadata) {
+      res.status(404).json({ error: 'Project not found' });
+      return;
+    }
+
+    if (metadata.ownerId !== req.user!.id) {
+      res.status(403).json({ error: 'Forbidden: you do not own this project' });
+      return;
+    }
+
+    const updated = await updateProjectMetadata(slug, { visibility });
+    res.status(200).json({ slug, visibility: updated?.visibility });
   } catch (err) {
     next(err);
   }

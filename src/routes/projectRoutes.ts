@@ -5,6 +5,7 @@ import {
   getProjects,
   getProjectMetadata,
   deleteProject,
+  updateVisibility,
 } from '../controllers/projectController';
 import { upload } from '../middleware/upload';
 import { requireAuth } from '../middleware/auth';
@@ -26,6 +27,7 @@ router.get('/', requireAuth, getProjectsLimiter, getProjects);
 router.post('/', requireAuth, uploadLimiter, upload.single('file'), createProject);
 router.put('/:slug', requireAuth, uploadLimiter, validateSlug, upload.single('file'), updateProject);
 router.get('/:slug/metadata', validateSlug, getProjectMetadata);
+router.patch('/:slug/visibility', requireAuth, validateSlug, updateVisibility);
 router.delete('/:slug', requireAuth, validateSlug, deleteProject);
 
 export default router;
