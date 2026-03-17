@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
+import { upsertUserRecord } from '../services/userService';
 
 const FRONTEND_URL = () => process.env.FRONTEND_URL || 'http://localhost:3001';
 const BACKEND_URL = () => process.env.BACKEND_URL || 'https://linkit-backend-tuj9.onrender.com';
@@ -56,6 +57,14 @@ export async function githubCallback(
       },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
+    );
+
+    // Fire-and-forget — never block the redirect
+    upsertUserRecord(
+      String(ghUser.id), 'github',
+      ghUser.name ?? ghUser.login,
+      ghUser.email ?? undefined,
+      ghUser.avatar_url
     );
 
     res.redirect(`${FRONTEND_URL()}/auth/callback?token=${appToken}`);
@@ -125,6 +134,9 @@ export async function googleCallback(
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
+
+    // Fire-and-forget — never block the redirect
+    upsertUserRecord(sub, 'google', name, email, picture);
 
     res.redirect(`${FRONTEND_URL()}/auth/callback?token=${appToken}`);
   } catch (err) {
