@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>iLens Disbursement System</title>
+
+<style>
+body {
+  margin:0;
+  font-family: "Segoe UI", Arial;
+  background:#f4f6f9;
+}
+
+/* TOP NAV */
+.topbar {
+  background:#a3211f;
+  color:#fff;
+  padding:10px 20px;
+  display:flex;
+  justify-content:space-between;
+}
+
+/* SUB NAV */
+.subnav {
+  background:#c0392b;
+  color:white;
+  padding:8px 20px;
+  font-size:14px;
+}
+
+/* LAYOUT */
+.container {
+  display:flex;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width:220px;
+  background:#fff;
+  border-right:1px solid #ddd;
+}
+
+.sidebar div {
+  padding:12px 15px;
+  cursor:pointer;
+}
+
+.sidebar .active {
+  background:#1f3a5f;
+  color:white;
+}
+
+/* MAIN */
+.main {
+  flex:1;
+  padding:15px;
+}
+
+/* HEADER */
+.header {
+  background:#fff;
+  padding:12px;
+  border-radius:6px;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+}
+
+/* PROGRESS */
+.progress {
+  background:#fff;
+  padding:15px;
+  border-radius:6px;
+}
+
+.bar {
+  height:14px;
+  background:#ddd;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:8px;
+}
+
+.fill {
+  height:100%;
+  background:#2e7d32;
+}
+
+/* CARDS */
+.cards {
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.card {
+  flex:1;
+  background:#fff;
+  padding:15px;
+  text-align:center;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.card:hover { background:#eef4ff; }
+
+.count {
+  background:#ff6f00;
+  color:white;
+  border-radius:50%;
+  width:50px;
+  height:50px;
+  line-height:50px;
+  margin:auto;
+}
+
+/* PANEL */
+.panel {
+  margin-top:10px;
+  background:#fff;
+  border-radius:6px;
+  display:none;
+}
+
+.panel-header {
+  background:#1f3a5f;
+  color:white;
+  padding:10px;
+}
+
+/* TABLE */
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  padding:10px;
+  border-bottom:1px solid #eee;
+}
+
+th { background:#f0f3f7; }
+
+/* BADGES */
+.badge {
+  padding:5px 8px;
+  border-radius:5px;
+  color:white;
+  font-size:12px;
+}
+
+.pending { background:#e53935; }
+.received { background:#2e7d32; }
+.query { background:#f57c00; }
+.verified { background:#2e7d32; }
+
+/* BUTTONS */
+button {
+  padding:5px 10px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.blue { background:#1976d2; color:white; }
+.green { background:#2e7d32; color:white; }
+.orange { background:#f57c00; color:white; }
+
+.footer {
+  padding:10px;
+  text-align:right;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div>iLens Mortgage</div>
+  <div>Maharshi Divekar</div>
+</div>
+
+<div class="subnav">Disbursement Module</div>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="active" onclick="showScreen('summary')">Disbursement Summary</div>
+  <div onclick="showScreen('dashboard')">Application Dashboard</div>
+  <div onclick="showScreen('sales')">Sales Workspace</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- HEADER -->
+<div class="header">
+  <div><b>NARENDRA VERMA</b> | ₹17L</div>
+  <div>In Progress</div>
+</div>
+
+<!-- SUMMARY -->
+<div id="summary">
+
+<div class="progress">
+  Overall Progress
+  <div class="bar">
+    <div class="fill" id="progressFill"></div>
+  </div>
+</div>
+
+<div class="cards" id="cards"></div>
+
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none">
+  <div class="cards" id="dashboardCards"></div>
+  <div class="panel" id="panel">
+    <div class="panel-header" id="panelTitle"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="taskTable"></tbody>
+    </table>
+    <div class="footer">
+      <button class="green" onclick="submitTasks()">Submit Completed</button>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+
+/* GLOBAL STATE */
+let tasks = [
+ {name:"Agreement to Sale", role:"sales", status:"pending"},
+ {name:"Property Tax Receipt", role:"sales", status:"received"},
+ {name:"Builder NOC", role:"sales", status:"query"},
+ {name:"Salary Slips", role:"credit", status:"verified"},
+ {name:"PAN Upload", role:"customer", status:"pending"}
+];
+
+let currentRole = "sales";
+
+/* SCREEN SWITCH */
+function showScreen(screen){
+  document.getElementById("summary").style.display="none";
+  document.getElementById("dashboard").style.display="none";
+
+  document.getElementById(screen).style.display="block";
+  renderAll();
+}
+
+/* RENDER */
+function renderAll(){
+  renderCards();
+  renderDashboardCards();
+  renderTasks();
+  updateProgress();
+}
+
+/* CARDS */
+function renderCards(){
+  const roles = ["customer","sales","credit","rcu"];
+  let html="";
+
+  roles.forEach(r=>{
+    const count = tasks.filter(t=>t.role===r && t.status!=="verified").length;
+    html += `<div class="card">${r}<div class="count">${count}</div></div>`;
+  });
+
+  document.getElementById("cards").innerHTML = html;
+}
+
+function renderDashboardCards(){
+  const roles = ["sales","customer","credit","rcu"];
+  let html="";
+
+  roles.forEach(r=>{
+    const count = tasks.filter(t=>t.role===r && t.status!=="verified").length;
+    html += `<div class="card" onclick="openPanel('${r}')">${r}<div class="count">${count}</div></div>`;
+  });
+
+  document.getElementById("dashboardCards").innerHTML = html;
+}
+
+/* PANEL */
+function openPanel(role){
+  currentRole = role;
+  document.getElementById("panel").style.display="block";
+  document.getElementById("panelTitle").innerText = role.toUpperCase()+" TASKS";
+  renderTasks();
+}
+
+function renderTasks(){
+  const table = document.getElementById("taskTable");
+  table.innerHTML="";
+
+  tasks.filter(t=>t.role===currentRole).forEach((t,i)=>{
+    table.innerHTML += `
+      <tr>
+        <td>${t.name}</td>
+        <td><span class="badge ${t.status}">${t.status}</span></td>
+        <td>
+          <button class="blue" onclick="update(${i},'received')">Mark Received</button>
+          <button class="green" onclick="update(${i},'verified')">Verify</button>
+          <button class="orange" onclick="update(${i},'query')">Raise Query</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+/* ACTION */
+function update(index,status){
+  const filtered = tasks.filter(t=>t.role===currentRole);
+  const task = filtered[index];
+  task.status = status;
+  renderAll();
+}
+
+/* PROGRESS */
+function updateProgress(){
+  const total = tasks.length;
+  const done = tasks.filter(t=>t.status==="verified").length;
+  const percent = Math.round((done/total)*100);
+  document.getElementById("progressFill").style.width = percent+"%";
+}
+
+/* SUBMIT */
+function submitTasks(){
+  alert("Submitted successfully (simulation)");
+}
+
+renderAll();
+
+</script>
+
+</body>
+</html>
