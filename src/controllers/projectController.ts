@@ -183,9 +183,10 @@ export async function getProjectMetadata(
       return;
     }
 
+    const cb = new Date(metadata.updatedAt).getTime();
     res.status(200).json({
       fileType: metadata.fileType,
-      fileURL: buildPagesUrl(ownerId, slug, metadata.currentFile),
+      fileURL: `${buildPagesUrl(ownerId, slug, metadata.currentFile)}?_cb=${cb}`,
       versions: metadata.versions,
     });
   } catch (err) {
