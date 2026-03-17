@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>iLens Disbursement Dashboard</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #f4f6f9;
+}
+
+/* TOP BAR */
+.topbar {
+  background: #a3211f;
+  color: white;
+  padding: 12px 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* HEADER */
+.header {
+  background: white;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+}
+
+.status {
+  color: orange;
+  font-weight: bold;
+}
+
+/* PROGRESS */
+.progress-box {
+  background: white;
+  margin: 15px;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.progress-bar {
+  height: 16px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 65%;
+  background: #2e7d32;
+}
+
+/* CARDS */
+.cards {
+  display: flex;
+  gap: 15px;
+  margin: 15px;
+}
+
+.card {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+}
+
+.card:hover {
+  background: #eef4ff;
+}
+
+.circle {
+  width: 60px;
+  height: 60px;
+  background: orange;
+  color: white;
+  border-radius: 50%;
+  line-height: 60px;
+  margin: auto;
+  font-size: 20px;
+}
+
+/* TASK PANEL */
+.panel {
+  margin: 15px;
+  background: white;
+  border-radius: 6px;
+  display: none;
+}
+
+.panel-header {
+  background: #1f3a5f;
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+}
+
+/* FILTER BUTTONS */
+.filters {
+  padding: 10px;
+}
+
+.filter-btn {
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  margin-right: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filter-btn.active {
+  background: #ff6f00;
+  color: white;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background: #f0f3f7;
+}
+
+/* STATUS */
+.badge {
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  font-size: 12px;
+}
+
+.pending { background: #e53935; }
+.received { background: #2e7d32; }
+.query { background: #f57c00; }
+.verified { background: #2e7d32; }
+
+/* BUTTONS */
+button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.blue { background: #1976d2; color: white; }
+.green { background: #2e7d32; color: white; }
+.orange { background: #f57c00; color: white; }
+
+.footer {
+  text-align: right;
+  padding: 15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="topbar">iLens Mortgage</div>
+
+<div class="header">
+  <div><b>NARENDRA VERMA</b> | ₹17L | Home Loan</div>
+  <div class="status">In Progress</div>
+</div>
+
+<div class="progress-box">
+  Overall Disbursement Progress
+  <div class="progress-bar">
+    <div class="progress-fill"></div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card" onclick="openPanel('sales')">
+    Sales
+    <div class="circle">11</div>
+  </div>
+
+  <div class="card" onclick="openPanel('customer')">
+    Customer
+    <div class="circle">6</div>
+  </div>
+
+  <div class="card" onclick="openPanel('credit')">
+    Credit
+    <div class="circle">2</div>
+  </div>
+
+  <div class="card" onclick="openPanel('rcu')">
+    RCU
+    <div class="circle">5</div>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div class="panel" id="panel">
+  <div class="panel-header" id="panelTitle">Sales Tasks</div>
+
+  <div class="filters">
+    <span class="filter-btn active">Documents</span>
+    <span class="filter-btn">Verifications</span>
+    <span class="filter-btn">Queries</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody id="taskTable"></tbody>
+  </table>
+
+  <div class="footer">
+    <button class="green">Submit Completed</button>
+  </div>
+</div>
+
+<script>
+
+const tasks = [
+  {name:"Agreement to Sale", status:"pending"},
+  {name:"Property Tax Receipt", status:"received"},
+  {name:"Builder NOC", status:"query"},
+  {name:"Salary Slips", status:"verified"}
+];
+
+function openPanel(role){
+  document.getElementById("panel").style.display = "block";
+  document.getElementById("panelTitle").innerText = role.toUpperCase() + " TASKS";
+
+  renderTasks();
+}
+
+function renderTasks(){
+  const table = document.getElementById("taskTable");
+  table.innerHTML = "";
+
+  tasks.forEach((t, i) => {
+    table.innerHTML += `
+      <tr>
+        <td>${t.name}</td>
+        <td><span class="badge ${t.status}">${t.status}</span></td>
+        <td>
+          <button class="blue" onclick="markReceived(${i})">Mark Received</button>
+          <button class="green" onclick="verify(${i})">Verify</button>
+          <button class="orange" onclick="raiseQuery(${i})">Raise Query</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function markReceived(i){
+  tasks[i].status = "received";
+  renderTasks();
+}
+
+function verify(i){
+  tasks[i].status = "verified";
+  renderTasks();
+}
+
+function raiseQuery(i){
+  tasks[i].status = "query";
+  renderTasks();
+}
+
+</script>
+
+</body>
+</html>
