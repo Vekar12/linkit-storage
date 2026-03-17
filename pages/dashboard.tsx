@@ -135,9 +135,14 @@ export default function Dashboard() {
       window.open(`${window.location.origin}/p/${result.slug}`, '_blank');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
-      const msg = axiosErr?.response?.data?.error
-        ?? axiosErr?.response?.data?.message
-        ?? `Upload failed (${axiosErr?.response?.status ?? 'no response'})`;
+      const status = axiosErr?.response?.status;
+      const msg = status === 409
+        ? 'A project with this name already exists. Please choose a different name.'
+        : status === 403
+        ? 'You do not have permission to create this project.'
+        : axiosErr?.response?.data?.error
+          ?? axiosErr?.response?.data?.message
+          ?? `Upload failed (${status ?? 'no response'})`;
       console.error('Upload error:', axiosErr?.response);
       toast.error(msg);
     } finally {

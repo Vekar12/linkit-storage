@@ -58,6 +58,8 @@ export default function UpdatePage() {
       const status = (err as { response?: { status?: number } })?.response?.status;
       const msg = status === 404
         ? 'No project found with that slug.'
+        : status === 403
+        ? 'You do not have permission to update this project.'
         : ((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Update failed. Please try again.');
       toast.error(msg);
     } finally {
