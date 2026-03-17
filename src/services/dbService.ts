@@ -1,4 +1,4 @@
-import { ProjectMetadata, VersionEntry } from '../types';
+import { ProjectMetadata } from '../types';
 import { readJSON, writeJSON, listProjectSlugs, deleteFile } from './githubService';
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
@@ -19,6 +19,14 @@ function setCached(key: string, data: unknown): void {
 function bust(...keys: string[]): void {
   keys.forEach((k) => cache.delete(k));
 }
+
+// Purge stale cache entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of cache) {
+    if (now > val.expiresAt) cache.delete(key);
+  }
+}, 5 * 60_000);
 
 // ─── Projects ─────────────────────────────────────────────────────────────────
 

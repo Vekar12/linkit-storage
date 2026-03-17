@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import axios from 'axios';
 import jwt from 'jsonwebtoken';
 
 declare global {
@@ -10,48 +9,49 @@ declare global {
   }
 }
 
-// Cache verified tokens for 5 minutes to avoid repeated API calls
+// Cache verified tokens for 5 minutes
 const tokenCache = new Map<string, { user: { id: string; provider: 'github' | 'google' }; expiresAt: number }>();
 
-async function verifyToken(
+// Purge expired entries every 10 minutes to prevent unbounded growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of tokenCache) {
+    if (now > val.expiresAt) tokenCache.delete(key);
+  }
+}, 10 * 60_000);
+
+function verifyToken(
   token: string
-): Promise<{ id: string; provider: 'github' | 'google' } | null> {
+): { id: string; provider: 'github' | 'google' } | null {
   const cached = tokenCache.get(token);
   if (cached && Date.now() < cached.expiresAt) return cached.user;
 
-  // Try Google JWT first (fast, no network call)
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { sub: string };
-    const user = { id: decoded.sub, provider: 'google' as const };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      sub: string;
+      provider: 'github' | 'google';
+    };
+    if (!decoded.sub || !decoded.provider) return null;
+    const user = { id: decoded.sub, provider: decoded.provider };
     tokenCache.set(token, { user, expiresAt: Date.now() + 5 * 60_000 });
     return user;
-  } catch {}
-
-  // Try GitHub access token
-  try {
-    const { data } = await axios.get('https://api.github.com/user', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const user = { id: String(data.id), provider: 'github' as const };
-    tokenCache.set(token, { user, expiresAt: Date.now() + 5 * 60_000 });
-    return user;
-  } catch {}
-
-  return null;
+  } catch {
+    return null;
+  }
 }
 
-export async function requireAuth(
+export function requireAuth(
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> {
+): void {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
   const token = authHeader.slice(7);
-  const user = await verifyToken(token);
+  const user = verifyToken(token);
   if (!user) {
     res.status(401).json({ error: 'Invalid or expired token' });
     return;

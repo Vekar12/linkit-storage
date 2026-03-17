@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { MulterError } from 'multer';
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 export function errorHandler(
   err: Error,
   _req: Request,
@@ -12,11 +14,16 @@ export function errorHandler(
     return;
   }
 
-  if (err.message?.startsWith('Unsupported file type')) {
+  if (err.message === 'Only HTML, Markdown, PDF, and PPTX files are allowed') {
     res.status(400).json({ error: err.message });
     return;
   }
 
   console.error(err);
-  res.status(500).json({ error: 'Internal server error', details: err.message });
+
+  // Never expose internal error details in production
+  res.status(500).json({
+    error: 'Internal server error',
+    ...(isDev && { details: err.message }),
+  });
 }

@@ -24,7 +24,7 @@ const router = Router();
 
 router.get('/', requireAuth, getProjectsLimiter, getProjects);
 router.post('/', requireAuth, uploadLimiter, upload.single('file'), createProject);
-router.put('/:slug', requireAuth, validateSlug, upload.single('file'), updateProject);
+router.put('/:slug', requireAuth, uploadLimiter, validateSlug, upload.single('file'), updateProject);
 router.get('/:slug/metadata', validateSlug, getProjectMetadata);
 router.delete('/:slug', requireAuth, validateSlug, deleteProject);
 

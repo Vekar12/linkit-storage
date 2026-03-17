@@ -21,6 +21,7 @@ export async function githubCallback(
       return;
     }
 
+    // Exchange code for GitHub access token
     const tokenResponse = await axios.post(
       'https://github.com/login/oauth/access_token',
       {
@@ -39,7 +40,25 @@ export async function githubCallback(
       return;
     }
 
-    res.redirect(`${FRONTEND_URL()}/auth/callback?token=${access_token}`);
+    // Fetch GitHub user info and wrap in a signed app JWT
+    // This avoids exposing raw GitHub tokens to the frontend
+    const { data: ghUser } = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+
+    const appToken = jwt.sign(
+      {
+        sub: String(ghUser.id),
+        login: ghUser.login,
+        name: ghUser.name,
+        avatar_url: ghUser.avatar_url,
+        provider: 'github',
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: '7d' }
+    );
+
+    res.redirect(`${FRONTEND_URL()}/auth/callback?token=${appToken}`);
   } catch (err) {
     next(err);
   }
@@ -101,7 +120,6 @@ export async function googleCallback(
 
     const { sub, email, name, picture } = userResponse.data as Record<string, string>;
 
-    // Generate signed app token with user info
     const appToken = jwt.sign(
       { sub, email, name, picture, provider: 'google' },
       process.env.JWT_SECRET!,

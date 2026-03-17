@@ -1,7 +1,10 @@
 import { Octokit } from '@octokit/rest';
 
-function getClient() {
-  return new Octokit({ auth: process.env.GITHUB_TOKEN });
+// Singleton — one client for the lifetime of the process
+let _client: Octokit | null = null;
+function getClient(): Octokit {
+  if (!_client) _client = new Octokit({ auth: process.env.GITHUB_TOKEN });
+  return _client;
 }
 
 function getRepo() {
@@ -27,9 +30,10 @@ async function getFileSHA(path: string): Promise<string | undefined> {
 export async function uploadFile(
   path: string,
   content: Buffer,
-  message: string
+  message: string,
+  knownSha?: string
 ): Promise<void> {
-  const sha = await getFileSHA(path);
+  const sha = knownSha ?? await getFileSHA(path);
   await getClient().repos.createOrUpdateFileContents({
     ...getRepo(),
     path,
@@ -45,11 +49,17 @@ export async function deleteFile(path: string, message: string): Promise<void> {
   await getClient().repos.deleteFile({ ...getRepo(), path, message, sha });
 }
 
-export async function getFileContentBase64(path: string): Promise<string | null> {
+// Returns both content and SHA to avoid a redundant getFileSHA call on update
+export async function getFileWithSHA(
+  path: string
+): Promise<{ content: string; sha: string } | null> {
   try {
     const { data } = await getClient().repos.getContent({ ...getRepo(), path });
-    if (!Array.isArray(data) && 'content' in data) {
-      return data.content.replace(/\n/g, '');
+    if (!Array.isArray(data) && 'content' in data && 'sha' in data) {
+      return {
+        content: data.content.replace(/[\r\n]/g, ''),
+        sha: data.sha,
+      };
     }
     return null;
   } catch {
@@ -91,23 +101,19 @@ export async function listProjectSlugs(): Promise<string[]> {
 
 export async function deleteProjectFolder(slug: string): Promise<void> {
   async function deleteAll(dirPath: string): Promise<void> {
-    try {
-      const { data } = await getClient().repos.getContent({ ...getRepo(), path: dirPath });
-      if (!Array.isArray(data)) return;
-      for (const item of data) {
-        if (item.type === 'dir') {
-          await deleteAll(item.path);
-        } else {
-          await getClient().repos.deleteFile({
-            ...getRepo(),
-            path: item.path,
-            message: `chore: delete project ${slug}`,
-            sha: item.sha,
-          });
-        }
+    const { data } = await getClient().repos.getContent({ ...getRepo(), path: dirPath });
+    if (!Array.isArray(data)) return;
+    for (const item of data) {
+      if (item.type === 'dir') {
+        await deleteAll(item.path);
+      } else {
+        await getClient().repos.deleteFile({
+          ...getRepo(),
+          path: item.path,
+          message: `chore: delete project ${slug}`,
+          sha: item.sha,
+        });
       }
-    } catch {
-      return;
     }
   }
   await deleteAll(`projects/${slug}`);
