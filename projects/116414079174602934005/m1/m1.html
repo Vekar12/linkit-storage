@@ -31,7 +31,7 @@ body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
   font-weight:600;
 }
 
-/* COMPLETION */
+/* STRIPS */
 .strip { margin-top:10px; padding:10px; border-radius:6px; }
 .green { background:#e8f5e9; color:#2e7d32; }
 .red { background:#fdecea; color:#c62828; }
@@ -48,11 +48,13 @@ body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 .panel-header { background:#1f3a5f; color:#fff; padding:10px; }
 
 table { width:100%; border-collapse:collapse; }
-th,td { padding:10px; border-bottom:1px solid #eee; font-size:13px; }
+th,td { padding:10px; border-bottom:1px solid #eee; font-size:13px; text-align:left; }
 th { background:#f0f3f7; }
 
+td:last-child { min-width:220px; }
+
 /* BADGE */
-.badge { padding:4px 8px; border-radius:5px; font-size:11px; color:#fff; }
+.badge { padding:4px 8px; border-radius:5px; font-size:11px; color:#fff; display:inline-block; }
 .pending { background:#fbc02d; color:#000; }
 .progress { background:#f57c00; }
 .submitted { background:#1976d2; }
@@ -60,7 +62,7 @@ th { background:#f0f3f7; }
 .query { background:#e53935; }
 
 /* BUTTON */
-button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-size:12px; }
+button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-size:12px; margin-right:4px;}
 .blue { background:#1976d2; color:#fff; }
 .greenBtn { background:#2e7d32; color:#fff; }
 .orangeBtn { background:#f57c00; color:#fff; }
@@ -77,7 +79,7 @@ button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-s
 
 <div class="topbar">
   <div>iLens Mortgage</div>
-  <div>Demo</div>
+  <div>Demo Mode</div>
 </div>
 
 <div class="subbar">Disbursement OS</div>
@@ -141,7 +143,13 @@ let stage=0;
 
 let tasks=[
  {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending"},
- {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending"}
+ {name:"Aadhaar", owner:"Customer", verifier:"Credit", status:"Pending"},
+ {name:"Salary Slips", owner:"Customer", verifier:"Credit", status:"Pending"},
+ {name:"Bank Statement", owner:"Customer", verifier:"Credit", status:"Pending"},
+ {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending"},
+ {name:"Property Docs", owner:"Sales", verifier:"Credit", status:"Pending"},
+ {name:"Credit Assessment", owner:"Credit", verifier:"Credit", status:"Pending"},
+ {name:"Final Approval", owner:"Credit", verifier:"Credit", status:"Pending"}
 ];
 
 let timeline=[];
@@ -151,12 +159,10 @@ function render(){
  let role=roles[stage];
  document.getElementById("roleBanner").innerText="Logged in as: "+role;
 
- /* TRACKER */
  let t="";
  roles.forEach((r,i)=> t+=`<div class="stage ${i<=stage?'active':''}">${r}</div>`);
  document.getElementById("tracker").innerHTML=t;
 
- /* COMPLETION */
  let total=tasks.length;
  let done=tasks.filter(t=>t.status==="Verified").length;
  let percent=Math.round((done/total)*100);
@@ -164,7 +170,6 @@ function render(){
  document.getElementById("completionBar").innerText=
  "Case Completion: "+percent+"% ("+done+"/"+total+")";
 
- /* TABLE */
  let html="";
  tasks.forEach((t,i)=>{
 
@@ -191,43 +196,41 @@ function render(){
  renderTimeline();
 }
 
-/* ACTION ENGINE */
 function actions(i){
  let t=tasks[i];
 
- if(t.status==="Pending") return `<button class="blue" onclick="start(${i})">Start</button>`;
- if(t.status==="In Progress") return `<button class="greenBtn" onclick="submitTask(${i})">Submit</button>`;
- if(t.status==="Submitted") return `<button class="greenBtn" onclick="verify(${i})">Verify</button>`;
- if(t.status==="Query") return `<button class="blue" onclick="reupload(${i})">Re-upload</button>`;
+ if(t.owner==="Customer"){
+   if(t.status==="Pending") return `<button class="blue" onclick="start(${i})">Start</button><button class="orangeBtn" onclick="raiseQuery(${i})">Query</button>`;
+   if(t.status==="In Progress") return `<button class="greenBtn" onclick="submitTask(${i})">Submit</button>`;
+   if(t.status==="Query") return `<button class="blue" onclick="reupload(${i})">Re-upload</button>`;
+ }
+
+ if(t.owner==="Sales"){
+   if(t.status==="Pending") return `<button class="blue" onclick="start(${i})">Receive</button>`;
+   if(t.status==="In Progress") return `<button class="greenBtn" onclick="submitTask(${i})">Submit to Credit</button>`;
+ }
+
+ if(t.owner==="Credit"){
+   if(t.status==="Submitted") return `<button class="greenBtn" onclick="verify(${i})">Verify</button><button class="orangeBtn" onclick="raiseQuery(${i})">Query</button>`;
+ }
+
  return "";
 }
 
 /* ACTIONS */
-function start(i){
- tasks[i].status="In Progress";
- log("Started "+tasks[i].name);
+function start(i){ tasks[i].status="In Progress"; log("Started "+tasks[i].name); render(); }
+function submitTask(i){ tasks[i].status="Submitted"; log("Submitted "+tasks[i].name); render(); }
+function verify(i){ tasks[i].status="Verified"; log("Verified "+tasks[i].name); render(); }
+function raiseQuery(i){ tasks[i].status="Query"; log("Query "+tasks[i].name); render(); }
+function reupload(i){ tasks[i].status="Submitted"; log("Re-upload "+tasks[i].name); render(); }
+
+/* DEMO FIX */
+function clearBlocker(){
+ let blocker = tasks.find(t=>t.status!=="Verified");
+ if(blocker){ blocker.status="Verified"; log("Override "+blocker.name); }
  render();
 }
 
-function submitTask(i){
- tasks[i].status="Submitted";
- log("Submitted "+tasks[i].name+" to "+tasks[i].verifier);
- render();
-}
-
-function verify(i){
- tasks[i].status="Verified";
- log("Verified "+tasks[i].name);
- render();
-}
-
-function reupload(i){
- tasks[i].status="Submitted";
- log("Re-uploaded "+tasks[i].name);
- render();
-}
-
-/* SUBMIT FLOW */
 function submit(){
 
  let role=roles[stage];
@@ -244,20 +247,20 @@ function submit(){
 
  if(stage<roles.length-1){
   stage++;
-  alert("Moved to "+roles[stage]);
  }
 
  render();
 }
 
-/* INSIGHTS */
 function renderInsights(role){
 
  let blocker = tasks.find(t=>t.status!=="Verified" && t.owner!==role);
 
  if(blocker){
   document.getElementById("blocker").className="strip red";
-  document.getElementById("blocker").innerText="BLOCKER: "+blocker.name+" pending with "+blocker.owner;
+  document.getElementById("blocker").innerHTML=
+  `BLOCKER: ${blocker.name} pending with ${blocker.owner}
+   <br><button class="orangeBtn" onclick="clearBlocker()">⚡ Clear Blocker</button>`;
  } else {
   document.getElementById("blocker").className="strip green";
   document.getElementById("blocker").innerText="No blockers";
@@ -271,7 +274,6 @@ function renderInsights(role){
  }
 }
 
-/* TIMELINE */
 function log(msg){
  timeline.unshift(new Date().toLocaleTimeString()+" | "+msg);
 }
