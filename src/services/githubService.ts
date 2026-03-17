@@ -11,8 +11,8 @@ function getRepo() {
   };
 }
 
-export function buildRawUrl(path: string): string {
-  return `https://raw.githubusercontent.com/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}/main/${path}`;
+export function buildPagesUrl(slug: string, filename: string): string {
+  return `https://${process.env.GITHUB_OWNER}.github.io/${process.env.GITHUB_REPO}/projects/${slug}/${filename}`;
 }
 
 async function getFileSHA(path: string): Promise<string | undefined> {
@@ -45,16 +45,17 @@ export async function deleteFile(path: string, message: string): Promise<void> {
   await getClient().repos.deleteFile({ ...getRepo(), path, message, sha });
 }
 
-export async function deleteFilesFromGitHub(
-  paths: string[],
-  projectId: string
-): Promise<void> {
-  await Promise.allSettled(
-    paths.map((p) => deleteFile(p, `chore: delete file from project ${projectId}`))
-  );
+export async function getFileContentBase64(path: string): Promise<string | null> {
+  try {
+    const { data } = await getClient().repos.getContent({ ...getRepo(), path });
+    if (!Array.isArray(data) && 'content' in data) {
+      return data.content.replace(/\n/g, '');
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
-
-// ─── JSON helpers ─────────────────────────────────────────────────────────────
 
 export async function readJSON<T>(path: string): Promise<T | null> {
   try {
@@ -76,7 +77,7 @@ export async function writeJSON(
   await uploadFile(path, Buffer.from(JSON.stringify(data, null, 2)), message);
 }
 
-export async function listProjectIds(): Promise<string[]> {
+export async function listProjectSlugs(): Promise<string[]> {
   try {
     const { data } = await getClient().repos.getContent({ ...getRepo(), path: 'projects' });
     if (Array.isArray(data)) {
@@ -86,4 +87,28 @@ export async function listProjectIds(): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+export async function deleteProjectFolder(slug: string): Promise<void> {
+  async function deleteAll(dirPath: string): Promise<void> {
+    try {
+      const { data } = await getClient().repos.getContent({ ...getRepo(), path: dirPath });
+      if (!Array.isArray(data)) return;
+      for (const item of data) {
+        if (item.type === 'dir') {
+          await deleteAll(item.path);
+        } else {
+          await getClient().repos.deleteFile({
+            ...getRepo(),
+            path: item.path,
+            message: `chore: delete project ${slug}`,
+            sha: item.sha,
+          });
+        }
+      }
+    } catch {
+      return;
+    }
+  }
+  await deleteAll(`projects/${slug}`);
 }
