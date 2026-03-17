@@ -189,7 +189,7 @@ function render(){
  renderTimeline();
 }
 
-/* ALWAYS SHOW BUTTONS */
+/* ROLE-WISE BUTTONS */
 function renderButtons(i, role, pendingAt){
 
  let t=tasks[i];
@@ -198,25 +198,40 @@ function renderButtons(i, role, pendingAt){
    return `<button class="${enable?cls:'gray'}" ${enable?`onclick="${fn}"`:''}>${label}</button>`;
  }
 
- return `
- ${btn("Upload","blue",`upload(${i})`, role==="Customer" && pendingAt==="Customer")}
- ${btn("Receive","blue",`receive(${i})`, role==="Sales" && pendingAt==="Sales")}
- ${btn("Submit","greenBtn",`submitTask(${i})`, role!=="Credit" && t.status==="In Progress")}
- ${btn("Verify","greenBtn",`verify(${i})`, role==="Credit" && t.status==="Submitted")}
- ${btn("Query","orangeBtn",`raiseQuery(${i})`, true)}
- ${btn("Re-upload","blue",`reupload(${i})`, t.status==="Query")}
- `;
+ if(role==="Customer" || role==="Sales"){
+   return `
+     ${btn("Upload","blue",`upload(${i})`, pendingAt===role)}
+     ${btn("Submit","greenBtn",`submitTask(${i})`, t.status==="In Progress")}
+     ${btn("Query","orangeBtn",`raiseQuery(${i})`, true)}
+     ${btn("Re-upload","blue",`reupload(${i})`, t.status==="Query")}
+   `;
+ }
+
+ if(role==="Credit"){
+   return `
+     ${btn("Verify","greenBtn",`verify(${i})`, t.status==="Submitted")}
+     ${btn("Query","orangeBtn",`raiseQuery(${i})`, true)}
+   `;
+ }
+
 }
 
 /* ACTIONS */
 function upload(i){ tasks[i].status="In Progress"; tasks[i].doc=true; log("Uploaded "+tasks[i].name); render(); }
-function receive(i){ tasks[i].status="In Progress"; log("Received "+tasks[i].name); render(); }
 function submitTask(i){ tasks[i].status="Submitted"; log("Submitted "+tasks[i].name); render(); }
 function verify(i){ tasks[i].status="Verified"; log("Verified "+tasks[i].name); render(); }
 function raiseQuery(i){ tasks[i].status="Query"; log("Query "+tasks[i].name); render(); }
 function reupload(i){ tasks[i].status="Submitted"; log("Re-upload "+tasks[i].name); render(); }
 
-/* BLOCKER + DEMO FIX */
+function submit(){
+ let role=roles[stage];
+ let pending=tasks.filter(t=>t.owner===role && t.status!=="Submitted" && t.status!=="Verified");
+ if(pending.length>0){ alert("Complete tasks first"); return; }
+ if(stage<roles.length-1) stage++;
+ render();
+}
+
+/* BLOCKER */
 function renderInsights(role){
 
  let blocker = tasks.find(t=>t.status!=="Verified" && t.owner!==role);
@@ -238,18 +253,7 @@ function renderInsights(role){
 
 function clearBlocker(){
  let blocker = tasks.find(t=>t.status!=="Verified");
- if(blocker){
-   blocker.status="Verified";
-   log("Override cleared "+blocker.name);
- }
- render();
-}
-
-function submit(){
- let role=roles[stage];
- let pending=tasks.filter(t=>t.owner===role && t.status!=="Verified");
- if(pending.length>0){ alert("Complete tasks first"); return; }
- if(stage<roles.length-1) stage++;
+ if(blocker){ blocker.status="Verified"; log("Override cleared "+blocker.name); }
  render();
 }
 
