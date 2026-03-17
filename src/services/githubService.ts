@@ -14,8 +14,8 @@ function getRepo() {
   };
 }
 
-export function buildPagesUrl(slug: string, filename: string): string {
-  return `https://${process.env.GITHUB_OWNER}.github.io/${process.env.GITHUB_REPO}/projects/${slug}/${filename}`;
+export function buildPagesUrl(ownerId: string, slug: string, filename: string): string {
+  return `https://${process.env.GITHUB_OWNER}.github.io/${process.env.GITHUB_REPO}/projects/${ownerId}/${slug}/${filename}`;
 }
 
 async function getFileSHA(path: string): Promise<string | undefined> {
@@ -87,9 +87,13 @@ export async function writeJSON(
   await uploadFile(path, Buffer.from(JSON.stringify(data, null, 2)), message);
 }
 
-export async function listProjectSlugs(): Promise<string[]> {
+// Lists slug directories under projects/{ownerId}/
+export async function listProjectSlugsForOwner(ownerId: string): Promise<string[]> {
   try {
-    const { data } = await getClient().repos.getContent({ ...getRepo(), path: 'projects' });
+    const { data } = await getClient().repos.getContent({
+      ...getRepo(),
+      path: `projects/${ownerId}`,
+    });
     if (Array.isArray(data)) {
       return data.filter((item) => item.type === 'dir').map((item) => item.name);
     }
@@ -99,7 +103,7 @@ export async function listProjectSlugs(): Promise<string[]> {
   }
 }
 
-export async function deleteProjectFolder(slug: string): Promise<void> {
+export async function deleteProjectFolder(ownerId: string, slug: string): Promise<void> {
   async function deleteAll(dirPath: string): Promise<void> {
     const { data } = await getClient().repos.getContent({ ...getRepo(), path: dirPath });
     if (!Array.isArray(data)) return;
@@ -116,5 +120,5 @@ export async function deleteProjectFolder(slug: string): Promise<void> {
       }
     }
   }
-  await deleteAll(`projects/${slug}`);
+  await deleteAll(`projects/${ownerId}/${slug}`);
 }

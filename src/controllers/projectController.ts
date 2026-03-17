@@ -4,7 +4,7 @@ import { Visibility } from '../types';
 import { generateSlug } from '../utils/slugUtils';
 import {
   createProjectMetadata,
-  getAllProjects,
+  getProjectsByOwner,
   getProjectBySlug,
   updateProjectMetadata,
   deleteProjectMetadata,
@@ -24,7 +24,6 @@ export async function createProject(
 ): Promise<void> {
   try {
     const rawName: string = req.body.projectName ?? '';
-    // Strip HTML tags and non-printable characters
     const projectName = rawName.replace(/<[^>]*>/g, '').replace(/[^\w\s\-().]/g, '').trim();
     const file = req.file;
 
@@ -39,28 +38,27 @@ export async function createProject(
     }
 
     const slug = generateSlug(projectName);
-
     if (!slug) {
       res.status(400).json({ error: 'projectName must contain at least one letter or number' });
       return;
     }
 
-    // Prevent silent overwrite of another project
-    const existing = await getProjectBySlug(slug);
+    const rawVisibility = req.body.visibility;
+    const visibility: Visibility = rawVisibility === 'public' ? 'public' : 'personal';
+
+    const ownerId = req.user!.id;
+
+    // Collision check is now scoped per owner — two different users can share the same slug
+    const existing = await getProjectBySlug(ownerId, slug);
     if (existing) {
-      res.status(409).json({ error: 'A project with this name already exists' });
+      res.status(409).json({ error: 'You already have a project with this name' });
       return;
     }
 
-    const rawVisibility = req.body.visibility;
-    const visibility: Visibility =
-      rawVisibility === 'public' ? 'public' : 'personal';
-
     const ext = path.extname(file.originalname).toLowerCase() || '.html';
     const filename = `${slug}${ext}`;
-    const filePath = `projects/${slug}/${filename}`;
-    const fileURL = buildPagesUrl(slug, filename);
-    const ownerId = req.user!.id;
+    const filePath = `projects/${ownerId}/${slug}/${filename}`;
+    const fileURL = buildPagesUrl(ownerId, slug, filename);
 
     await uploadFile(filePath, file.buffer, `feat: create project ${slug}`);
     const metadata = await createProjectMetadata(
@@ -69,7 +67,7 @@ export async function createProject(
     );
 
     res.status(201).json({
-      shareLink: `${process.env.FRONTEND_URL}/p/${slug}`,
+      shareLink: `${process.env.FRONTEND_URL}/p/${ownerId}/${slug}`,
       ...metadata,
     });
   } catch (err) {
@@ -85,6 +83,7 @@ export async function updateProject(
 ): Promise<void> {
   try {
     const { slug } = req.params;
+    const ownerId = req.user!.id;
     const file = req.file;
 
     if (!file) {
@@ -92,15 +91,9 @@ export async function updateProject(
       return;
     }
 
-    const metadata = await getProjectBySlug(slug);
+    const metadata = await getProjectBySlug(ownerId, slug);
     if (!metadata) {
       res.status(404).json({ error: 'Project not found' });
-      return;
-    }
-
-    // Ownership check
-    if (metadata.ownerId && metadata.ownerId !== req.user!.id) {
-      res.status(403).json({ error: 'Forbidden: you do not own this project' });
       return;
     }
 
@@ -108,25 +101,24 @@ export async function updateProject(
     const newVersionNumber = metadata.versions.length + 1;
 
     // Fetch current file content+SHA in one call, then archive it
-    const current = await getFileWithSHA(`projects/${slug}/${metadata.currentFile}`);
+    const current = await getFileWithSHA(`projects/${ownerId}/${slug}/${metadata.currentFile}`);
     if (current) {
       const archivedName = `v${newVersionNumber - 1}_${metadata.currentFile}`;
-      const archivePath = `projects/${slug}/versions/${archivedName}`;
-      // Archive is a new file — skip SHA fetch
       await uploadFile(
-        archivePath,
+        `projects/${ownerId}/${slug}/versions/${archivedName}`,
         Buffer.from(current.content, 'base64'),
         `chore: archive v${newVersionNumber - 1} of ${slug}`,
         undefined
       );
-      // Upload new file using the known SHA of the current file (avoids extra API call)
+
       const newFilename = `${slug}${ext}`;
-      const newFilePath = `projects/${slug}/${newFilename}`;
-      const newFileURL = buildPagesUrl(slug, newFilename);
+      const newFilePath = `projects/${ownerId}/${slug}/${newFilename}`;
+      const newFileURL = buildPagesUrl(ownerId, slug, newFilename);
       const useSha = newFilename === metadata.currentFile ? current.sha : undefined;
+
       await uploadFile(newFilePath, file.buffer, `feat: update ${slug} to v${newVersionNumber}`, useSha);
 
-      const updated = await updateProjectMetadata(slug, {
+      const updated = await updateProjectMetadata(ownerId, slug, {
         fileType: ext.replace('.', ''),
         currentFile: newFilename,
         versions: [
@@ -139,14 +131,14 @@ export async function updateProject(
       return;
     }
 
-    // Fallback: current file not found in GitHub, just upload new version
+    // Fallback: current file not found in GitHub, just upload the new version
     const newFilename = `${slug}${ext}`;
-    const newFilePath = `projects/${slug}/${newFilename}`;
-    const newFileURL = buildPagesUrl(slug, newFilename);
+    const newFilePath = `projects/${ownerId}/${slug}/${newFilename}`;
+    const newFileURL = buildPagesUrl(ownerId, slug, newFilename);
 
     await uploadFile(newFilePath, file.buffer, `feat: update ${slug} to v${newVersionNumber}`);
 
-    const updated = await updateProjectMetadata(slug, {
+    const updated = await updateProjectMetadata(ownerId, slug, {
       fileType: ext.replace('.', ''),
       currentFile: newFilename,
       versions: [
@@ -168,23 +160,22 @@ export async function getProjects(
   next: NextFunction
 ): Promise<void> {
   try {
-    const allProjects = await getAllProjects();
-    const projects = allProjects.filter((p) => p.ownerId === req.user!.id);
+    const projects = await getProjectsByOwner(req.user!.id);
     res.status(200).json(projects);
   } catch (err) {
     next(err);
   }
 }
 
-// GET /projects/:slug/metadata — public endpoint for share page
+// GET /projects/:ownerId/:slug/metadata — public endpoint for share page
 export async function getProjectMetadata(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const { slug } = req.params;
-    const metadata = await getProjectBySlug(slug);
+    const { ownerId, slug } = req.params;
+    const metadata = await getProjectBySlug(ownerId, slug);
 
     if (!metadata) {
       res.status(404).json({ error: 'Project not found' });
@@ -193,7 +184,7 @@ export async function getProjectMetadata(
 
     res.status(200).json({
       fileType: metadata.fileType,
-      fileURL: buildPagesUrl(slug, metadata.currentFile),
+      fileURL: buildPagesUrl(ownerId, slug, metadata.currentFile),
       versions: metadata.versions,
     });
   } catch (err) {
@@ -209,6 +200,7 @@ export async function updateVisibility(
 ): Promise<void> {
   try {
     const { slug } = req.params;
+    const ownerId = req.user!.id;
     const { visibility } = req.body;
 
     if (visibility !== 'personal' && visibility !== 'public') {
@@ -216,18 +208,13 @@ export async function updateVisibility(
       return;
     }
 
-    const metadata = await getProjectBySlug(slug);
+    const metadata = await getProjectBySlug(ownerId, slug);
     if (!metadata) {
       res.status(404).json({ error: 'Project not found' });
       return;
     }
 
-    if (metadata.ownerId !== req.user!.id) {
-      res.status(403).json({ error: 'Forbidden: you do not own this project' });
-      return;
-    }
-
-    const updated = await updateProjectMetadata(slug, { visibility });
+    const updated = await updateProjectMetadata(ownerId, slug, { visibility });
     res.status(200).json({ slug, visibility: updated?.visibility });
   } catch (err) {
     next(err);
@@ -242,20 +229,16 @@ export async function deleteProject(
 ): Promise<void> {
   try {
     const { slug } = req.params;
-    const metadata = await getProjectBySlug(slug);
+    const ownerId = req.user!.id;
+    const metadata = await getProjectBySlug(ownerId, slug);
 
     if (!metadata) {
       res.status(404).json({ error: 'Project not found' });
       return;
     }
 
-    if (metadata.ownerId && metadata.ownerId !== req.user!.id) {
-      res.status(403).json({ error: 'Forbidden: you do not own this project' });
-      return;
-    }
-
-    await deleteProjectFolder(slug);
-    await deleteProjectMetadata(slug);
+    await deleteProjectFolder(ownerId, slug);
+    await deleteProjectMetadata(ownerId, slug);
 
     res.status(200).json({ message: 'Project deleted successfully' });
   } catch (err) {

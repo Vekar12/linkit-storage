@@ -1,5 +1,10 @@
 import { ProjectMetadata, Visibility } from '../types';
-import { readJSON, writeJSON, listProjectSlugs, deleteFile } from './githubService';
+import {
+  readJSON,
+  writeJSON,
+  listProjectSlugsForOwner,
+  deleteFile,
+} from './githubService';
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
 
@@ -51,47 +56,65 @@ export async function createProjectMetadata(
     updatedAt: now,
     versions: [{ version: 1, filename, fileURL, uploadedAt: now }],
   };
-  await writeJSON(`projects/${slug}/metadata.json`, metadata, `feat: create project ${slug}`);
-  bust('projects');
+  await writeJSON(
+    `projects/${ownerId}/${slug}/metadata.json`,
+    metadata,
+    `feat: create project ${slug}`
+  );
+  bust(`projects:${ownerId}`);
   return metadata;
 }
 
-export async function getAllProjects(): Promise<ProjectMetadata[]> {
-  let projects = getCached<ProjectMetadata[]>('projects');
+// Returns all projects belonging to a specific owner
+export async function getProjectsByOwner(ownerId: string): Promise<ProjectMetadata[]> {
+  const cacheKey = `projects:${ownerId}`;
+  let projects = getCached<ProjectMetadata[]>(cacheKey);
   if (!projects) {
-    const slugs = await listProjectSlugs();
+    const slugs = await listProjectSlugsForOwner(ownerId);
     const results = await Promise.all(
-      slugs.map((s) => readJSON<ProjectMetadata>(`projects/${s}/metadata.json`))
+      slugs.map((s) => readJSON<ProjectMetadata>(`projects/${ownerId}/${s}/metadata.json`))
     );
     projects = (results.filter(Boolean) as ProjectMetadata[]).sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-    setCached('projects', projects);
+    setCached(cacheKey, projects);
   }
   return projects;
 }
 
-export async function getProjectBySlug(slug: string): Promise<ProjectMetadata | null> {
-  const cached = getCached<ProjectMetadata>(`project:${slug}`);
+export async function getProjectBySlug(
+  ownerId: string,
+  slug: string
+): Promise<ProjectMetadata | null> {
+  const cacheKey = `project:${ownerId}:${slug}`;
+  const cached = getCached<ProjectMetadata>(cacheKey);
   if (cached) return cached;
-  const meta = await readJSON<ProjectMetadata>(`projects/${slug}/metadata.json`);
-  if (meta) setCached(`project:${slug}`, meta);
+  const meta = await readJSON<ProjectMetadata>(`projects/${ownerId}/${slug}/metadata.json`);
+  if (meta) setCached(cacheKey, meta);
   return meta;
 }
 
 export async function updateProjectMetadata(
+  ownerId: string,
   slug: string,
   updates: Partial<ProjectMetadata>
 ): Promise<ProjectMetadata | null> {
-  const meta = await getProjectBySlug(slug);
+  const meta = await getProjectBySlug(ownerId, slug);
   if (!meta) return null;
   const updated = { ...meta, ...updates, updatedAt: new Date().toISOString() };
-  await writeJSON(`projects/${slug}/metadata.json`, updated, `chore: update ${slug}`);
-  bust(`project:${slug}`, 'projects');
+  await writeJSON(
+    `projects/${ownerId}/${slug}/metadata.json`,
+    updated,
+    `chore: update ${slug}`
+  );
+  bust(`project:${ownerId}:${slug}`, `projects:${ownerId}`);
   return updated;
 }
 
-export async function deleteProjectMetadata(slug: string): Promise<void> {
-  await deleteFile(`projects/${slug}/metadata.json`, `chore: delete project ${slug}`);
-  bust(`project:${slug}`, 'projects');
+export async function deleteProjectMetadata(ownerId: string, slug: string): Promise<void> {
+  await deleteFile(
+    `projects/${ownerId}/${slug}/metadata.json`,
+    `chore: delete project ${slug}`
+  );
+  bust(`project:${ownerId}:${slug}`, `projects:${ownerId}`);
 }
