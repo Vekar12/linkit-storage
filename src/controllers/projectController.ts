@@ -22,11 +22,18 @@ export async function createProject(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { projectName } = req.body;
+    const rawName: string = req.body.projectName ?? '';
+    // Strip HTML tags and control characters
+    const projectName = rawName.replace(/<[^>]*>/g, '').replace(/[^\w\s\-().]/g, '').trim();
     const file = req.file;
 
     if (!projectName || !file) {
       res.status(400).json({ error: 'projectName and file are required' });
+      return;
+    }
+
+    if (projectName.length > 100) {
+      res.status(400).json({ error: 'projectName must be 100 characters or fewer' });
       return;
     }
 
