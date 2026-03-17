@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Disbursement Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fb;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    /* HEADER */
+    .header {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .header div {
+      margin-right: 15px;
+    }
+
+    /* READINESS BAR */
+    .readiness {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .bar {
+      display: flex;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .segment {
+      flex: 1;
+    }
+
+    .green { background: #2E7D32; }
+    .amber { background: #F57C00; }
+    .red { background: #C62828; }
+
+    /* ROLE TILES */
+    .tiles {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .tile {
+      flex: 1;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      border-top: 4px solid #1976D2;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .tile:hover {
+      background: #eef4ff;
+    }
+
+    .badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: orange;
+      color: #fff;
+      border-radius: 50%;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    /* TASK TABLE */
+    .tasks {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f3f9;
+    }
+
+    .status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .pending { background: #C62828; }
+    .progress { background: #F57C00; }
+    .submitted { background: #1565C0; }
+    .verified { background: #2E7D32; }
+
+    button {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-primary { background: #1976D2; color: #fff; }
+    .btn-success { background: #2E7D32; color: #fff; }
+    .btn-warning { background: #F57C00; color: #fff; }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div><b>Customer:</b> Narendra Verma</div>
+    <div><b>App ID:</b> 77212317570</div>
+    <div><b>Loan:</b> ₹17L</div>
+    <div><b>Status:</b> In Progress</div>
+    <div><b>TAT:</b> 6h 13m</div>
+  </div>
+
+  <!-- READINESS -->
+  <div class="readiness">
+    <b>Case Readiness: 67%</b>
+    <div class="bar">
+      <div class="segment green"></div>
+      <div class="segment amber"></div>
+      <div class="segment red"></div>
+      <div class="segment amber"></div>
+      <div class="segment green"></div>
+    </div>
+  </div>
+
+  <!-- ROLE TILES -->
+  <div class="tiles">
+    <div class="tile" onclick="showTasks('sales')">
+      Sales
+      <div class="badge">3</div>
+    </div>
+
+    <div class="tile" onclick="showTasks('customer')">
+      Customer
+      <div class="badge">5</div>
+    </div>
+
+    <div class="tile" onclick="showTasks('credit')">
+      Credit
+      <div class="badge">2</div>
+    </div>
+
+    <div class="tile" onclick="showTasks('rcu')">
+      RCU
+      <div class="badge">1</div>
+    </div>
+  </div>
+
+  <!-- TASK TABLE -->
+  <div class="tasks" id="taskPanel">
+    <h3 id="taskTitle">Tasks</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Task</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="taskBody">
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+
+const data = {
+  sales: [
+    {id:'T1', name:'Collect Sale Deed', priority:'P1', status:'pending'},
+    {id:'T2', name:'Upload Photo', priority:'P2', status:'progress'}
+  ],
+  customer: [
+    {id:'T3', name:'Upload PAN', priority:'P1', status:'pending'}
+  ],
+  credit: [
+    {id:'T4', name:'Verify Income', priority:'P1', status:'submitted'}
+  ],
+  rcu: [
+    {id:'T5', name:'Field Visit', priority:'P2', status:'pending'}
+  ]
+};
+
+function showTasks(role) {
+  const panel = document.getElementById("taskPanel");
+  const body = document.getElementById("taskBody");
+  const title = document.getElementById("taskTitle");
+
+  panel.style.display = "block";
+  body.innerHTML = "";
+  title.innerText = role.toUpperCase() + " TASKS";
+
+  data[role].forEach(task => {
+    const row = `
+      <tr>
+        <td>${task.id}</td>
+        <td>${task.name}</td>
+        <td>${task.priority}</td>
+        <td><span class="status ${task.status}">${task.status}</span></td>
+        <td>
+          <button class="btn-primary">Start</button>
+          <button class="btn-success">Submit</button>
+        </td>
+      </tr>
+    `;
+    body.innerHTML += row;
+  });
+}
+
+</script>
+
+</body>
+</html>
