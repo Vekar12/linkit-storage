@@ -87,6 +87,19 @@ export async function writeJSON(
   await uploadFile(path, Buffer.from(JSON.stringify(data, null, 2)), message);
 }
 
+// Lists all owner directories under projects/
+export async function listAllOwners(): Promise<string[]> {
+  try {
+    const { data } = await getClient().repos.getContent({ ...getRepo(), path: 'projects' });
+    if (Array.isArray(data)) {
+      return data.filter((item) => item.type === 'dir').map((item) => item.name);
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
 // Lists slug directories under projects/{ownerId}/
 export async function listProjectSlugsForOwner(ownerId: string): Promise<string[]> {
   try {

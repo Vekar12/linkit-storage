@@ -5,6 +5,7 @@ import { generateSlug } from '../utils/slugUtils';
 import {
   createProjectMetadata,
   getProjectsByOwner,
+  getAllPublicProjects,
   getProjectBySlug,
   updateProjectMetadata,
   deleteProjectMetadata,
@@ -192,6 +193,26 @@ export async function getProjectMetadata(
   }
 }
 
+// GET /projects/public — all public projects across all users (paginated)
+export async function getPublicProjects(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? '20'), 10) || 20));
+
+    const all = await getAllPublicProjects();
+    const total = all.length;
+    const items = all.slice((page - 1) * limit, page * limit);
+
+    res.status(200).json({ total, page, limit, items });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // PATCH /projects/:slug/visibility
 export async function updateVisibility(
   req: Request,
@@ -214,8 +235,8 @@ export async function updateVisibility(
       return;
     }
 
-    const updated = await updateProjectMetadata(ownerId, slug, { visibility });
-    res.status(200).json({ slug, visibility: updated?.visibility });
+    await updateProjectMetadata(ownerId, slug, { visibility });
+    res.status(200).json({ message: 'Visibility updated' });
   } catch (err) {
     next(err);
   }

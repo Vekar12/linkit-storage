@@ -3,6 +3,7 @@ import {
   createProject,
   updateProject,
   getProjects,
+  getPublicProjects,
   getProjectMetadata,
   deleteProject,
   updateVisibility,
@@ -32,11 +33,14 @@ function validateOwnerId(req: Request, res: Response, next: NextFunction): void 
 
 const router = Router();
 
+// Public routes — must be declared before dynamic /:slug routes
+router.get('/public', getProjectsLimiter, getPublicProjects);
+
 // Authenticated routes — ownerId derived from token, not the URL
 router.get('/', requireAuth, getProjectsLimiter, getProjects);
 router.post('/', requireAuth, uploadLimiter, upload.single('file'), createProject);
 router.put('/:slug', requireAuth, uploadLimiter, validateSlug, upload.single('file'), updateProject);
-router.patch('/:slug/visibility', requireAuth, validateSlug, updateVisibility);
+router.patch('/:slug', requireAuth, validateSlug, updateVisibility);
 router.delete('/:slug', requireAuth, validateSlug, deleteProject);
 
 // Public route — ownerId is part of the URL for share-page resolution

@@ -2,6 +2,7 @@ import { ProjectMetadata, Visibility } from '../types';
 import {
   readJSON,
   writeJSON,
+  listAllOwners,
   listProjectSlugsForOwner,
   deleteFile,
 } from './githubService';
@@ -109,6 +110,30 @@ export async function updateProjectMetadata(
   );
   bust(`project:${ownerId}:${slug}`, `projects:${ownerId}`);
   return updated;
+}
+
+// Returns all public projects across all users — cached for 60s
+export async function getAllPublicProjects(): Promise<ProjectMetadata[]> {
+  const cacheKey = 'projects:public';
+  let projects = getCached<ProjectMetadata[]>(cacheKey);
+  if (!projects) {
+    const owners = await listAllOwners();
+    const perOwner = await Promise.all(
+      owners.map(async (ownerId) => {
+        const slugs = await listProjectSlugsForOwner(ownerId);
+        const metas = await Promise.all(
+          slugs.map((s) => readJSON<ProjectMetadata>(`projects/${ownerId}/${s}/metadata.json`))
+        );
+        return metas.filter(Boolean) as ProjectMetadata[];
+      })
+    );
+    projects = perOwner
+      .flat()
+      .filter((p) => p.visibility === 'public')
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    setCached(cacheKey, projects);
+  }
+  return projects;
 }
 
 export async function deleteProjectMetadata(ownerId: string, slug: string): Promise<void> {
