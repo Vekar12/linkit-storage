@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useDropzone, FileRejection } from 'react-dropzone';
 import { UploadCloud, FileCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -20,7 +20,7 @@ interface FileDropzoneProps {
 
 export default function FileDropzone({ file, onFileSelect }: FileDropzoneProps) {
   const onDrop = useCallback(
-    (accepted: File[], rejected: { errors: { code: string }[] }[]) => {
+    (accepted: File[], rejected: FileRejection[]) => {
       if (rejected.length > 0) {
         const code = rejected[0].errors[0]?.code;
         if (code === 'file-too-large') {
