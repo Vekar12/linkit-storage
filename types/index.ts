@@ -8,10 +8,12 @@ export interface ProjectVersion {
 export interface Project {
   projectName: string;
   slug: string;
+  ownerId: string;
   fileType: string;
   currentFile: string;
   createdAt: string;
   updatedAt: string;
+  shareLink?: string;
   versions: ProjectVersion[];
 }
 

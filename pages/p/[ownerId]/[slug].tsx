@@ -6,19 +6,19 @@ import type { ProjectMetadata } from '@/types';
 
 export default function PublicViewPage() {
   const router = useRouter();
-  const { slug } = router.query;
+  const { ownerId, slug } = router.query;
 
   const [metadata, setMetadata] = useState<ProjectMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!slug || typeof slug !== 'string') return;
-    getProjectMetadata(slug)
+    if (!ownerId || !slug || typeof ownerId !== 'string' || typeof slug !== 'string') return;
+    getProjectMetadata(ownerId, slug)
       .then(setMetadata)
       .catch((err) => { if (err?.response?.status === 404) setNotFound(true); })
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [ownerId, slug]);
 
   if (loading) {
     return (
@@ -46,13 +46,11 @@ export default function PublicViewPage() {
   const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'image/png', 'image/jpeg'].includes(fileType);
   const isZip   = fileType === 'application/zip' || fileType === 'zip';
 
-  // Cache-bust so browser always fetches the latest file after an update
   const rawURL = metadata.versions?.[metadata.versions.length - 1]?.fileURL ?? fileURL;
   const latestURL = `${rawURL}${rawURL.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
 
   return (
     <div className="flex flex-col" style={{ height: '100vh' }}>
-      {/* Full-screen content */}
       <div className="flex-1 overflow-hidden">
         {(isHTML || isPDF) && (
           <iframe
@@ -92,7 +90,7 @@ export default function PublicViewPage() {
           LinkIt
         </div>
         <div className="flex items-center gap-4">
-          <a href={latestURL} download target="_blank" rel="noopener noreferrer"
+          <a href={rawURL} download target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1 text-white/70 hover:text-white transition-colors">
             <Download size={13} />
             Download

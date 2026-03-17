@@ -12,6 +12,7 @@ import { checkAuth } from '@/lib/auth';
 export default function UpdatePage() {
   const router = useRouter();
   const [slug, setSlug] = useState('');
+  const [ownerId, setOwnerId] = useState('');
   const [uploadMode, setUploadMode] = useState<'file' | 'html'>('file');
   const [file, setFile] = useState<File | null>(null);
   const [htmlCode, setHtmlCode] = useState('');
@@ -20,7 +21,8 @@ export default function UpdatePage() {
 
   useEffect(() => {
     if (router.query.slug) setSlug(router.query.slug as string);
-  }, [router.query.slug]);
+    if (router.query.owner) setOwnerId(router.query.owner as string);
+  }, [router.query.slug, router.query.owner]);
 
   useEffect(() => {
     if (!checkAuth()) router.replace('/login');
@@ -55,7 +57,10 @@ export default function UpdatePage() {
       setSuccess(true);
       toast.success('Project updated!');
       // Auto-open the updated link in a new tab
-      window.open(`${window.location.origin}/p/${slug.trim()}`, '_blank');
+      const linkPath = ownerId
+        ? `/p/${ownerId}/${slug.trim()}`
+        : `/p/${slug.trim()}`;
+      window.open(`${window.location.origin}${linkPath}`, '_blank');
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       const msg = status === 404

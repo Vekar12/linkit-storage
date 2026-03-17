@@ -9,7 +9,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 
 export default function VersionHistoryPage() {
   const router = useRouter();
-  const { slug } = router.query;
+  const { slug, owner: ownerId } = router.query;
 
   const [metadata, setMetadata] = useState<ProjectMetadata | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,14 +36,14 @@ export default function VersionHistoryPage() {
   };
 
   useEffect(() => {
-    if (!slug || typeof slug !== 'string') return;
-    getProjectMetadata(slug)
+    if (!slug || !ownerId || typeof slug !== 'string' || typeof ownerId !== 'string') return;
+    getProjectMetadata(ownerId, slug)
       .then(setMetadata)
       .catch((err) => { if (err?.response?.status === 404) setNotFound(true); })
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [slug, ownerId]);
 
-  const shareLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${slug}`;
+  const shareLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${ownerId}/${slug}`;
 
   if (loading) {
     return (
@@ -132,7 +132,7 @@ export default function VersionHistoryPage() {
                 Open Link
               </a>
               <button
-                onClick={() => router.push(`/update?slug=${slug}`)}
+                onClick={() => router.push(`/update?slug=${slug}&owner=${ownerId}`)}
                 className="flex items-center gap-1.5 dark-btn-ghost text-sm py-2 px-4 border border-dark-border rounded-xl"
               >
                 <RefreshCw size={14} />

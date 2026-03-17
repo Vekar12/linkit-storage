@@ -65,9 +65,10 @@ export const getProjects = async (): Promise<Project[]> => {
 };
 
 export const getProjectMetadata = async (
+  ownerId: string,
   slug: string
 ): Promise<ProjectMetadata> => {
-  const { data } = await api.get<ProjectMetadata>(`/projects/${slug}/metadata`);
+  const { data } = await api.get<ProjectMetadata>(`/projects/${ownerId}/${slug}/metadata`);
   return data;
 };
 

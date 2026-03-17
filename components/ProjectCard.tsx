@@ -32,7 +32,8 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     toast.success(next === 'public' ? 'Set to Public' : 'Set to Personal');
   };
 
-  const shareLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${project.slug}`;
+  const shareLink = project.shareLink
+    ?? `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${project.ownerId}/${project.slug}`;
 
   const formattedDate = new Date(project.createdAt).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
@@ -101,7 +102,7 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
 
   return (
     <div
-      onClick={() => router.push(`/projects/${project.slug}`)}
+      onClick={() => router.push(`/projects/${project.slug}?owner=${project.ownerId}`)}
       className="bg-dark-raised border border-dark-border rounded-2xl flex flex-col justify-between hover:border-primary/50 hover:shadow-glow transition-all duration-200 aspect-square cursor-pointer overflow-hidden"
     >
       {/* Top bar: delete (left) + file type badge (right) */}
@@ -182,7 +183,7 @@ export default function ProjectCard({ project, onDeleted }: ProjectCardProps) {
           </button>
 
           <button
-            onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}`); }}
+            onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}&owner=${project.ownerId}`); }}
             title="Upload update"
             className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-dark-border bg-dark-surface hover:border-dark-borderhover hover:bg-dark-raised transition-colors"
           >
