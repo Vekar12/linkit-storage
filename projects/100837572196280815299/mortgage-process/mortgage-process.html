@@ -21,7 +21,6 @@ body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 .strip { margin-top:10px; padding:10px; border-radius:6px; }
 .green { background:#e8f5e9; color:#2e7d32; }
 .red { background:#fdecea; color:#c62828; }
-.orange { background:#fff3e0; color:#ef6c00; }
 
 .tracker { background:#fff; margin-top:10px; padding:10px; border-radius:6px; }
 .stage-bar { display:flex; }
@@ -33,36 +32,17 @@ body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 
 table { width:100%; border-collapse:collapse; table-layout:fixed; }
 
-th, td { padding:10px; border-bottom:1px solid #eee; font-size:13px; vertical-align:middle; }
+th, td { padding:10px; border-bottom:1px solid #eee; font-size:13px; }
 
 th { background:#f0f3f7; text-align:left; }
 
-th:nth-child(1){width:20%;}
-th:nth-child(2){width:12%;}
-th:nth-child(3){width:15%;}
-th:nth-child(4){width:18%;}
-th:nth-child(5){width:8%; text-align:center;}
-th:nth-child(6){width:27%;}
-
-.badge {
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:4px 8px;
-  border-radius:5px;
-  font-size:11px;
-  color:#fff;
-}
+.badge { padding:4px 8px; border-radius:5px; font-size:11px; color:#fff; }
 
 .pending { background:#fbc02d; color:#000; }
 .progress { background:#f57c00; }
 .submitted { background:#1976d2; }
 .verified { background:#2e7d32; }
 .query { background:#e53935; }
-
-.doc-icon { text-align:center; font-size:16px; }
-
-.actions { display:flex; flex-wrap:wrap; gap:4px; }
 
 button { padding:4px 6px; border:none; border-radius:4px; font-size:11px; }
 
@@ -105,7 +85,6 @@ button { padding:4px 6px; border:none; border-radius:4px; font-size:11px; }
 </div>
 
 <div id="blocker" class="strip"></div>
-<div id="nextAction" class="strip"></div>
 
 <div class="panel">
 <div class="panel-header">Documents Dashboard</div>
@@ -142,10 +121,10 @@ let roles=["Customer","Sales","Credit","FCPG"];
 let stage=0;
 
 let tasks=[
- {name:"PAN", owner:"Customer", verifier:"Scrutiny", status:"Pending", doc:false},
- {name:"Aadhaar", owner:"Customer", verifier:"Scrutiny", status:"Pending", doc:false},
- {name:"Salary Slips", owner:"Customer", verifier:"Scrutiny", status:"Pending", doc:false},
- {name:"Bank Statement", owner:"Customer", verifier:"Scrutiny", status:"Pending", doc:false},
+ {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Aadhaar", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Salary Slips", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Bank Statement", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
 
  {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending", doc:false},
  {name:"Property Docs", owner:"Sales", verifier:"Credit", status:"Pending", doc:false},
@@ -171,115 +150,11 @@ function render(){
 
  document.getElementById("completionBar").innerHTML=
  `Case Completion: ${percent}%
- <div style="background:#ddd;height:6px;border-radius:5px;margin-top:5px;">
- <div style="width:${percent}%;height:6px;background:#2e7d32;border-radius:5px;"></div></div>`;
+ <div style="background:#ddd;height:6px;margin-top:5px;">
+ <div style="width:${percent}%;height:6px;background:#2e7d32;"></div></div>`;
 
  let html="";
 
  tasks.forEach((t,i)=>{
 
- let pendingAt =
-  t.status==="Submitted" ? t.verifier :
-  t.status==="Verified" && t.verifier==="FCPG" ? "FCPG" :
-  t.status==="Verified" ? "Disbursement Process" :
-  t.owner;
-
- let icon = t.doc ? "📄" : "—";
-
- html+=`
- <tr style="${t.owner===role && t.status!=='Verified' ? 'background:#fff8e1;' : ''}">
-  <td>${t.name}</td>
-  <td><span class="badge ${t.status.toLowerCase()}">${t.status}</span></td>
-  <td>${t.verifier}</td>
-  <td>${pendingAt}</td>
-  <td class="doc-icon">${icon}</td>
-  <td><div class="actions">${renderButtons(i, role, pendingAt)}</div></td>
- </tr>`;
- });
-
- document.getElementById("table").innerHTML=html;
-
- renderInsights(role);
- renderTimeline();
-}
-
-function renderButtons(i, role, pendingAt){
-
- let t=tasks[i];
-
- function btn(label, cls, fn, enable){
-   return `<button class="${enable?cls:'gray'}" ${enable?`onclick="${fn}"`:''}>${label}</button>`;
- }
-
- if(role==="Customer" || role==="Sales"){
-   return `
-     ${btn("Upload","blue",`upload(${i})`, pendingAt===role && t.status==="Pending")}
-     ${btn("Submit","greenBtn",`submitTask(${i})`, t.status==="In Progress")}
-     ${btn("Query","orangeBtn",`raiseQuery(${i})`, true)}
-     ${btn("Re-upload","blue",`reupload(${i})`, t.status==="Query")}
-   `;
- }
-
- if(role==="Credit" || role==="FCPG"){
-   return `
-     ${btn("Verify","greenBtn",`verify(${i})`, t.status==="Submitted")}
-     ${btn("Query","orangeBtn",`raiseQuery(${i})`, true)}
-   `;
- }
-}
-
-function upload(i){ tasks[i].status="In Progress"; tasks[i].doc=true; log("Uploaded "+tasks[i].name); render(); }
-function submitTask(i){ tasks[i].status="Submitted"; log("Submitted "+tasks[i].name); render(); }
-function verify(i){ tasks[i].status="Verified"; log("Verified "+tasks[i].name); render(); }
-function raiseQuery(i){ tasks[i].status="Query"; log("Query "+tasks[i].name); render(); }
-function reupload(i){ tasks[i].status="Submitted"; log("Re-upload "+tasks[i].name); render(); }
-
-function submit(){
- let role=roles[stage];
- let pending = tasks.filter(t => 
-  t.owner === role && (t.status === "Pending" || t.status === "In Progress" || t.status === "Query")
- );
- if(pending.length>0){ alert("Complete tasks first"); return; }
- if(stage<roles.length-1){
-   log(role + " completed stage");
-   stage++;
- }
- render();
-}
-
-function renderInsights(role){
-
- let blocker = tasks.find(t => 
-  t.status !== "Verified" && roles.indexOf(t.owner) < stage
- );
-
- if(blocker){
-  document.getElementById("blocker").className="strip red";
-  document.getElementById("blocker").innerHTML=
-  `BLOCKER: ${blocker.name} pending with ${blocker.owner}`;
- } else {
-  document.getElementById("blocker").className="strip green";
-  document.getElementById("blocker").innerText="No blockers";
- }
-
- let next=tasks.find(t=>t.owner===role && t.status!=="Verified");
- document.getElementById("nextAction").className="strip orange";
- document.getElementById("nextAction").innerText=next?"Next Action: "+next.name:"";
-}
-
-function log(msg){
- timeline.unshift(new Date().toLocaleTimeString()+" | "+msg);
-}
-
-function renderTimeline(){
- let html="<b>Activity</b><br>";
- timeline.slice(0,5).forEach(t=> html+=`<div>${t}</div>`);
- document.getElementById("timeline").innerHTML=html;
-}
-
-render();
-
-</script>
-
-</body>
-</html>
+ let verificationText =
