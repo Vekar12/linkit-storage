@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Disbursement Dashboard</title>
+
+<style>
+body { margin:0; font-family:"Segoe UI"; background:#f5f7fa; }
+
+/* HEADER */
+.header {
+  background:#1f3a5f;
+  color:#fff;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+}
+
+/* KPI CARDS */
+.kpi-container {
+  display:flex;
+  gap:10px;
+  padding:15px;
+}
+
+.kpi {
+  flex:1;
+  background:#fff;
+  padding:15px;
+  border-radius:8px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* TRACKER */
+.tracker {
+  margin:0 15px;
+  background:#fff;
+  padding:10px;
+  border-radius:8px;
+}
+
+.stage-bar { display:flex; }
+.stage {
+  flex:1;
+  text-align:center;
+  padding:8px;
+  border-right:1px solid #eee;
+}
+.stage.active { background:#2e7d32; color:#fff; }
+
+/* TABLE */
+.table-container {
+  margin:15px;
+  background:#fff;
+  border-radius:8px;
+  overflow:hidden;
+}
+
+table { width:100%; border-collapse:collapse; }
+
+th {
+  background:#eef2f7;
+  padding:10px;
+  text-align:left;
+  font-size:13px;
+}
+
+td {
+  padding:10px;
+  border-bottom:1px solid #eee;
+  font-size:13px;
+}
+
+/* BADGES */
+.badge {
+  padding:4px 8px;
+  border-radius:12px;
+  font-size:11px;
+}
+
+.pending { background:#fff3cd; }
+.submitted { background:#dbeafe; }
+.verified { background:#d1fae5; }
+
+/* BUTTON */
+button {
+  padding:4px 8px;
+  border:none;
+  border-radius:4px;
+  font-size:11px;
+}
+
+.blue { background:#2563eb; color:#fff; }
+.green { background:#2e7d32; color:#fff; }
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div><b>Loan ID: HL12345</b> | Narendra Verma</div>
+  <div>Status: In Progress</div>
+</div>
+
+<!-- KPI -->
+<div class="kpi-container">
+  <div class="kpi">Pending Docs: 3</div>
+  <div class="kpi">Under Review: 2</div>
+  <div class="kpi">Queries: 1</div>
+  <div class="kpi">Completed: 2</div>
+</div>
+
+<!-- TRACKER -->
+<div class="tracker">
+  <div class="stage-bar">
+    <div class="stage active">Customer</div>
+    <div class="stage active">Credit</div>
+    <div class="stage">FCPG</div>
+    <div class="stage">Disbursement</div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-container">
+<table>
+
+<tr>
+<th>Document</th>
+<th>Status</th>
+<th>Verification</th>
+<th>Action Pending</th>
+<th>Actions</th>
+</tr>
+
+<tr>
+<td>PAN</td>
+<td><span class="badge submitted">Submitted</span></td>
+<td>Under Scrutiny</td>
+<td>Credit</td>
+<td>
+<button class="blue">View</button>
+</td>
+</tr>
+
+<tr>
+<td>Agreement</td>
+<td><span class="badge verified">Verified</span></td>
+<td>Approved by Credit</td>
+<td>FCPG</td>
+<td>
+<button class="green">Verified</button>
+</td>
+</tr>
+
+<tr>
+<td>Disbursement</td>
+<td><span class="badge pending">Pending</span></td>
+<td>-</td>
+<td>FCPG</td>
+<td>
+<button class="blue">Upload</button>
+</td>
+</tr>
+
+</table>
+</div>
+
+</body>
+</html>
