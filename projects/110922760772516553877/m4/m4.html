@@ -1,128 +1,180 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loan Dashboard</title>
+<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',Inter,sans-serif;background:#EEF2F7;padding:16px;color:#0F172A;line-height:1.4;">
 
-<style>
-body {
-  font-family: -apple-system, sans-serif;
-  background:#EEF2F7;
-  margin:0;
-  padding:16px;
-}
+  <!-- HEADER -->
+  <div style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:20px;font-weight:700;">Loan Dashboard</div>
+        <div style="font-size:12px;color:#64748B;">Rahul Sharma • HL-982374</div>
+      </div>
 
-.card {
-  background:white;
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:16px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.06);
-}
+      <div style="background:#DCFCE7;color:#166534;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;">
+        ✔ Legal Completed
+      </div>
+    </div>
 
-.btn {
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  margin-top:6px;
-  width:100%;
-}
+    <div style="margin-top:8px;font-size:12px;color:#64748B;">
+      Last Activity: Credit verified Income Proof • 2 hrs ago
+    </div>
 
-.primary { background:#2563EB; color:white; }
-.secondary { background:#E5E7EB; }
+    <div style="margin-top:10px;background:#FEF3C7;color:#92400E;padding:8px 12px;border-radius:10px;font-size:13px;display:inline-block;font-weight:500;">
+      ⚠️ 8 Actions Pending
+    </div>
+  </div>
 
-.hero {
-  background:linear-gradient(135deg,#1D4ED8,#2563EB);
-  color:white;
-  padding:20px;
-  border-radius:20px;
-  margin-bottom:16px;
-}
+  <!-- HERO -->
+  <div style="background:linear-gradient(135deg,#1D4ED8,#2563EB);color:white;padding:22px;border-radius:22px;margin-bottom:18px;box-shadow:0 10px 30px rgba(37,99,235,0.35);">
 
-.small {
-  font-size:12px;
-  color:#6B7280;
-}
+    <div style="font-size:13px;opacity:0.85;">Loan Progress</div>
+    <div style="font-size:26px;font-weight:700;margin-top:4px;">67% Completed</div>
 
-.item {
-  margin-bottom:12px;
-}
-</style>
+    <div style="margin-top:6px;font-size:13px;opacity:0.9;">
+      ✔ Legal Completed • Only 2 steps left to disbursement
+    </div>
 
-</head>
+    <!-- NEXT STEP -->
+    <div style="margin-top:16px;background:white;color:#1D4ED8;padding:16px;border-radius:16px;">
 
-<body>
+      <div style="font-size:12px;color:#64748B;">Next Step</div>
+      <div style="font-weight:600;font-size:16px;margin-top:2px;">
+        Upload Property Tax Receipt
+      </div>
 
-<div class="hero">
-  <div>67% Completed</div>
-  <div class="small">Only 2 steps left</div>
+      <button style="margin-top:12px;width:100%;padding:12px;background:#2563EB;color:white;border:none;border-radius:12px;font-weight:600;">
+        Upload Property Tax Receipt
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- BLOCKERS -->
+  <div style="background:white;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-weight:700;font-size:15px;">Blocking Your Progress</div>
+      <div style="font-size:12px;color:#DC2626;font-weight:600;">8 Items</div>
+    </div>
+
+    <!-- ITEM 1 -->
+    <div style="padding:12px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="font-weight:600;">Property Tax Receipt</div>
+      <div style="font-size:11px;color:#64748B;">Requested by Legal • Required for property validation</div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button style="flex:1;padding:10px;background:#2563EB;color:white;border:none;border-radius:10px;">Upload</button>
+        <button style="flex:1;padding:10px;background:#E5E7EB;border:none;border-radius:10px;">Contact RM</button>
+      </div>
+    </div>
+
+    <!-- ITEM 2 -->
+    <div style="padding:12px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="font-weight:600;">Electricity Bill</div>
+      <div style="font-size:11px;color:#64748B;">Address Verification • Legal</div>
+      <button style="margin-top:8px;width:100%;padding:10px;background:#2563EB;color:white;border:none;border-radius:10px;">Upload Electricity Bill</button>
+    </div>
+
+    <!-- ITEM 3 -->
+    <div style="padding:12px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="font-weight:600;">Sale Agreement (Original)</div>
+      <div style="font-size:11px;color:#64748B;">Pickup required • Ops Team</div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button style="flex:1;padding:10px;background:#111827;color:white;border:none;border-radius:10px;">Schedule Pickup</button>
+        <button style="flex:1;padding:10px;background:#E5E7EB;border:none;border-radius:10px;">Contact RM</button>
+      </div>
+    </div>
+
+    <!-- ITEM 4 -->
+    <div style="padding:12px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="font-weight:600;">NOC Document</div>
+      <div style="font-size:11px;color:#64748B;">Additional Legal Requirement</div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button style="flex:1;padding:10px;background:#2563EB;color:white;border:none;border-radius:10px;">Upload</button>
+        <button style="flex:1;padding:10px;background:#E5E7EB;border:none;border-radius:10px;">Raise Query</button>
+      </div>
+    </div>
+
+    <!-- ITEM 5 -->
+    <div style="padding:12px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="font-weight:600;">Builder Agreement Copy</div>
+      <div style="font-size:11px;color:#64748B;">Pending submission • Sales</div>
+      <button style="margin-top:8px;width:100%;padding:10px;background:#2563EB;color:white;border:none;border-radius:10px;">Upload Document</button>
+    </div>
+
+    <!-- ITEM 6 -->
+    <div style="padding:12px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="font-weight:600;">Property Photos</div>
+      <div style="font-size:11px;color:#64748B;">Required by Technical Team</div>
+      <button style="margin-top:8px;width:100%;padding:10px;background:#2563EB;color:white;border:none;border-radius:10px;">Upload Photos</button>
+    </div>
+
+    <!-- ITEM 7 -->
+    <div style="padding:12px 0;border-bottom:1px solid #F1F5F9;">
+      <div style="font-weight:600;">Society NOC</div>
+      <div style="font-size:11px;color:#64748B;">Pending from society authority</div>
+      <button style="margin-top:8px;width:100%;padding:10px;background:#E5E7EB;border:none;border-radius:10px;">Raise Query</button>
+    </div>
+
+    <!-- ITEM 8 -->
+    <div style="padding-top:12px;">
+      <div style="font-weight:600;">Stamp Duty Receipt</div>
+      <div style="font-size:11px;color:#64748B;">Mandatory for disbursement</div>
+      <button style="margin-top:8px;width:100%;padding:10px;background:#2563EB;color:white;border:none;border-radius:10px;">Upload Receipt</button>
+    </div>
+
+  </div>
+
+  <!-- UNDER REVIEW -->
+  <div style="background:white;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+
+    <div style="font-weight:700;margin-bottom:12px;">Under Verification</div>
+
+    <div style="padding:10px 0;border-bottom:1px solid #F1F5F9;">
+      <div>Income Proof</div>
+      <div style="font-size:11px;color:#64748B;">Pending with Credit Team</div>
+      <button style="margin-top:6px;padding:6px 10px;background:#E5E7EB;border:none;border-radius:8px;">View</button>
+    </div>
+
+    <div style="padding:10px 0;border-bottom:1px solid #F1F5F9;">
+      <div>Bank Statement</div>
+      <div style="font-size:11px;color:#64748B;">Pending with Credit Team</div>
+      <button style="margin-top:6px;padding:6px 10px;background:#E5E7EB;border:none;border-radius:8px;">View</button>
+    </div>
+
+    <div style="padding-top:10px;">
+      <div>Employment Proof</div>
+      <div style="font-size:11px;color:#64748B;">Pending with Ops Team</div>
+      <button style="margin-top:6px;padding:6px 10px;background:#E5E7EB;border:none;border-radius:8px;">View</button>
+    </div>
+
+  </div>
+
+  <!-- NEEDS ATTENTION -->
+  <div style="background:white;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,0.05);">
+
+    <div style="font-weight:700;margin-bottom:12px;">Needs Your Attention</div>
+
+    <div style="padding:10px 0;">
+      <div>Salary Slip</div>
+      <div style="font-size:11px;color:#64748B;">Query raised by Credit</div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <button style="flex:1;padding:10px;background:#2563EB;color:white;border:none;border-radius:10px;">Re-upload</button>
+        <button style="flex:1;padding:10px;background:#E5E7EB;border:none;border-radius:10px;">View Query</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RM -->
+  <div style="background:linear-gradient(135deg,#2563EB,#1D4ED8);color:white;border-radius:18px;padding:16px;box-shadow:0 6px 20px rgba(37,99,235,0.3);">
+
+    <div style="font-weight:700;">Relationship Manager</div>
+    <div style="font-size:13px;">Amit Verma</div>
+    <div style="font-size:12px;opacity:0.85;">+91 9876543210</div>
+
+    <button style="margin-top:12px;width:100%;padding:12px;background:white;color:#2563EB;border:none;border-radius:12px;font-weight:600;">
+      Contact RM
+    </button>
+
+  </div>
+
 </div>
-
-<div class="card">
-  <b>Next Action</b>
-  <div id="nextAction">Upload Property Tax Receipt</div>
-  <button class="btn primary" onclick="uploadDoc('Property Tax Receipt')">Upload</button>
-</div>
-
-<div class="card">
-  <b>Tasks</b>
-
-  <div id="taskList"></div>
-</div>
-
-<script>
-
-let tasks = [
-  {name:"Property Tax Receipt", status:"pending", owner:"Legal"},
-  {name:"Electricity Bill", status:"pending", owner:"Ops"},
-  {name:"Income Proof", status:"verification", owner:"Credit"},
-  {name:"Bank Statement", status:"verification", owner:"Credit"},
-  {name:"Salary Slip", status:"query", owner:"Credit"}
-];
-
-function render() {
-  let html = "";
-
-  tasks.forEach((t,i)=>{
-    html += `<div class="item">
-      <div><b>${t.name}</b></div>
-      <div class="small">Status: ${t.status} • ${t.owner}</div>`;
-
-    if(t.status=="pending"){
-      html += `<button class="btn primary" onclick="uploadDoc('${t.name}')">Upload</button>`;
-    }
-
-    if(t.status=="verification"){
-      html += `<button class="btn secondary" onclick="viewDoc('${t.name}')">View</button>`;
-    }
-
-    if(t.status=="query"){
-      html += `<button class="btn primary" onclick="reupload('${t.name}')">Re-upload</button>`;
-    }
-
-    html += `</div>`;
-  });
-
-  document.getElementById("taskList").innerHTML = html;
-}
-
-function uploadDoc(name){
-  tasks = tasks.map(t => t.name==name ? {...t, status:"verification"} : t);
-  render();
-}
-
-function viewDoc(name){
-  alert("Viewing " + name);
-}
-
-function reupload(name){
-  tasks = tasks.map(t => t.name==name ? {...t, status:"verification"} : t);
-  render();
-}
-
-render();
-
-</script>
-
-</body>
-</html>
