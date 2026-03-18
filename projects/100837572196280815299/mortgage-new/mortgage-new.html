@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>iLens Disbursement OS</title>
+
+<style>
+body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
+
+.topbar { background:#a3211f; color:#fff; padding:10px 20px; display:flex; justify-content:space-between; }
+.subbar { background:#c0392b; color:#fff; padding:8px 20px; }
+
+.container { display:flex; }
+.sidebar { width:220px; background:#fff; border-right:1px solid #ddd; }
+.main { flex:1; padding:15px; }
+
+.header { background:#fff; padding:12px; display:flex; justify-content:space-between; border-radius:6px; }
+
+.role-banner { margin-top:10px; padding:10px; background:#1f3a5f; color:#fff; border-radius:6px; font-weight:600; }
+
+.strip { margin-top:10px; padding:10px; border-radius:6px; }
+.green { background:#e8f5e9; color:#2e7d32; }
+.red { background:#fdecea; color:#c62828; }
+
+.tracker { background:#fff; margin-top:10px; padding:10px; border-radius:6px; }
+.stage-bar { display:flex; }
+.stage { flex:1; text-align:center; padding:6px; border-right:1px solid #ddd; }
+.stage.active { background:#2e7d32; color:#fff; }
+
+.panel { background:#fff; margin-top:10px; border-radius:6px; }
+.panel-header { background:#1f3a5f; color:#fff; padding:10px; }
+
+table { width:100%; border-collapse:collapse; table-layout:fixed; }
+
+th, td { padding:10px; border-bottom:1px solid #eee; font-size:13px; }
+
+th { background:#f0f3f7; text-align:left; }
+
+.badge { padding:4px 8px; border-radius:5px; font-size:11px; color:#fff; }
+
+.pending { background:#fbc02d; color:#000; }
+.progress { background:#f57c00; }
+.submitted { background:#1976d2; }
+.verified { background:#2e7d32; }
+.query { background:#e53935; }
+
+button { padding:4px 6px; border:none; border-radius:4px; font-size:11px; }
+
+.blue { background:#1976d2; color:#fff; }
+.greenBtn { background:#2e7d32; color:#fff; }
+.orangeBtn { background:#f57c00; color:#fff; }
+.gray { background:#ccc; color:#666; cursor:not-allowed; }
+
+.timeline { background:#fff; padding:10px; margin-top:10px; border-radius:6px; font-size:12px; }
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div>iLens Mortgage</div>
+  <div>Demo Mode</div>
+</div>
+
+<div class="subbar">Disbursement OS</div>
+
+<div class="container">
+
+<div class="sidebar">
+  <div>Documents Dashboard</div>
+</div>
+
+<div class="main">
+
+<div class="header">
+  <div><b>NARENDRA VERMA</b></div>
+  <div>Status: In Progress</div>
+</div>
+
+<div class="role-banner" id="roleBanner"></div>
+<div class="strip green" id="completionBar"></div>
+
+<div class="tracker">
+  <div class="stage-bar" id="tracker"></div>
+</div>
+
+<div id="blocker" class="strip"></div>
+
+<div class="panel">
+<div class="panel-header">Documents Dashboard</div>
+
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Status</th>
+<th>Verification</th>
+<th>Action Pending At</th>
+<th>Docs</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="table"></tbody>
+</table>
+
+<div style="padding:10px;text-align:right;">
+<button class="greenBtn" onclick="submit()">Submit</button>
+</div>
+
+</div>
+
+<div class="timeline" id="timeline"></div>
+
+</div>
+</div>
+
+<script>
+
+let roles=["Customer","Sales","Credit","FCPG"];
+let stage=0;
+
+let tasks=[
+ {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Aadhaar", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Salary Slips", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Bank Statement", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+
+ {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Property Docs", owner:"Sales", verifier:"Credit", status:"Pending", doc:false},
+
+ {name:"Credit Approval", owner:"Credit", verifier:"FCPG", status:"Pending", doc:false},
+
+ {name:"Disbursement", owner:"FCPG", verifier:"Disbursement Process", status:"Pending", doc:false}
+];
+
+let timeline=[];
+
+function render(){
+
+ let role=roles[stage];
+ document.getElementById("roleBanner").innerHTML="👤 Logged in as: <b>"+role+"</b>";
+
+ let t="";
+ roles.forEach((r,i)=> t+=`<div class="stage ${i<=stage?'active':''}">${r}</div>`);
+ document.getElementById("tracker").innerHTML=t;
+
+ let done=tasks.filter(t=>t.status==="Verified").length;
+ let percent=Math.round(done/tasks.length*100);
+
+ document.getElementById("completionBar").innerHTML=
+ `Case Completion: ${percent}%
+ <div style="background:#ddd;height:6px;margin-top:5px;">
+ <div style="width:${percent}%;height:6px;background:#2e7d32;"></div></div>`;
+
+ let html="";
+
+ tasks.forEach((t,i)=>{
+
+ let verificationText =
