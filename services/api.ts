@@ -49,12 +49,18 @@ export const createProject = async (
 export const updateProject = async (
   slug: string,
   file: File,
-  editCode?: string
+  options?: { ownerId?: string; editCode?: string }
 ): Promise<UpdateProjectResponse> => {
   const formData = new FormData();
   formData.append('file', file);
-  if (editCode) formData.append('editCode', editCode);
+  if (options?.ownerId) formData.append('ownerId', options.ownerId);
+  if (options?.editCode) formData.append('editCode', options.editCode);
   const { data } = await api.put<UpdateProjectResponse>(`/projects/${slug}`, formData);
+  return data;
+};
+
+export const rotateEditCode = async (slug: string): Promise<Project> => {
+  const { data } = await api.patch<Project>(`/projects/${slug}`, { regenerateCode: true });
   return data;
 };
 

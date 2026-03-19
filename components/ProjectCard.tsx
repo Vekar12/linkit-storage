@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { deleteProject, setProjectVisibility, renameProject } from '@/services/api';
+import { deleteProject, setProjectVisibility, renameProject, rotateEditCode } from '@/services/api';
 import { addHistory } from '@/lib/history';
 import type { Project } from '@/types';
 
@@ -22,16 +22,19 @@ interface ProjectCardProps {
   onDeleted: (slug: string) => void;
   onVisibilityChanged?: (slug: string, visibility: 'personal' | 'public') => void;
   onRenamed?: (slug: string, projectName: string) => void;
+  onEditCodeChanged?: (slug: string, editCode: string) => void;
   isPublicView?: boolean;
 }
 
-function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, isPublicView = false }: ProjectCardProps) {
+function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEditCodeChanged, isPublicView = false }: ProjectCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [rotating, setRotating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [visibility, setVisibilityState] = useState<'personal' | 'public'>(project.visibility ?? 'personal');
+  const [editCodeDisplay, setEditCodeDisplay] = useState(project.editCode ?? '');
   const [displayName, setDisplayName] = useState(project.projectName);
   const [isRenaming, setIsRenaming] = useState(false);
   const [nameInput, setNameInput] = useState(project.projectName);
@@ -108,14 +111,33 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, isPub
 
   const handleCopyCode = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!project.editCode) return;
+    if (!editCodeDisplay) return;
     try {
-      await navigator.clipboard.writeText(project.editCode);
+      await navigator.clipboard.writeText(editCodeDisplay);
       setCodeCopied(true);
       toast.success('Edit code copied!');
       setTimeout(() => setCodeCopied(false), 2000);
     } catch {
       toast.error('Could not copy.');
+    }
+  };
+
+  const handleRotateCode = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (rotating) return;
+    setRotating(true);
+    try {
+      const updated = await rotateEditCode(project.slug);
+      const newCode = updated.editCode ?? '';
+      setEditCodeDisplay(newCode);
+      onEditCodeChanged?.(project.slug, newCode);
+      toast.success('Edit code rotated — old code is now invalid.');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
+      const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
+      toast.error(msg ?? 'Could not rotate edit code.');
+    } finally {
+      setRotating(false);
     }
   };
 
@@ -239,17 +261,16 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, isPub
           {visibility === 'public' ? 'Public' : 'Personal'}
         </button>
         {/* Edit code — shown to owner when project is public */}
-        {!isPublicView && project.editCode && visibility === 'public' && (
+        {!isPublicView && editCodeDisplay && visibility === 'public' && (
           <div className="flex items-center gap-1 mt-1.5" onClick={(e) => e.stopPropagation()}>
             <span className="text-[10px] font-mono tracking-widest text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-              {project.editCode}
+              {editCodeDisplay}
             </span>
-            <button
-              onClick={handleCopyCode}
-              title="Copy edit code"
-              className="text-gray-300 hover:text-primary transition-colors"
-            >
+            <button onClick={handleCopyCode} title="Copy edit code" className="text-gray-300 hover:text-primary transition-colors">
               {codeCopied ? <CheckCircle size={9} className="text-primary" /> : <Copy size={9} />}
+            </button>
+            <button onClick={handleRotateCode} title="Rotate code (invalidates old)" className="text-gray-300 hover:text-amber-500 transition-colors">
+              <RefreshCw size={9} className={rotating ? 'animate-spin' : ''} />
             </button>
           </div>
         )}

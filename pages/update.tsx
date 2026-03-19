@@ -8,6 +8,7 @@ import FileDropzone from '@/components/FileDropzone';
 import { updateProject } from '@/services/api';
 import { addHistory } from '@/lib/history';
 import { checkAuth } from '@/lib/auth';
+import { getTokenPayload } from '@/lib/jwt';
 
 export default function UpdatePage() {
   const router = useRouter();
@@ -17,8 +18,21 @@ export default function UpdatePage() {
   const [file, setFile] = useState<File | null>(null);
   const [htmlCode, setHtmlCode] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [shareUrlInput, setShareUrlInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState('');
+
+  const currentUserId = getTokenPayload()?.sub ?? '';
+  const isOwner = !ownerId || ownerId === currentUserId;
+
+  const handleParseShareUrl = (url: string) => {
+    setShareUrlInput(url);
+    const match = url.match(/\/p\/([^/\s]+)\/([^/\s?#]+)/);
+    if (match) {
+      setOwnerId(match[1]);
+      setSlug(match[2]);
+    }
+  };
 
   useEffect(() => {
     if (router.query.slug) setSlug(router.query.slug as string);
@@ -41,6 +55,10 @@ export default function UpdatePage() {
     }
     if (uploadMode === 'html' && !htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
     if (uploadMode === 'file' && !file) { toast.error('Please select a file to upload.'); return; }
+    if (!isOwner && !editCode.trim()) {
+      toast.error('Edit code is required to update someone else\'s project.');
+      return;
+    }
 
     // Open new tab now — must be synchronous within the user gesture
     const newTab = window.open('', '_blank');
@@ -65,7 +83,9 @@ export default function UpdatePage() {
 
     const attemptUpdate = async (attemptsLeft: number): Promise<void> => {
       try {
-        await updateProject(cleanSlug, uploadFile!, editCode.trim() || undefined);
+        await updateProject(cleanSlug, uploadFile!, isOwner
+          ? undefined
+          : { ownerId, editCode: editCode.trim() });
         addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
         const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
         const link = `${window.location.origin}${linkPath}`;
@@ -155,6 +175,21 @@ export default function UpdatePage() {
 
         <div className="li-card">
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {/* Collaborator helper — paste share URL to auto-fill slug + owner */}
+            {!router.query.slug && (
+              <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3">
+                <p className="text-xs font-semibold text-violet-700 mb-1.5">Updating someone else&apos;s project?</p>
+                <input
+                  type="text"
+                  className="li-input text-sm"
+                  placeholder="Paste the share URL — e.g. https://…/p/123456/my-resume"
+                  value={shareUrlInput}
+                  onChange={(e) => handleParseShareUrl(e.target.value)}
+                />
+                <p className="text-xs text-violet-500 mt-1">Slug and owner ID will be filled automatically.</p>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Project Slug</label>
               <input
@@ -167,22 +202,24 @@ export default function UpdatePage() {
               <p className="text-xs text-gray-400 mt-1.5">Find this on your project card in the dashboard.</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                <KeyRound size={13} className="text-gray-400" />
-                Edit Code
-                <span className="text-gray-400 font-normal text-xs">(only needed if you don&apos;t own this project)</span>
-              </label>
-              <input
-                type="text"
-                className="li-input font-mono tracking-widest uppercase"
-                placeholder="e.g. A3X9KZ2M"
-                value={editCode}
-                onChange={(e) => setEditCode(e.target.value.toUpperCase())}
-                maxLength={20}
-              />
-              <p className="text-xs text-gray-400 mt-1.5">Ask the project owner to share their edit code with you.</p>
-            </div>
+            {/* Edit code — only shown for non-owner collaborator updates */}
+            {!isOwner && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <KeyRound size={13} className="text-gray-400" />
+                  Edit Code
+                </label>
+                <input
+                  type="text"
+                  className="li-input font-mono tracking-widest uppercase"
+                  placeholder="e.g. A3X9KZ2M"
+                  value={editCode}
+                  onChange={(e) => setEditCode(e.target.value.toUpperCase())}
+                  maxLength={20}
+                />
+                <p className="text-xs text-gray-400 mt-1.5">Ask the project owner to share their edit code with you.</p>
+              </div>
+            )}
 
             <div
               className="flex gap-1 rounded-xl p-1 border border-gray-100"

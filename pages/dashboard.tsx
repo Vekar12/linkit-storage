@@ -108,6 +108,12 @@ export default function Dashboard() {
     if (_cache) _cache.data = _cache.data.map(update);
   };
 
+  const handleEditCodeChanged = (slug: string, editCode: string) => {
+    const update = (p: Project) => p.slug === slug ? { ...p, editCode } : p;
+    setProjects((prev) => prev.map(update));
+    if (_cache) _cache.data = _cache.data.map(update);
+  };
+
   // User greeting
   const payload = getTokenPayload();
   const displayName = payload?.name || payload?.login || payload?.email?.split('@')[0] || 'there';
@@ -359,6 +365,7 @@ export default function Dashboard() {
                         }}
                         onVisibilityChanged={handleVisibilityChanged}
                         onRenamed={handleRenamed}
+                        onEditCodeChanged={handleEditCodeChanged}
                       />
                     ))}
                   </div>
