@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { CheckCircle, ArrowLeft, Upload, Code2, ExternalLink, KeyRound } from 'lucide-react';
+import { ArrowLeft, Upload, Code2, KeyRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { marked } from 'marked';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -21,7 +21,6 @@ export default function UpdatePage() {
   const [remarks, setRemarks] = useState('');
   const [shareUrlInput, setShareUrlInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [shareLink, setShareLink] = useState('');
 
   const currentUserId = getTokenPayload()?.sub ?? '';
   const isOwner = !ownerId || ownerId === currentUserId;
@@ -89,11 +88,12 @@ export default function UpdatePage() {
           ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
         });
         addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
-        const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
+        const shareOwner = ownerId || currentUserId;
+        const linkPath = shareOwner ? `/p/${shareOwner}/${cleanSlug}` : `/p/${cleanSlug}`;
         const link = `${window.location.origin}${linkPath}`;
-        setShareLink(link);
         if (newTab && !newTab.closed) newTab.location.href = link;
-        toast.success('Project updated!');
+        toast.success('Upload successful!', { duration: 7000 });
+        router.push(`/projects/${cleanSlug}?owner=${shareOwner}`);
       } catch (err: unknown) {
         const axiosErr = err as { response?: { status?: number; data?: unknown } };
         const status = axiosErr?.response?.status;
@@ -127,37 +127,6 @@ export default function UpdatePage() {
       setLoading(false);
     }
   };
-
-  if (shareLink) {
-    return (
-      <DashboardLayout>
-        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-20">
-          <div className="w-full max-w-lg text-center">
-            <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle size={36} className="text-primary" />
-            </div>
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Project updated!</h2>
-            <p className="text-gray-400 text-sm mb-6">The same share link now serves your new file.</p>
-            <a
-              href={shareLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="li-btn-primary w-full py-3 flex items-center justify-center gap-2 rounded-xl mb-3"
-            >
-              <ExternalLink size={15} />
-              Open Updated Link
-            </a>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   return (
     <DashboardLayout>
