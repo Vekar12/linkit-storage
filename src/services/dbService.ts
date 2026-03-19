@@ -91,8 +91,12 @@ export async function getProjectBySlug(
   const cached = getCached<ProjectMetadata>(cacheKey);
   if (cached) return cached;
   const meta = await readJSON<ProjectMetadata>(`projects/${ownerId}/${slug}/metadata.json`);
-  if (meta) setCached(cacheKey, meta);
-  return meta;
+  if (meta) {
+    const normalised = { ...meta, visibility: meta.visibility ?? 'personal' } as ProjectMetadata;
+    setCached(cacheKey, normalised);
+    return normalised;
+  }
+  return null;
 }
 
 export async function updateProjectMetadata(
@@ -130,6 +134,7 @@ export async function getAllPublicProjects(): Promise<ProjectMetadata[]> {
     projects = perOwner
       .flat()
       .filter((p) => p.visibility === 'public')
+      .map((p) => ({ ...p, visibility: 'public' as const }))
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     setCached(cacheKey, projects);
   }

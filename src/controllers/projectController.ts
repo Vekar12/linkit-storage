@@ -300,7 +300,9 @@ export async function updateVisibility(
     }
 
     const updated = await updateProjectMetadata(ownerId, slug, { visibility });
-    res.status(200).json({ message: 'Visibility updated', ...updated });
+    // Spread updated fields but always guarantee visibility is present,
+    // even if updateProjectMetadata returns null for any reason
+    res.status(200).json({ message: 'Visibility updated', ...(updated ?? {}), visibility });
   } catch (err) {
     next(err);
   }
