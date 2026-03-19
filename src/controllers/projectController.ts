@@ -188,6 +188,7 @@ export async function getProjectMetadata(
     res.status(200).json({
       fileType: metadata.fileType,
       fileURL: `${buildPagesUrl(ownerId, slug, metadata.currentFile)}?_cb=${cb}`,
+      visibility: metadata.visibility ?? 'personal',
       versions: metadata.versions,
     });
   } catch (err) {
