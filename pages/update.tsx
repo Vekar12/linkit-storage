@@ -31,31 +31,34 @@ export default function UpdatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Sync validation before any await
     const cleanSlug = slug.trim().toLowerCase();
     if (!cleanSlug) { toast.error('Please enter the project slug.'); return; }
     if (!/^[a-z0-9-]+$/.test(cleanSlug)) {
       toast.error('Slug can only contain lowercase letters, numbers, and hyphens.');
       return;
     }
+    if (uploadMode === 'html' && !htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
+    if (uploadMode === 'file' && !file) { toast.error('Please select a file to upload.'); return; }
+
+    // Open new tab now — must be synchronous within the user gesture
+    const newTab = window.open('', '_blank');
 
     let uploadFile: File | null = file;
 
     if (uploadMode === 'html') {
-      if (!htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
       const blob = new Blob([htmlCode], { type: 'text/html' });
       uploadFile = new File([blob], `${cleanSlug}.html`, { type: 'text/html' });
-    } else {
-      if (!uploadFile) { toast.error('Please select a file to upload.'); return; }
-      if (uploadFile.name.endsWith('.md')) {
-        try {
-          const text = await uploadFile.text();
-          const html = await marked(text);
-          const blob = new Blob([html], { type: 'text/html' });
-          uploadFile = new File([blob], uploadFile.name.replace('.md', '.html'), { type: 'text/html' });
-        } catch {
-          toast.error('Failed to parse Markdown. Please check your file.');
-          return;
-        }
+    } else if (uploadFile!.name.endsWith('.md')) {
+      try {
+        const text = await uploadFile!.text();
+        const html = await marked(text);
+        const blob = new Blob([html], { type: 'text/html' });
+        uploadFile = new File([blob], uploadFile!.name.replace('.md', '.html'), { type: 'text/html' });
+      } catch {
+        toast.error('Failed to parse Markdown. Please check your file.');
+        try { newTab?.close(); } catch {}
+        return;
       }
     }
 
@@ -64,7 +67,9 @@ export default function UpdatePage() {
         await updateProject(cleanSlug, uploadFile!);
         addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
         const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
-        setShareLink(`${window.location.origin}${linkPath}`);
+        const link = `${window.location.origin}${linkPath}`;
+        setShareLink(link);
+        if (newTab && !newTab.closed) newTab.location.href = link;
         toast.success('Project updated!');
       } catch (err: unknown) {
         const axiosErr = err as { response?: { status?: number; data?: unknown } };
@@ -78,6 +83,7 @@ export default function UpdatePage() {
           return attemptUpdate(attemptsLeft - 1);
         }
 
+        try { newTab?.close(); } catch {}
         const serverMsg = (axiosErr?.response?.data as { message?: string; error?: string })?.message
           ?? (axiosErr?.response?.data as { message?: string; error?: string })?.error;
         const msg = status === 404

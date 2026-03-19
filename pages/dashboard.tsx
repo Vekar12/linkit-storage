@@ -145,27 +145,30 @@ export default function Dashboard() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Sync validation before any await so we can open the tab within the user gesture
     if (!projectName.trim()) { toast.error('Enter a project name.'); return; }
+    if (uploadMode === 'html' && !htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
+    if (uploadMode === 'file' && !file) { toast.error('Select a file.'); return; }
+
+    // Open new tab now — must be synchronous within the user gesture
+    const newTab = window.open('', '_blank');
 
     let uploadFile: File | null = file;
 
     if (uploadMode === 'html') {
-      if (!htmlCode.trim()) { toast.error('Paste some HTML code first.'); return; }
       const blob = new Blob([htmlCode], { type: 'text/html' });
       const safeName = projectName.trim().toLowerCase().replace(/\s+/g, '-');
       uploadFile = new File([blob], `${safeName}.html`, { type: 'text/html' });
-    } else {
-      if (!uploadFile) { toast.error('Select a file.'); return; }
-      if (uploadFile.name.endsWith('.md')) {
-        try {
-          const text = await uploadFile.text();
-          const html = await marked(text);
-          const blob = new Blob([html], { type: 'text/html' });
-          uploadFile = new File([blob], uploadFile.name.replace('.md', '.html'), { type: 'text/html' });
-        } catch {
-          toast.error('Failed to parse Markdown. Please check your file and try again.');
-          return;
-        }
+    } else if (uploadFile!.name.endsWith('.md')) {
+      try {
+        const text = await uploadFile!.text();
+        const html = await marked(text);
+        const blob = new Blob([html], { type: 'text/html' });
+        uploadFile = new File([blob], uploadFile!.name.replace('.md', '.html'), { type: 'text/html' });
+      } catch {
+        toast.error('Failed to parse Markdown. Please check your file and try again.');
+        try { newTab?.close(); } catch {}
+        return;
       }
     }
 
@@ -182,6 +185,7 @@ export default function Dashboard() {
           ? (newProject.shareLink ?? `${window.location.origin}/p/${newProject.ownerId}/${newProject.slug}`)
           : result.shareLink;
         setShareLink(correctLink);
+        if (newTab && !newTab.closed) newTab.location.href = correctLink;
         setProjectName('');
         setFile(null);
         setHtmlCode('');
@@ -197,6 +201,7 @@ export default function Dashboard() {
           return attemptCreate(attemptsLeft - 1);
         }
 
+        try { newTab?.close(); } catch {}
         const msg = status === 409
           ? 'A project with this name already exists.'
           : status === 403
