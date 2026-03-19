@@ -202,7 +202,7 @@ const MIME_MAP: Record<string, string> = {
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 };
 
-// GET /projects/:ownerId/:slug/download — proxy file to avoid CORS on raw.githubusercontent.com
+// GET /projects/:ownerId/:slug/download?version=N — proxy file, supports version history
 export async function downloadProject(
   req: Request,
   res: Response,
@@ -217,7 +217,33 @@ export async function downloadProject(
       return;
     }
 
-    const filePath = `projects/${ownerId}/${slug}/${metadata.currentFile}`;
+    const latestVersion = metadata.versions[metadata.versions.length - 1]?.version ?? 1;
+    const requestedVersion = req.query.version !== undefined
+      ? parseInt(String(req.query.version), 10)
+      : latestVersion;
+
+    if (isNaN(requestedVersion) || requestedVersion < 1) {
+      res.status(400).json({ error: 'version must be a positive integer' });
+      return;
+    }
+
+    const versionEntry = metadata.versions.find((v) => v.version === requestedVersion);
+    if (!versionEntry) {
+      res.status(404).json({ error: `Version ${requestedVersion} not found` });
+      return;
+    }
+
+    // Latest version lives at the root of the project folder;
+    // older versions are archived under versions/v{N}_{filename}
+    const isLatest = requestedVersion === latestVersion;
+    const filePath = isLatest
+      ? `projects/${ownerId}/${slug}/${metadata.currentFile}`
+      : `projects/${ownerId}/${slug}/versions/v${requestedVersion}_${versionEntry.filename}`;
+
+    const downloadFilename = isLatest
+      ? metadata.currentFile
+      : `v${requestedVersion}_${versionEntry.filename}`;
+
     const buffer = await getFileBuffer(filePath);
 
     if (!buffer) {
@@ -225,9 +251,10 @@ export async function downloadProject(
       return;
     }
 
-    const contentType = MIME_MAP[metadata.fileType] ?? 'application/octet-stream';
+    const ext = versionEntry.filename.split('.').pop() ?? metadata.fileType;
+    const contentType = MIME_MAP[ext] ?? MIME_MAP[metadata.fileType] ?? 'application/octet-stream';
 
-    res.setHeader('Content-Disposition', `attachment; filename="${metadata.currentFile}"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', buffer.length);
     res.send(buffer);
