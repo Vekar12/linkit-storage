@@ -272,8 +272,8 @@ export async function updateVisibility(
       return;
     }
 
-    await updateProjectMetadata(ownerId, slug, { visibility });
-    res.status(200).json({ message: 'Visibility updated' });
+    const updated = await updateProjectMetadata(ownerId, slug, { visibility });
+    res.status(200).json({ message: 'Visibility updated', ...updated });
   } catch (err) {
     next(err);
   }

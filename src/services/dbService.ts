@@ -75,9 +75,9 @@ export async function getProjectsByOwner(ownerId: string): Promise<ProjectMetada
     const results = await Promise.all(
       slugs.map((s) => readJSON<ProjectMetadata>(`projects/${ownerId}/${s}/metadata.json`))
     );
-    projects = (results.filter(Boolean) as ProjectMetadata[]).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    projects = (results.filter(Boolean) as ProjectMetadata[])
+      .map((p) => ({ ...p, visibility: p.visibility ?? 'personal' }))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     setCached(cacheKey, projects);
   }
   return projects;
@@ -108,7 +108,7 @@ export async function updateProjectMetadata(
     updated,
     `chore: update ${slug}`
   );
-  bust(`project:${ownerId}:${slug}`, `projects:${ownerId}`);
+  bust(`project:${ownerId}:${slug}`, `projects:${ownerId}`, 'projects:public');
   return updated;
 }
 
@@ -141,5 +141,5 @@ export async function deleteProjectMetadata(ownerId: string, slug: string): Prom
     `projects/${ownerId}/${slug}/metadata.json`,
     `chore: delete project ${slug}`
   );
-  bust(`project:${ownerId}:${slug}`, `projects:${ownerId}`);
+  bust(`project:${ownerId}:${slug}`, `projects:${ownerId}`, 'projects:public');
 }
