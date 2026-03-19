@@ -13,7 +13,10 @@ export interface ProjectMetadata {
   fileType: string;
   currentFile: string;
   ownerId: string;
+  ownerName?: string;
+  lastUpdatedByName?: string;
   visibility: Visibility;
+  editCode?: string;
   createdAt: string;
   updatedAt: string;
   versions: VersionEntry[];

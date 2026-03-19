@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import {
   createProject,
   updateProject,
+  collaboratorUpdateProject,
   getProjects,
   getPublicProjects,
   getProjectMetadata,
@@ -47,5 +48,8 @@ router.delete('/:slug', requireAuth, validateSlug, deleteProject);
 // Public routes — ownerId is part of the URL for share-page resolution
 router.get('/:ownerId/:slug/metadata', validateOwnerId, validateSlug, getProjectMetadata);
 router.get('/:ownerId/:slug/download', validateOwnerId, validateSlug, downloadProject);
+
+// Collaborative update — authenticated, requires editCode in body (unless requester is owner)
+router.put('/:ownerId/:slug', requireAuth, uploadLimiter, validateOwnerId, validateSlug, upload.single('file'), collaboratorUpdateProject);
 
 export default router;

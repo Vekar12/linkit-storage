@@ -4,13 +4,15 @@ import jwt from 'jsonwebtoken';
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: string; provider: 'github' | 'google' };
+      user?: { id: string; provider: 'github' | 'google'; name?: string };
     }
   }
 }
 
+type CachedUser = { id: string; provider: 'github' | 'google'; name?: string };
+
 // Cache verified tokens for 5 minutes
-const tokenCache = new Map<string, { user: { id: string; provider: 'github' | 'google' }; expiresAt: number }>();
+const tokenCache = new Map<string, { user: CachedUser; expiresAt: number }>();
 
 // Purge expired entries every 10 minutes to prevent unbounded growth
 setInterval(() => {
@@ -20,9 +22,7 @@ setInterval(() => {
   }
 }, 10 * 60_000);
 
-function verifyToken(
-  token: string
-): { id: string; provider: 'github' | 'google' } | null {
+function verifyToken(token: string): CachedUser | null {
   const cached = tokenCache.get(token);
   if (cached && Date.now() < cached.expiresAt) return cached.user;
 
@@ -30,9 +30,10 @@ function verifyToken(
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
       sub: string;
       provider: 'github' | 'google';
+      name?: string;
     };
     if (!decoded.sub || !decoded.provider) return null;
-    const user = { id: decoded.sub, provider: decoded.provider };
+    const user: CachedUser = { id: decoded.sub, provider: decoded.provider, name: decoded.name };
     tokenCache.set(token, { user, expiresAt: Date.now() + 5 * 60_000 });
     return user;
   } catch {

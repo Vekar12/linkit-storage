@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
-import { Visibility } from '../types';
+import { randomBytes } from 'crypto';
+import { ProjectMetadata, Visibility } from '../types';
 import { generateSlug } from '../utils/slugUtils';
 import {
   createProjectMetadata,
@@ -17,6 +18,12 @@ import {
   buildPagesUrl,
   deleteProjectFolder,
 } from '../services/githubService';
+
+// 8-char alphanumeric edit code, unambiguous characters
+function generateEditCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from(randomBytes(8)).map((b) => chars[b % chars.length]).join('');
+}
 
 // POST /projects
 export async function createProject(
@@ -49,6 +56,7 @@ export async function createProject(
     const visibility: Visibility = rawVisibility === 'public' ? 'public' : 'personal';
 
     const ownerId = req.user!.id;
+    const ownerName = req.user!.name;
 
     // Collision check is now scoped per owner — two different users can share the same slug
     const existing = await getProjectBySlug(ownerId, slug);
@@ -65,7 +73,7 @@ export async function createProject(
     await uploadFile(filePath, file.buffer, `feat: create project ${slug}`);
     const metadata = await createProjectMetadata(
       projectName, slug, filename,
-      ext.replace('.', ''), fileURL, ownerId, visibility
+      ext.replace('.', ''), fileURL, ownerId, visibility, ownerName
     );
 
     res.status(201).json({
@@ -77,7 +85,7 @@ export async function createProject(
   }
 }
 
-// PUT /projects/:slug
+// PUT /projects/:slug — owner update, or non-owner collaborative update with editCode
 export async function updateProject(
   req: Request,
   res: Response,
@@ -85,7 +93,7 @@ export async function updateProject(
 ): Promise<void> {
   try {
     const { slug } = req.params;
-    const ownerId = req.user!.id;
+    const requesterId = req.user!.id;
     const file = req.file;
 
     if (!file) {
@@ -93,14 +101,36 @@ export async function updateProject(
       return;
     }
 
+    // Non-owners pass the project owner's ID in the form body so we can look up the right project
+    const OWNER_ID_RE = /^[a-zA-Z0-9_-]{1,128}$/;
+    const bodyOwnerId = req.body.ownerId;
+    const ownerId =
+      bodyOwnerId && OWNER_ID_RE.test(bodyOwnerId) && bodyOwnerId !== requesterId
+        ? bodyOwnerId
+        : requesterId;
+
     const metadata = await getProjectBySlug(ownerId, slug);
     if (!metadata) {
       res.status(404).json({ error: 'Project not found' });
       return;
     }
 
+    // Non-owner: must present a valid edit code and project must be public
+    if (ownerId !== requesterId) {
+      if (metadata.visibility !== 'public') {
+        res.status(403).json({ error: 'Project is not open for collaboration' });
+        return;
+      }
+      const { editCode } = req.body;
+      if (!editCode || editCode !== metadata.editCode) {
+        res.status(403).json({ error: 'Invalid or missing edit code' });
+        return;
+      }
+    }
+
     const ext = path.extname(file.originalname).toLowerCase() || '.html';
     const newVersionNumber = metadata.versions.length + 1;
+    const lastUpdatedByName = req.user!.name;
 
     // Fetch current file content+SHA in one call, then archive it
     const current = await getFileWithSHA(`projects/${ownerId}/${slug}/${metadata.currentFile}`);
@@ -123,6 +153,7 @@ export async function updateProject(
       const updated = await updateProjectMetadata(ownerId, slug, {
         fileType: ext.replace('.', ''),
         currentFile: newFilename,
+        lastUpdatedByName,
         versions: [
           ...metadata.versions,
           { version: newVersionNumber, filename: newFilename, fileURL: newFileURL, uploadedAt: new Date().toISOString() },
@@ -143,6 +174,7 @@ export async function updateProject(
     const updated = await updateProjectMetadata(ownerId, slug, {
       fileType: ext.replace('.', ''),
       currentFile: newFilename,
+      lastUpdatedByName,
       versions: [
         ...metadata.versions,
         { version: newVersionNumber, filename: newFilename, fileURL: newFileURL, uploadedAt: new Date().toISOString() },
@@ -155,7 +187,101 @@ export async function updateProject(
   }
 }
 
-// GET /projects — returns only the requesting user's projects
+// PUT /projects/:ownerId/:slug — collaborative update (non-owner with edit code, or owner)
+export async function collaboratorUpdateProject(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { ownerId, slug } = req.params;
+    const requesterId = req.user!.id;
+    const file = req.file;
+
+    if (!file) {
+      res.status(400).json({ error: 'file is required' });
+      return;
+    }
+
+    const metadata = await getProjectBySlug(ownerId, slug);
+    if (!metadata) {
+      res.status(404).json({ error: 'Project not found' });
+      return;
+    }
+
+    const isOwner = requesterId === ownerId;
+
+    if (!isOwner) {
+      if (metadata.visibility !== 'public') {
+        res.status(403).json({ error: 'Project is not open for collaboration' });
+        return;
+      }
+      const { editCode } = req.body;
+      if (!editCode || editCode !== metadata.editCode) {
+        res.status(403).json({ error: 'Invalid or missing edit code' });
+        return;
+      }
+    }
+
+    const ext = path.extname(file.originalname).toLowerCase() || '.html';
+    const newVersionNumber = metadata.versions.length + 1;
+    const lastUpdatedByName = req.user!.name;
+
+    const current = await getFileWithSHA(`projects/${ownerId}/${slug}/${metadata.currentFile}`);
+    if (current) {
+      const archivedName = `v${newVersionNumber - 1}_${metadata.currentFile}`;
+      await uploadFile(
+        `projects/${ownerId}/${slug}/versions/${archivedName}`,
+        Buffer.from(current.content, 'base64'),
+        `chore: archive v${newVersionNumber - 1} of ${slug}`,
+        undefined
+      );
+
+      const newFilename = `${slug}${ext}`;
+      const newFilePath = `projects/${ownerId}/${slug}/${newFilename}`;
+      const newFileURL = buildPagesUrl(ownerId, slug, newFilename);
+      const useSha = newFilename === metadata.currentFile ? current.sha : undefined;
+
+      await uploadFile(newFilePath, file.buffer, `feat: update ${slug} to v${newVersionNumber}`, useSha);
+
+      const updated = await updateProjectMetadata(ownerId, slug, {
+        fileType: ext.replace('.', ''),
+        currentFile: newFilename,
+        lastUpdatedByName,
+        versions: [
+          ...metadata.versions,
+          { version: newVersionNumber, filename: newFilename, fileURL: newFileURL, uploadedAt: new Date().toISOString() },
+        ],
+      });
+
+      res.status(200).json({ message: 'Project updated successfully', ...updated });
+      return;
+    }
+
+    // Fallback: current file not found in GitHub
+    const newFilename = `${slug}${ext}`;
+    const newFilePath = `projects/${ownerId}/${slug}/${newFilename}`;
+    const newFileURL = buildPagesUrl(ownerId, slug, newFilename);
+
+    await uploadFile(newFilePath, file.buffer, `feat: update ${slug} to v${newVersionNumber}`);
+
+    const updated = await updateProjectMetadata(ownerId, slug, {
+      fileType: ext.replace('.', ''),
+      currentFile: newFilename,
+      lastUpdatedByName,
+      versions: [
+        ...metadata.versions,
+        { version: newVersionNumber, filename: newFilename, fileURL: newFileURL, uploadedAt: new Date().toISOString() },
+      ],
+    });
+
+    res.status(200).json({ message: 'Project updated successfully', ...updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// GET /projects — returns only the requesting user's projects (includes editCode)
 export async function getProjects(
   req: Request,
   res: Response,
@@ -277,7 +403,7 @@ export async function getPublicProjects(
   }
 }
 
-// PATCH /projects/:slug — update projectName and/or visibility
+// PATCH /projects/:slug — update projectName, visibility, and/or regenerate edit code
 export async function updateVisibility(
   req: Request,
   res: Response,
@@ -286,22 +412,22 @@ export async function updateVisibility(
   try {
     const { slug } = req.params;
     const ownerId = req.user!.id;
-    const { visibility, projectName: rawName } = req.body;
+    const { visibility, projectName: rawName, regenerateCode } = req.body;
 
     // Validate fields — at least one must be present
-    if (visibility === undefined && rawName === undefined) {
-      res.status(400).json({ error: 'Provide at least one of: visibility, projectName' });
+    if (visibility === undefined && rawName === undefined && !regenerateCode) {
+      res.status(400).json({ error: 'Provide at least one of: visibility, projectName, regenerateCode' });
       return;
     }
 
-    const updates: Record<string, string> = {};
+    const updates: Partial<ProjectMetadata> = {};
 
     if (visibility !== undefined) {
       if (visibility !== 'personal' && visibility !== 'public') {
         res.status(400).json({ error: 'visibility must be "personal" or "public"' });
         return;
       }
-      updates.visibility = visibility;
+      updates.visibility = visibility as Visibility;
     }
 
     if (rawName !== undefined) {
@@ -321,6 +447,13 @@ export async function updateVisibility(
     if (!metadata) {
       res.status(404).json({ error: 'Project not found' });
       return;
+    }
+
+    // Generate edit code when explicitly requested, or when first setting to public
+    if (regenerateCode) {
+      updates.editCode = generateEditCode();
+    } else if (updates.visibility === 'public' && !metadata.editCode) {
+      updates.editCode = generateEditCode();
     }
 
     const updated = await updateProjectMetadata(ownerId, slug, updates);
