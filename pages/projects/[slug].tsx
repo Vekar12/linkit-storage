@@ -31,10 +31,13 @@ export default function VersionHistoryPage() {
     try {
       await setProjectVisibility(slug, next);
       toast.success(next === 'public' ? 'Project set to Public' : 'Project set to Personal');
-    } catch {
+    } catch (err: unknown) {
       setVisibilityState(prev);
       setVisibility(slug, prev);
-      toast.error('Could not update visibility.');
+      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
+      const status = axiosErr?.response?.status;
+      const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
+      toast.error(msg ?? `Could not update visibility (${status ?? 'no response'}).`);
     }
   };
 

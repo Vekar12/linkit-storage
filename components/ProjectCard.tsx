@@ -39,10 +39,13 @@ function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     try {
       await setProjectVisibility(project.slug, next);
       toast.success(next === 'public' ? 'Set to Public' : 'Set to Personal');
-    } catch {
+    } catch (err: unknown) {
       setVisibilityState(prev);
       setVisibility(project.slug, prev);
-      toast.error('Could not update visibility. Please try again.');
+      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
+      const status = axiosErr?.response?.status;
+      const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
+      toast.error(msg ?? `Could not update visibility (${status ?? 'no response'}).`);
     }
   };
 
