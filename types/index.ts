@@ -26,6 +26,7 @@ export interface ProjectMetadata {
   fileURL: string;
   versions: ProjectVersion[];
   visibility?: 'personal' | 'public';
+  editCode?: string;
 }
 
 export interface CreateProjectResponse {

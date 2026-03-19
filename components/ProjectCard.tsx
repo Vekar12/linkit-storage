@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe, Pencil } from 'lucide-react';
+import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe, Pencil, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { deleteProject, setProjectVisibility, renameProject, rotateEditCode } from '@/services/api';
 import { addHistory } from '@/lib/history';
@@ -142,6 +142,24 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
   };
 
   const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/projects/${project.ownerId}/${project.slug}/download`;
+  const isHtml = project.fileType?.toLowerCase() === 'html';
+
+  const handleDownloadHtmlAsPdf = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const win = window.open('', '_blank');
+    if (!win) { toast.error('Allow popups to save as PDF.'); return; }
+    try {
+      const res = await fetch(downloadUrl);
+      const html = await res.text();
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      setTimeout(() => win.print(), 800);
+    } catch {
+      try { win.close(); } catch {}
+      toast.error('Could not load file for PDF export.');
+    }
+  };
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -173,7 +191,11 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
 
   return (
     <div
-      onClick={() => router.push(`/projects/${project.slug}?owner=${project.ownerId}`)}
+      onClick={() => {
+        const editParam = !isPublicView && project.editCode && project.visibility === 'public'
+          ? `&editCode=${project.editCode}` : '';
+        router.push(`/projects/${project.slug}?owner=${project.ownerId}${editParam}`);
+      }}
       className="bg-white rounded-2xl flex flex-col justify-between aspect-square cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
       style={{
         boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
@@ -220,7 +242,7 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
             />
           ) : (
             <>
-              <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-1 flex-1 min-w-0" title={displayName}>
                 {displayName}
               </h3>
               <button
@@ -301,15 +323,25 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
             }
           </button>
 
-          <a
-            href={downloadUrl}
-            download
-            onClick={(e) => e.stopPropagation()}
-            title="Download"
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
-          >
-            <Download size={13} className="text-gray-400" />
-          </a>
+          {isHtml ? (
+            <button
+              onClick={handleDownloadHtmlAsPdf}
+              title="Save as PDF"
+              className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
+            >
+              <FileText size={13} className="text-gray-400" />
+            </button>
+          ) : (
+            <a
+              href={downloadUrl}
+              download
+              onClick={(e) => e.stopPropagation()}
+              title="Download"
+              className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
+            >
+              <Download size={13} className="text-gray-400" />
+            </a>
+          )}
 
           <button
             onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}&owner=${project.ownerId}`); }}
