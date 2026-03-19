@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import {
   Copy, CheckCircle, Search, Upload, Code2, Lock, Globe,
@@ -90,32 +90,45 @@ export default function Dashboard() {
 
   // Filter state
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | Visibility>('all');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Right panel
   const [recentHistory, setRecentHistory] = useState<HistoryEntry[]>([]);
 
-  const handleVisibilityChanged = (slug: string, visibility: 'personal' | 'public') => {
+  const handleVisibilityChanged = useCallback((slug: string, visibility: 'personal' | 'public') => {
     const update = (p: Project) => p.slug === slug ? { ...p, visibility } : p;
     setProjects((prev) => prev.map(update));
     setPublicProjects((prev) => prev.map(update));
     if (_cache) _cache.data = _cache.data.map(update);
-  };
+  }, []);
 
-  const handleRenamed = (slug: string, projectName: string) => {
+  const handleRenamed = useCallback((slug: string, projectName: string) => {
     const update = (p: Project) => p.slug === slug ? { ...p, projectName } : p;
     setProjects((prev) => prev.map(update));
     setPublicProjects((prev) => prev.map(update));
     if (_cache) _cache.data = _cache.data.map(update);
-  };
+  }, []);
 
-  const handleEditCodeChanged = (slug: string, editCode: string) => {
+  const handleEditCodeChanged = useCallback((slug: string, editCode: string) => {
     const update = (p: Project) => p.slug === slug ? { ...p, editCode } : p;
     setProjects((prev) => prev.map(update));
     if (_cache) _cache.data = _cache.data.map(update);
-  };
+  }, []);
+
+  const handleDeleted = useCallback((slug: string) => {
+    invalidateCache();
+    setProjects((prev) => prev.filter((p) => p.slug !== slug));
+  }, []);
+
+  const handlePublicDeleted = useCallback((slug: string) => {
+    invalidateCache();
+    setProjects((prev) => prev.filter((p) => p.slug !== slug));
+    setPublicProjects((prev) => prev.filter((p) => p.slug !== slug));
+  }, []);
 
   // User greeting
   const payload = getTokenPayload();
+  const currentUserId = payload?.sub ?? '';
   const displayName = payload?.name || payload?.login || payload?.email?.split('@')[0] || 'there';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -147,6 +160,23 @@ export default function Dashboard() {
     init();
     setRecentHistory(getHistory());
   }, [router]);
+
+  // Refresh projects when tab regains focus (stale cache guard)
+  useEffect(() => {
+    const onVisible = () => {
+      if (!document.hidden && checkAuth()) {
+        fetchWithCache().then(setProjects).catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
+
+  // Debounce search input by 150ms to avoid filtering on every keystroke
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 150);
+    return () => clearTimeout(id);
+  }, [search]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,11 +269,11 @@ export default function Dashboard() {
   };
 
   const filteredProjects = useMemo(() => projects.filter((p) => {
-    const q = search.toLowerCase();
+    const q = debouncedSearch.toLowerCase();
     const matchesSearch = p.projectName.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q);
     const matchesVisibility = visibilityFilter === 'all' || (p.visibility ?? 'personal') === visibilityFilter;
     return matchesSearch && matchesVisibility;
-  }), [projects, search, visibilityFilter]);
+  }), [projects, debouncedSearch, visibilityFilter]);
 
   const visibleProjects = filteredProjects.slice(0, page * PAGE_SIZE);
   const hasMore = visibleProjects.length < filteredProjects.length;
@@ -359,13 +389,11 @@ export default function Dashboard() {
                       <ProjectCard
                         key={project.slug}
                         project={project}
-                        onDeleted={(slug) => {
-                          invalidateCache();
-                          setProjects((prev) => prev.filter((p) => p.slug !== slug));
-                        }}
+                        onDeleted={handleDeleted}
                         onVisibilityChanged={handleVisibilityChanged}
                         onRenamed={handleRenamed}
                         onEditCodeChanged={handleEditCodeChanged}
+                        currentUserId={currentUserId}
                       />
                     ))}
                   </div>
@@ -424,14 +452,11 @@ export default function Dashboard() {
                           <ProjectCard
                             key={project.slug}
                             project={project}
-                            onDeleted={(slug) => {
-                              invalidateCache();
-                              setProjects((prev) => prev.filter((p) => p.slug !== slug));
-                              setPublicProjects((prev) => prev.filter((p) => p.slug !== slug));
-                            }}
+                            onDeleted={handlePublicDeleted}
                             onVisibilityChanged={handleVisibilityChanged}
                             onRenamed={handleRenamed}
                             isPublicView
+                            currentUserId={currentUserId}
                           />
                         ))}
                       </div>

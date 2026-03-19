@@ -66,6 +66,7 @@ export default function TopNav() {
     const opening = !notifOpen;
     setNotifOpen(opening);
     if (!opening) return;
+    if (notifLoading) return;
     setNotifLoading(true);
     try {
       const list = await getNotifications();

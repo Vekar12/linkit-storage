@@ -99,10 +99,12 @@ export default function VersionHistoryPage() {
     try {
       const res = await fetch(url);
       const html = await res.text();
+      win.document.open();
       win.document.write(html);
       win.document.close();
       win.focus();
-      setTimeout(() => win.print(), 800);
+      win.onload = () => win.print();
+      setTimeout(() => { if (!win.closed) win.print(); }, 2000);
     } catch {
       try { win.close(); } catch {}
       toast.error('Could not load file for PDF export.');

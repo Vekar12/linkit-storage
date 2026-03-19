@@ -4,7 +4,6 @@ import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2,
 import toast from 'react-hot-toast';
 import { deleteProject, setProjectVisibility, renameProject, rotateEditCode } from '@/services/api';
 import { addHistory } from '@/lib/history';
-import { getTokenPayload } from '@/lib/jwt';
 import type { Project } from '@/types';
 
 const typeColors: Record<string, { bg: string; text: string }> = {
@@ -25,9 +24,10 @@ interface ProjectCardProps {
   onRenamed?: (slug: string, projectName: string) => void;
   onEditCodeChanged?: (slug: string, editCode: string) => void;
   isPublicView?: boolean;
+  currentUserId?: string;
 }
 
-function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEditCodeChanged, isPublicView = false }: ProjectCardProps) {
+function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEditCodeChanged, isPublicView = false, currentUserId = '' }: ProjectCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
@@ -152,10 +152,13 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
     try {
       const res = await fetch(downloadUrl);
       const html = await res.text();
+      win.document.open();
       win.document.write(html);
       win.document.close();
       win.focus();
-      setTimeout(() => win.print(), 800);
+      // onload fires after resources finish; fallback timeout handles edge cases
+      win.onload = () => win.print();
+      setTimeout(() => { if (!win.closed) win.print(); }, 2000);
     } catch {
       try { win.close(); } catch {}
       toast.error('Could not load file for PDF export.');
@@ -190,7 +193,6 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
   const fileKey = project.fileType?.toLowerCase();
   const badge = typeColors[fileKey] ?? { bg: 'bg-gray-100', text: 'text-gray-500' };
 
-  const currentUserId = getTokenPayload()?.sub ?? '';
   const isOwnProject = isPublicView && !!currentUserId && project.ownerId === currentUserId;
 
   return (
@@ -237,6 +239,7 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
               Yours
             </span>
           )}
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${badge.bg} ${badge.text}`}>
             {project.fileType?.toUpperCase()}
           </span>
         </div>
