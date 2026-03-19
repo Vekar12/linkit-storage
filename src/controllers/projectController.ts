@@ -20,6 +20,7 @@ import {
 } from '../services/githubService';
 import { getUserNameMap } from '../services/userService';
 import { extractUser } from '../middleware/auth';
+import { notifyContributors } from '../services/notificationService';
 
 // 8-char alphanumeric edit code, unambiguous characters
 function generateEditCode(): string {
@@ -133,6 +134,16 @@ export async function updateProject(
     const ext = path.extname(file.originalname).toLowerCase() || '.html';
     const newVersionNumber = metadata.versions.length + 1;
     const lastUpdatedByName = req.user!.name;
+    const remarks = req.body.remarks ? String(req.body.remarks).slice(0, 500).trim() : undefined;
+    const newVersionEntry = {
+      version: newVersionNumber,
+      filename: `${slug}${ext}`,
+      fileURL: buildPagesUrl(ownerId, slug, `${slug}${ext}`),
+      uploadedAt: new Date().toISOString(),
+      updatedBy: lastUpdatedByName,
+      updatedById: requesterId,
+      ...(remarks ? { remarks } : {}),
+    };
 
     // Fetch current file content+SHA in one call, then archive it
     const current = await getFileWithSHA(`projects/${ownerId}/${slug}/${metadata.currentFile}`);
@@ -145,44 +156,32 @@ export async function updateProject(
         undefined
       );
 
-      const newFilename = `${slug}${ext}`;
-      const newFilePath = `projects/${ownerId}/${slug}/${newFilename}`;
-      const newFileURL = buildPagesUrl(ownerId, slug, newFilename);
-      const useSha = newFilename === metadata.currentFile ? current.sha : undefined;
-
-      await uploadFile(newFilePath, file.buffer, `feat: update ${slug} to v${newVersionNumber}`, useSha);
+      const useSha = newVersionEntry.filename === metadata.currentFile ? current.sha : undefined;
+      await uploadFile(`projects/${ownerId}/${slug}/${newVersionEntry.filename}`, file.buffer, `feat: update ${slug} to v${newVersionNumber}`, useSha);
 
       const updated = await updateProjectMetadata(ownerId, slug, {
         fileType: ext.replace('.', ''),
-        currentFile: newFilename,
+        currentFile: newVersionEntry.filename,
         lastUpdatedByName,
-        versions: [
-          ...metadata.versions,
-          { version: newVersionNumber, filename: newFilename, fileURL: newFileURL, uploadedAt: new Date().toISOString() },
-        ],
+        versions: [...metadata.versions, newVersionEntry],
       });
 
+      notifyContributors(metadata.versions, ownerId, requesterId, lastUpdatedByName, metadata.projectName, slug);
       res.status(200).json({ message: 'Project updated successfully', ...updated });
       return;
     }
 
     // Fallback: current file not found in GitHub, just upload the new version
-    const newFilename = `${slug}${ext}`;
-    const newFilePath = `projects/${ownerId}/${slug}/${newFilename}`;
-    const newFileURL = buildPagesUrl(ownerId, slug, newFilename);
-
-    await uploadFile(newFilePath, file.buffer, `feat: update ${slug} to v${newVersionNumber}`);
+    await uploadFile(`projects/${ownerId}/${slug}/${newVersionEntry.filename}`, file.buffer, `feat: update ${slug} to v${newVersionNumber}`);
 
     const updated = await updateProjectMetadata(ownerId, slug, {
       fileType: ext.replace('.', ''),
-      currentFile: newFilename,
+      currentFile: newVersionEntry.filename,
       lastUpdatedByName,
-      versions: [
-        ...metadata.versions,
-        { version: newVersionNumber, filename: newFilename, fileURL: newFileURL, uploadedAt: new Date().toISOString() },
-      ],
+      versions: [...metadata.versions, newVersionEntry],
     });
 
+    notifyContributors(metadata.versions, ownerId, requesterId, lastUpdatedByName, metadata.projectName, slug);
     res.status(200).json({ message: 'Project updated successfully', ...updated });
   } catch (err) {
     next(err);
@@ -228,6 +227,16 @@ export async function collaboratorUpdateProject(
     const ext = path.extname(file.originalname).toLowerCase() || '.html';
     const newVersionNumber = metadata.versions.length + 1;
     const lastUpdatedByName = req.user!.name;
+    const remarks = req.body.remarks ? String(req.body.remarks).slice(0, 500).trim() : undefined;
+    const newVersionEntry = {
+      version: newVersionNumber,
+      filename: `${slug}${ext}`,
+      fileURL: buildPagesUrl(ownerId, slug, `${slug}${ext}`),
+      uploadedAt: new Date().toISOString(),
+      updatedBy: lastUpdatedByName,
+      updatedById: requesterId,
+      ...(remarks ? { remarks } : {}),
+    };
 
     const current = await getFileWithSHA(`projects/${ownerId}/${slug}/${metadata.currentFile}`);
     if (current) {
@@ -239,44 +248,32 @@ export async function collaboratorUpdateProject(
         undefined
       );
 
-      const newFilename = `${slug}${ext}`;
-      const newFilePath = `projects/${ownerId}/${slug}/${newFilename}`;
-      const newFileURL = buildPagesUrl(ownerId, slug, newFilename);
-      const useSha = newFilename === metadata.currentFile ? current.sha : undefined;
-
-      await uploadFile(newFilePath, file.buffer, `feat: update ${slug} to v${newVersionNumber}`, useSha);
+      const useSha = newVersionEntry.filename === metadata.currentFile ? current.sha : undefined;
+      await uploadFile(`projects/${ownerId}/${slug}/${newVersionEntry.filename}`, file.buffer, `feat: update ${slug} to v${newVersionNumber}`, useSha);
 
       const updated = await updateProjectMetadata(ownerId, slug, {
         fileType: ext.replace('.', ''),
-        currentFile: newFilename,
+        currentFile: newVersionEntry.filename,
         lastUpdatedByName,
-        versions: [
-          ...metadata.versions,
-          { version: newVersionNumber, filename: newFilename, fileURL: newFileURL, uploadedAt: new Date().toISOString() },
-        ],
+        versions: [...metadata.versions, newVersionEntry],
       });
 
+      notifyContributors(metadata.versions, ownerId, requesterId, lastUpdatedByName, metadata.projectName, slug);
       res.status(200).json({ message: 'Project updated successfully', ...updated });
       return;
     }
 
     // Fallback: current file not found in GitHub
-    const newFilename = `${slug}${ext}`;
-    const newFilePath = `projects/${ownerId}/${slug}/${newFilename}`;
-    const newFileURL = buildPagesUrl(ownerId, slug, newFilename);
-
-    await uploadFile(newFilePath, file.buffer, `feat: update ${slug} to v${newVersionNumber}`);
+    await uploadFile(`projects/${ownerId}/${slug}/${newVersionEntry.filename}`, file.buffer, `feat: update ${slug} to v${newVersionNumber}`);
 
     const updated = await updateProjectMetadata(ownerId, slug, {
       fileType: ext.replace('.', ''),
-      currentFile: newFilename,
+      currentFile: newVersionEntry.filename,
       lastUpdatedByName,
-      versions: [
-        ...metadata.versions,
-        { version: newVersionNumber, filename: newFilename, fileURL: newFileURL, uploadedAt: new Date().toISOString() },
-      ],
+      versions: [...metadata.versions, newVersionEntry],
     });
 
+    notifyContributors(metadata.versions, ownerId, requesterId, lastUpdatedByName, metadata.projectName, slug);
     res.status(200).json({ message: 'Project updated successfully', ...updated });
   } catch (err) {
     next(err);

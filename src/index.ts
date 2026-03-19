@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import projectRoutes from './routes/projectRoutes';
 import authRoutes from './routes/authRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -41,6 +42,7 @@ app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
 
 app.use('/projects', projectRoutes);
 app.use('/auth', authRoutes);
+app.use('/notifications', notificationRoutes);
 
 app.use(errorHandler);
 

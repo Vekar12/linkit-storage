@@ -58,7 +58,7 @@ export async function createProjectMetadata(
     visibility,
     createdAt: now,
     updatedAt: now,
-    versions: [{ version: 1, filename, fileURL, uploadedAt: now }],
+    versions: [{ version: 1, filename, fileURL, uploadedAt: now, updatedBy: ownerName, updatedById: ownerId }],
   };
   await writeJSON(
     `projects/${ownerId}/${slug}/metadata.json`,

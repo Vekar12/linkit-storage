@@ -17,3 +17,12 @@ export const uploadLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Upload limit reached, please wait before uploading again.' },
 });
+
+// GET /notifications — 120 requests per minute per IP
+export const notificationsLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
