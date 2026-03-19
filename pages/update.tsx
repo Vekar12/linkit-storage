@@ -18,6 +18,7 @@ export default function UpdatePage() {
   const [file, setFile] = useState<File | null>(null);
   const [htmlCode, setHtmlCode] = useState('');
   const [editCode, setEditCode] = useState('');
+  const [remarks, setRemarks] = useState('');
   const [shareUrlInput, setShareUrlInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState('');
@@ -83,9 +84,10 @@ export default function UpdatePage() {
 
     const attemptUpdate = async (attemptsLeft: number): Promise<void> => {
       try {
-        await updateProject(cleanSlug, uploadFile!, isOwner
-          ? undefined
-          : { ownerId, editCode: editCode.trim() });
+        await updateProject(cleanSlug, uploadFile!, {
+          ...(isOwner ? {} : { ownerId, editCode: editCode.trim() }),
+          ...(remarks.trim() ? { remarks: remarks.trim() } : {}),
+        });
         addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
         const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
         const link = `${window.location.origin}${linkPath}`;
@@ -259,6 +261,20 @@ export default function UpdatePage() {
                 spellCheck={false}
               />
             )}
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Version notes <span className="font-normal text-gray-400">(optional)</span>
+              </label>
+              <textarea
+                className="li-input resize-none text-sm"
+                rows={2}
+                placeholder="e.g. Updated pricing section, fixed mobile layout…"
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                maxLength={200}
+              />
+            </div>
 
             <button
               type="submit"

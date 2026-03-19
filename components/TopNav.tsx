@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Link2, Bell, Search, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X } from 'lucide-react';
+import { Link2, Bell, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X } from 'lucide-react';
 import { logout } from '@/lib/auth';
 import { getTokenPayload, type TokenPayload } from '@/lib/jwt';
 
@@ -77,11 +77,11 @@ export default function TopNav() {
 
         {/* Right section */}
         <div className="flex items-center gap-1">
-          {/* Search + Bell — desktop only */}
-          <button className="hidden sm:flex w-9 h-9 rounded-xl items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
-            <Search size={17} />
-          </button>
-          <button className="hidden sm:flex w-9 h-9 rounded-xl items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+          {/* Bell — desktop only (notifications coming soon) */}
+          <button
+            className="hidden sm:flex w-9 h-9 rounded-xl items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors relative"
+            title="Notifications"
+          >
             <Bell size={17} />
           </button>
 

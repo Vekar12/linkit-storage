@@ -3,6 +3,8 @@ export interface ProjectVersion {
   filename: string;
   fileURL: string;
   uploadedAt: string;
+  remarks?: string;
+  updatedBy?: string;
 }
 
 export interface Project {

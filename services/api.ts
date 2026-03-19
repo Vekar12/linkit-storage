@@ -49,12 +49,13 @@ export const createProject = async (
 export const updateProject = async (
   slug: string,
   file: File,
-  options?: { ownerId?: string; editCode?: string }
+  options?: { ownerId?: string; editCode?: string; remarks?: string }
 ): Promise<UpdateProjectResponse> => {
   const formData = new FormData();
   formData.append('file', file);
   if (options?.ownerId) formData.append('ownerId', options.ownerId);
   if (options?.editCode) formData.append('editCode', options.editCode);
+  if (options?.remarks) formData.append('remarks', options.remarks);
   const { data } = await api.put<UpdateProjectResponse>(`/projects/${slug}`, formData);
   return data;
 };

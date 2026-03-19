@@ -9,7 +9,14 @@ import DashboardLayout from '@/components/DashboardLayout';
 export default function VersionHistoryPage() {
   const router = useRouter();
   const { slug, owner: ownerId, editCode: editCodeParam } = router.query;
-  const [editCode, setEditCode] = useState(typeof editCodeParam === 'string' ? editCodeParam : '');
+  const [editCode, setEditCode] = useState('');
+
+  // Sync editCode from URL param after router hydrates (query is empty on first SSR render)
+  useEffect(() => {
+    if (typeof editCodeParam === 'string' && editCodeParam && !editCode) {
+      setEditCode(editCodeParam);
+    }
+  }, [editCodeParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [metadata, setMetadata] = useState<ProjectMetadata | null>(null);
   const [loading, setLoading] = useState(true);
@@ -199,9 +206,9 @@ export default function VersionHistoryPage() {
           ) : (
             <ul className="divide-y divide-gray-50">
               {versions.map((v, i) => (
-                <li key={v.version} className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-gray-50/60 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                <li key={v.version} className="px-6 py-4 flex items-start justify-between gap-4 hover:bg-gray-50/60 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${
                       i === 0 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500 border border-gray-200'
                     }`}>
                       v{v.version}
@@ -220,7 +227,11 @@ export default function VersionHistoryPage() {
                           year: 'numeric', month: 'long', day: 'numeric',
                           hour: '2-digit', minute: '2-digit',
                         })}
+                        {v.updatedBy && <span className="ml-1.5 text-gray-300">· by {v.updatedBy}</span>}
                       </p>
+                      {v.remarks && (
+                        <p className="text-xs text-gray-500 mt-1 italic max-w-xs">&ldquo;{v.remarks}&rdquo;</p>
+                      )}
                     </div>
                   </div>
 
