@@ -277,7 +277,7 @@ export async function getPublicProjects(
   }
 }
 
-// PATCH /projects/:slug/visibility
+// PATCH /projects/:slug — update projectName and/or visibility
 export async function updateVisibility(
   req: Request,
   res: Response,
@@ -286,11 +286,35 @@ export async function updateVisibility(
   try {
     const { slug } = req.params;
     const ownerId = req.user!.id;
-    const { visibility } = req.body;
+    const { visibility, projectName: rawName } = req.body;
 
-    if (visibility !== 'personal' && visibility !== 'public') {
-      res.status(400).json({ error: 'visibility must be "personal" or "public"' });
+    // Validate fields — at least one must be present
+    if (visibility === undefined && rawName === undefined) {
+      res.status(400).json({ error: 'Provide at least one of: visibility, projectName' });
       return;
+    }
+
+    const updates: Record<string, string> = {};
+
+    if (visibility !== undefined) {
+      if (visibility !== 'personal' && visibility !== 'public') {
+        res.status(400).json({ error: 'visibility must be "personal" or "public"' });
+        return;
+      }
+      updates.visibility = visibility;
+    }
+
+    if (rawName !== undefined) {
+      const projectName = String(rawName).replace(/<[^>]*>/g, '').replace(/[^\w\s\-().]/g, '').trim();
+      if (!projectName) {
+        res.status(400).json({ error: 'projectName cannot be empty' });
+        return;
+      }
+      if (projectName.length > 100) {
+        res.status(400).json({ error: 'projectName must be 100 characters or fewer' });
+        return;
+      }
+      updates.projectName = projectName;
     }
 
     const metadata = await getProjectBySlug(ownerId, slug);
@@ -299,10 +323,8 @@ export async function updateVisibility(
       return;
     }
 
-    const updated = await updateProjectMetadata(ownerId, slug, { visibility });
-    // Spread updated fields but always guarantee visibility is present,
-    // even if updateProjectMetadata returns null for any reason
-    res.status(200).json({ message: 'Visibility updated', ...(updated ?? {}), visibility });
+    const updated = await updateProjectMetadata(ownerId, slug, updates);
+    res.status(200).json({ ...(updated ?? metadata), ...updates });
   } catch (err) {
     next(err);
   }
