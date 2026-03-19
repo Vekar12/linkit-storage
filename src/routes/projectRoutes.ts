@@ -5,6 +5,7 @@ import {
   getProjects,
   getPublicProjects,
   getProjectMetadata,
+  downloadProject,
   deleteProject,
   updateVisibility,
 } from '../controllers/projectController';
@@ -43,7 +44,8 @@ router.put('/:slug', requireAuth, uploadLimiter, validateSlug, upload.single('fi
 router.patch('/:slug', requireAuth, validateSlug, updateVisibility);
 router.delete('/:slug', requireAuth, validateSlug, deleteProject);
 
-// Public route — ownerId is part of the URL for share-page resolution
+// Public routes — ownerId is part of the URL for share-page resolution
 router.get('/:ownerId/:slug/metadata', validateOwnerId, validateSlug, getProjectMetadata);
+router.get('/:ownerId/:slug/download', validateOwnerId, validateSlug, downloadProject);
 
 export default router;

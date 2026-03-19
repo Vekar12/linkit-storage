@@ -1,4 +1,5 @@
 import { Octokit } from '@octokit/rest';
+import axios from 'axios';
 
 // Singleton — one client for the lifetime of the process
 let _client: Octokit | null = null;
@@ -76,6 +77,33 @@ export async function readJSON<T>(path: string): Promise<T | null> {
     if (!Array.isArray(data) && 'content' in data) {
       return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8')) as T;
     }
+    return null;
+  } catch (err: unknown) {
+    if ((err as { status?: number }).status === 404) return null;
+    throw err;
+  }
+}
+
+// Fetches the raw file content as a Buffer.
+// For files ≤ 1 MB the GitHub Content API returns base64 directly.
+// For larger files it returns a download_url — we fetch that instead.
+export async function getFileBuffer(filePath: string): Promise<Buffer | null> {
+  try {
+    const { data } = await getClient().repos.getContent({ ...getRepo(), path: filePath });
+    if (Array.isArray(data)) return null;
+
+    if ('content' in data && data.content) {
+      return Buffer.from(data.content.replace(/[\r\n]/g, ''), 'base64');
+    }
+
+    if ('download_url' in data && data.download_url) {
+      const response = await axios.get<ArrayBuffer>(data.download_url, {
+        responseType: 'arraybuffer',
+        headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` },
+      });
+      return Buffer.from(response.data);
+    }
+
     return null;
   } catch (err: unknown) {
     if ((err as { status?: number }).status === 404) return null;

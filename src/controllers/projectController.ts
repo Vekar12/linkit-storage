@@ -13,6 +13,7 @@ import {
 import {
   uploadFile,
   getFileWithSHA,
+  getFileBuffer,
   buildPagesUrl,
   deleteProjectFolder,
 } from '../services/githubService';
@@ -189,6 +190,47 @@ export async function getProjectMetadata(
       fileURL: `${buildPagesUrl(ownerId, slug, metadata.currentFile)}?_cb=${cb}`,
       versions: metadata.versions,
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+const MIME_MAP: Record<string, string> = {
+  html: 'text/html',
+  md:   'text/markdown',
+  pdf:  'application/pdf',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+};
+
+// GET /projects/:ownerId/:slug/download — proxy file to avoid CORS on raw.githubusercontent.com
+export async function downloadProject(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { ownerId, slug } = req.params;
+    const metadata = await getProjectBySlug(ownerId, slug);
+
+    if (!metadata) {
+      res.status(404).json({ error: 'Project not found' });
+      return;
+    }
+
+    const filePath = `projects/${ownerId}/${slug}/${metadata.currentFile}`;
+    const buffer = await getFileBuffer(filePath);
+
+    if (!buffer) {
+      res.status(404).json({ error: 'File not found in storage' });
+      return;
+    }
+
+    const contentType = MIME_MAP[metadata.fileType] ?? 'application/octet-stream';
+
+    res.setHeader('Content-Disposition', `attachment; filename="${metadata.currentFile}"`);
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Length', buffer.length);
+    res.send(buffer);
   } catch (err) {
     next(err);
   }
