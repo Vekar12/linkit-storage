@@ -251,11 +251,10 @@ export async function downloadProject(
       return;
     }
 
-    const ext = versionEntry.filename.split('.').pop() ?? metadata.fileType;
-    const contentType = MIME_MAP[ext] ?? MIME_MAP[metadata.fileType] ?? 'application/octet-stream';
-
+    // Use octet-stream for all downloads — correct MIME types (text/html etc.) cause
+    // browsers to render rather than download, especially for cross-origin <a> links
     res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
-    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Length', buffer.length);
     res.send(buffer);
   } catch (err) {
