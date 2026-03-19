@@ -241,7 +241,7 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-screen-xl mx-auto px-6 py-8">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
         {/* ── Projects view ── */}
         {view === 'projects' && (
@@ -275,7 +275,7 @@ export default function Dashboard() {
               )}
 
               {/* Search + filter bar */}
-              <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div
                   className="flex items-center gap-0.5 rounded-full px-1.5 py-1.5"
                   style={{ backgroundColor: '#f3f4f6', border: '1px solid rgba(0,0,0,0.06)' }}
@@ -303,7 +303,7 @@ export default function Dashboard() {
                     placeholder="Search projects…"
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    className="li-input pl-9 pr-4 py-2 text-sm w-52"
+                    className="li-input pl-9 pr-4 py-2 text-sm w-full sm:w-52"
                   />
                 </div>
               </div>

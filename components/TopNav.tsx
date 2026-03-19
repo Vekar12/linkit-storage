@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Link2, Bell, Search, LogOut, ChevronDown, Upload, LayoutGrid, Clock } from 'lucide-react';
+import { Link2, Bell, Search, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X } from 'lucide-react';
 import { logout } from '@/lib/auth';
 import { getTokenPayload, type TokenPayload } from '@/lib/jwt';
 
@@ -9,13 +9,14 @@ export default function TopNav() {
   const router = useRouter();
   const [user, setUser] = useState<TokenPayload | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setUser(getTokenPayload());
   }, []);
 
-  // Close dropdown on outside click
+  // Close avatar dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -25,6 +26,11 @@ export default function TopNav() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [router.pathname, router.query]);
 
   const currentView = typeof router.query.view === 'string' ? router.query.view : undefined;
   const isActive = (view?: string) => {
@@ -44,7 +50,7 @@ export default function TopNav() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-      <div className="max-w-screen-xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-4">
 
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2.5 flex-shrink-0">
@@ -57,9 +63,9 @@ export default function TopNav() {
           <span className="text-base font-bold text-gray-900">LinkIt</span>
         </Link>
 
-        {/* Tab nav */}
+        {/* Tab nav — desktop only */}
         <nav
-          className="flex items-center gap-0.5 rounded-full px-1.5 py-1.5"
+          className="hidden sm:flex items-center gap-0.5 rounded-full px-1.5 py-1.5"
           style={{ backgroundColor: '#f3f4f6', border: '1px solid rgba(0,0,0,0.06)' }}
         >
           {navItems.map(({ label, view, href }) => (
@@ -69,16 +75,17 @@ export default function TopNav() {
           ))}
         </nav>
 
-        {/* Right icons */}
+        {/* Right section */}
         <div className="flex items-center gap-1">
-          <button className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+          {/* Search + Bell — desktop only */}
+          <button className="hidden sm:flex w-9 h-9 rounded-xl items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
             <Search size={17} />
           </button>
-          <button className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+          <button className="hidden sm:flex w-9 h-9 rounded-xl items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
             <Bell size={17} />
           </button>
 
-          {/* Avatar dropdown */}
+          {/* Avatar dropdown — always visible */}
           <div className="relative ml-1" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((o) => !o)}
@@ -92,7 +99,7 @@ export default function TopNav() {
                   {initials}
                 </div>
               )}
-              <ChevronDown size={13} className="text-gray-400" />
+              <ChevronDown size={13} className="text-gray-400 hidden sm:block" />
             </button>
 
             {menuOpen && (
@@ -116,9 +123,37 @@ export default function TopNav() {
               </div>
             )}
           </div>
-        </div>
 
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setMobileOpen((o) => !o)}
+            className="sm:hidden w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors ml-0.5"
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile nav drawer */}
+      {mobileOpen && (
+        <div className="sm:hidden border-t border-gray-100 bg-white px-4 py-3 flex flex-col gap-1">
+          {navItems.map(({ label, icon: Icon, view, href }) => (
+            <Link
+              key={label}
+              href={href}
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                isActive(view)
+                  ? 'bg-violet-50 text-primary'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <Icon size={16} />
+              {label}
+            </Link>
+          ))}
+        </div>
+      )}
     </header>
   );
 }

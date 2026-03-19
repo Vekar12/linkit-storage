@@ -132,7 +132,7 @@ export default function UpdatePage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 py-10">
+      <div className="max-w-2xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
         <button
           onClick={() => router.push('/dashboard')}
           className="flex items-center gap-1.5 text-gray-400 hover:text-primary text-sm mb-6 transition-colors"

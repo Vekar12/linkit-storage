@@ -67,14 +67,23 @@ function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     }
   };
 
-  const handleDownload = (e: React.MouseEvent) => {
+  const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!latestFileURL) return;
-    const a = document.createElement('a');
-    a.href = latestFileURL;
-    a.download = project.currentFile;
-    a.target = '_blank';
-    a.click();
+    try {
+      const res = await fetch(latestFileURL);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = project.currentFile;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(latestFileURL, '_blank');
+    }
   };
 
   const handleDelete = async (e: React.MouseEvent) => {

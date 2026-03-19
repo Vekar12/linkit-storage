@@ -77,6 +77,23 @@ export default function VersionHistoryPage() {
 
   const versions = [...(metadata.versions ?? [])].reverse();
 
+  const handleDownloadFile = async (url: string, filename: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objUrl);
+    } catch {
+      window.open(url, '_blank');
+    }
+  };
+
   const handleDownloadPDF = async (url: string) => {
     try {
       const res = await fetch(url);
@@ -98,7 +115,7 @@ export default function VersionHistoryPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-10">
+      <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
         {/* Back */}
         <button
           onClick={() => router.push('/dashboard')}
@@ -110,7 +127,7 @@ export default function VersionHistoryPage() {
 
         {/* Project header */}
         <div className="li-card mb-6">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
               <h1 className="text-xl font-bold text-gray-900">{slug}</h1>
               <p className="text-gray-400 text-sm mt-0.5 font-mono">{slug}</p>
@@ -190,17 +207,14 @@ export default function VersionHistoryPage() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <a
-                      href={v.fileURL}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => handleDownloadFile(v.fileURL, v.filename)}
                       className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
-                      title="Download HTML file"
+                      title="Download file"
                     >
                       <Download size={12} />
-                      HTML
-                    </a>
+                      Download
+                    </button>
                     <button
                       onClick={() => handleDownloadPDF(v.fileURL)}
                       className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
