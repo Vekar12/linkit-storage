@@ -73,10 +73,12 @@ export async function createProject(
     const filePath = `projects/${ownerId}/${slug}/${filename}`;
     const fileURL = buildPagesUrl(ownerId, slug, filename);
 
+    const editCode = visibility === 'public' ? generateEditCode() : undefined;
+
     await uploadFile(filePath, file.buffer, `feat: create project ${slug}`);
     const metadata = await createProjectMetadata(
       projectName, slug, filename,
-      ext.replace('.', ''), fileURL, ownerId, visibility, ownerName
+      ext.replace('.', ''), fileURL, ownerId, visibility, ownerName, editCode
     );
 
     res.status(201).json({

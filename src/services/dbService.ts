@@ -44,7 +44,8 @@ export async function createProjectMetadata(
   fileURL: string,
   ownerId: string,
   visibility: Visibility = 'personal',
-  ownerName?: string
+  ownerName?: string,
+  editCode?: string
 ): Promise<ProjectMetadata> {
   const now = new Date().toISOString();
   const metadata: ProjectMetadata = {
@@ -56,6 +57,7 @@ export async function createProjectMetadata(
     ownerName,
     lastUpdatedByName: ownerName,
     visibility,
+    ...(editCode ? { editCode } : {}),
     createdAt: now,
     updatedAt: now,
     versions: [{ version: 1, filename, fileURL, uploadedAt: now, updatedBy: ownerName, updatedById: ownerId }],
