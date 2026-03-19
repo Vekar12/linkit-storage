@@ -192,9 +192,9 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
   return (
     <div
       onClick={() => {
-        const editParam = !isPublicView && project.editCode && project.visibility === 'public'
-          ? `&editCode=${project.editCode}` : '';
-        router.push(`/projects/${project.slug}?owner=${project.ownerId}${editParam}`);
+        const editParam = !isPublicView && project.editCode ? `&editCode=${project.editCode}` : '';
+        const nameParam = `&name=${encodeURIComponent(project.projectName)}`;
+        router.push(`/projects/${project.slug}?owner=${project.ownerId}${nameParam}${editParam}`);
       }}
       className="bg-white rounded-2xl flex flex-col justify-between aspect-square cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
       style={{
@@ -270,18 +270,21 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
           </p>
         )}
 
-        <button
-          onClick={handleToggleVisibility}
-          title={visibility === 'personal' ? 'Personal — click to make Public' : 'Public — click to make Personal'}
-          className={`mt-1.5 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
-            visibility === 'public'
-              ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
-              : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-          }`}
-        >
-          {visibility === 'public' ? <Globe size={9} /> : <Lock size={9} />}
-          {visibility === 'public' ? 'Public' : 'Personal'}
-        </button>
+        {/* Visibility toggle — only shown on owner's own cards, not in the public directory */}
+        {!isPublicView && (
+          <button
+            onClick={handleToggleVisibility}
+            title={visibility === 'personal' ? 'Personal — click to make Public' : 'Public — click to make Personal'}
+            className={`mt-1.5 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
+              visibility === 'public'
+                ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+            }`}
+          >
+            {visibility === 'public' ? <Globe size={9} /> : <Lock size={9} />}
+            {visibility === 'public' ? 'Public' : 'Personal'}
+          </button>
+        )}
         {/* Edit code — shown to owner when project is public */}
         {!isPublicView && editCodeDisplay && visibility === 'public' && (
           <div className="flex items-center gap-1 mt-1.5" onClick={(e) => e.stopPropagation()}>
@@ -300,57 +303,85 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
 
       {/* Bottom actions */}
       <div className="px-3 pb-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
-        <a
-          href={shareLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center justify-center gap-1.5 li-btn-primary text-xs py-1.5 w-full rounded-xl"
-        >
-          <ExternalLink size={12} />
-          Open Link
-        </a>
-
-        <div className="flex gap-1.5">
-          <button
-            onClick={handleCopy}
-            title={copied ? 'Copied!' : 'Copy link'}
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
-          >
-            {copied
-              ? <CheckCircle size={13} className="text-primary" />
-              : <Copy size={13} className="text-gray-400" />
-            }
-          </button>
-
-          {isHtml ? (
+        {isPublicView ? (
+          /* Public directory — just copy + open, no owner actions */
+          <div className="flex gap-1.5">
             <button
-              onClick={handleDownloadHtmlAsPdf}
-              title="Save as PDF"
+              onClick={handleCopy}
+              title={copied ? 'Copied!' : 'Copy link'}
               className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
             >
-              <FileText size={13} className="text-gray-400" />
+              {copied
+                ? <CheckCircle size={13} className="text-primary" />
+                : <Copy size={13} className="text-gray-400" />
+              }
             </button>
-          ) : (
             <a
-              href={downloadUrl}
-              download
+              href={shareLink}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              title="Download"
-              className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
+              className="flex items-center justify-center gap-1.5 flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
             >
-              <Download size={13} className="text-gray-400" />
+              <ExternalLink size={13} className="text-gray-400" />
             </a>
-          )}
+          </div>
+        ) : (
+          /* Owner's own card — full actions */
+          <>
+            <a
+              href={shareLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center justify-center gap-1.5 li-btn-primary text-xs py-1.5 w-full rounded-xl"
+            >
+              <ExternalLink size={12} />
+              Open Link
+            </a>
 
-          <button
-            onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}&owner=${project.ownerId}`); }}
-            title="Upload update"
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
-          >
-            <RefreshCw size={13} className="text-gray-400" />
-          </button>
-        </div>
+            <div className="flex gap-1.5">
+              <button
+                onClick={handleCopy}
+                title={copied ? 'Copied!' : 'Copy link'}
+                className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
+              >
+                {copied
+                  ? <CheckCircle size={13} className="text-primary" />
+                  : <Copy size={13} className="text-gray-400" />
+                }
+              </button>
+
+              {isHtml ? (
+                <button
+                  onClick={handleDownloadHtmlAsPdf}
+                  title="Save as PDF"
+                  className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
+                >
+                  <FileText size={13} className="text-gray-400" />
+                </button>
+              ) : (
+                <a
+                  href={downloadUrl}
+                  download
+                  onClick={(e) => e.stopPropagation()}
+                  title="Download"
+                  className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
+                >
+                  <Download size={13} className="text-gray-400" />
+                </a>
+              )}
+
+              <button
+                onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}&owner=${project.ownerId}`); }}
+                title="Upload update"
+                className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
+              >
+                <RefreshCw size={13} className="text-gray-400" />
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

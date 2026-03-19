@@ -8,15 +8,15 @@ import DashboardLayout from '@/components/DashboardLayout';
 
 export default function VersionHistoryPage() {
   const router = useRouter();
-  const { slug, owner: ownerId, editCode: editCodeParam } = router.query;
+  const { slug, owner: ownerId, editCode: editCodeParam, name: nameParam } = router.query;
   const [editCode, setEditCode] = useState('');
+  const [projectName, setProjectName] = useState('');
 
-  // Sync editCode from URL param after router hydrates (query is empty on first SSR render)
+  // Sync from URL params after router hydrates (query is empty on first SSR render)
   useEffect(() => {
-    if (typeof editCodeParam === 'string' && editCodeParam && !editCode) {
-      setEditCode(editCodeParam);
-    }
-  }, [editCodeParam]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (typeof editCodeParam === 'string' && editCodeParam && !editCode) setEditCode(editCodeParam);
+    if (typeof nameParam === 'string' && nameParam) setProjectName(nameParam);
+  }, [editCodeParam, nameParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [metadata, setMetadata] = useState<ProjectMetadata | null>(null);
   const [loading, setLoading] = useState(true);
@@ -137,10 +137,10 @@ export default function VersionHistoryPage() {
         <div className="li-card mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{slug}</h1>
+              <h1 className="text-xl font-bold text-gray-900">{projectName || slug}</h1>
               <p className="text-gray-400 text-sm mt-0.5 font-mono">{slug}</p>
-              {/* Edit code — shown to owner when project is public */}
-              {editCode && visibility === 'public' && (
+              {/* Edit code — shown to owner whenever an edit code exists */}
+              {editCode && (
                 <div className="flex items-center gap-2 mt-2 p-2.5 rounded-xl bg-violet-50 border border-violet-100">
                   <KeyRound size={13} className="text-violet-400 flex-shrink-0" />
                   <span className="text-xs text-violet-600 font-medium">Edit code:</span>
