@@ -18,8 +18,8 @@ function getCached<T>(key: string): T | null {
   return entry.data as T;
 }
 
-function setCached(key: string, data: unknown): void {
-  cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL });
+function setCached(key: string, data: unknown, ttl = CACHE_TTL): void {
+  cache.set(key, { data, expiresAt: Date.now() + ttl });
 }
 
 function bust(...keys: string[]): void {
@@ -141,7 +141,7 @@ export async function getAllPublicProjects(): Promise<ProjectMetadata[]> {
       .filter((p) => p.visibility === 'public')
       .map((p) => ({ ...p, visibility: 'public' as const }))
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    setCached(cacheKey, projects);
+    setCached(cacheKey, projects, 5 * 60_000); // 5-min TTL — this scan is expensive
   }
   return projects;
 }

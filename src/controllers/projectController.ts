@@ -9,7 +9,6 @@ import {
   getAllPublicProjects,
   getProjectBySlug,
   updateProjectMetadata,
-  deleteProjectMetadata,
 } from '../services/dbService';
 import {
   uploadFile,
@@ -328,13 +327,6 @@ export async function getProjectMetadata(
   }
 }
 
-const MIME_MAP: Record<string, string> = {
-  html: 'text/html',
-  md:   'text/markdown',
-  pdf:  'application/pdf',
-  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-};
-
 // GET /projects/:ownerId/:slug/download?version=N — proxy file, supports version history
 export async function downloadProject(
   req: Request,
@@ -500,8 +492,7 @@ export async function deleteProject(
       return;
     }
 
-    await deleteProjectFolder(ownerId, slug);
-    await deleteProjectMetadata(ownerId, slug);
+    await deleteProjectFolder(ownerId, slug); // deletes all files including metadata.json
 
     res.status(200).json({ message: 'Project deleted successfully' });
   } catch (err) {

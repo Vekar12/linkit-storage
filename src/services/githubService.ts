@@ -152,18 +152,18 @@ export async function deleteProjectFolder(ownerId: string, slug: string): Promis
   async function deleteAll(dirPath: string): Promise<void> {
     const { data } = await getClient().repos.getContent({ ...getRepo(), path: dirPath });
     if (!Array.isArray(data)) return;
-    for (const item of data) {
-      if (item.type === 'dir') {
-        await deleteAll(item.path);
-      } else {
-        await getClient().repos.deleteFile({
-          ...getRepo(),
-          path: item.path,
-          message: `chore: delete project ${slug}`,
-          sha: item.sha,
-        });
-      }
-    }
+    await Promise.all(
+      data.map((item) =>
+        item.type === 'dir'
+          ? deleteAll(item.path)
+          : getClient().repos.deleteFile({
+              ...getRepo(),
+              path: item.path,
+              message: `chore: delete project ${slug}`,
+              sha: item.sha,
+            })
+      )
+    );
   }
   await deleteAll(`projects/${ownerId}/${slug}`);
 }

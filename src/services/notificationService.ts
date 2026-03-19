@@ -57,12 +57,11 @@ export async function markNotificationRead(
   userId: string,
   notificationId: string
 ): Promise<boolean> {
-  const list = await readJSON<Notification[]>(notifPath(userId));
-  if (!list) return false;
+  const list = await getNotifications(userId); // uses cache when available
   const idx = list.findIndex((n) => n.id === notificationId);
   if (idx < 0) return false;
-  list[idx] = { ...list[idx], read: true };
-  await writeJSON(notifPath(userId), list, `chore: mark notification read ${notificationId}`);
+  const updated = list.map((n, i) => (i === idx ? { ...n, read: true } : n));
+  await writeJSON(notifPath(userId), updated, `chore: mark notification read ${notificationId}`);
   bust(userId);
   return true;
 }
