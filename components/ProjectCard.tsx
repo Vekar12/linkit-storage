@@ -285,33 +285,34 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
           </p>
         )}
 
-        {/* Visibility toggle — only shown on owner's own cards, not in the public directory */}
+        {/* Visibility toggle + edit code on the same row */}
         {!isPublicView && (
-          <button
-            onClick={handleToggleVisibility}
-            title={visibility === 'personal' ? 'Personal — click to make Public' : 'Public — click to make Personal'}
-            className={`mt-1.5 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-colors ${
-              visibility === 'public'
-                ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
-                : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-            }`}
-          >
-            {visibility === 'public' ? <Globe size={9} /> : <Lock size={9} />}
-            {visibility === 'public' ? 'Public' : 'Personal'}
-          </button>
-        )}
-        {/* Edit code — shown to owner when project is public */}
-        {!isPublicView && editCodeDisplay && visibility === 'public' && (
-          <div className="flex items-center gap-1 mt-1.5" onClick={(e) => e.stopPropagation()}>
-            <span className="text-[10px] font-mono tracking-widest text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-              {editCodeDisplay}
-            </span>
-            <button onClick={handleCopyCode} title="Copy edit code" className="text-gray-300 hover:text-primary transition-colors">
-              {codeCopied ? <CheckCircle size={9} className="text-primary" /> : <Copy size={9} />}
+          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={handleToggleVisibility}
+              title={visibility === 'personal' ? 'Personal — click to make Public' : 'Public — click to make Personal'}
+              className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium transition-colors flex-shrink-0 ${
+                visibility === 'public'
+                  ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+              }`}
+            >
+              {visibility === 'public' ? <Globe size={9} /> : <Lock size={9} />}
+              {visibility === 'public' ? 'Public' : 'Personal'}
             </button>
-            <button onClick={handleRotateCode} title="Rotate code (invalidates old)" className="text-gray-300 hover:text-amber-500 transition-colors">
-              <RefreshCw size={9} className={rotating ? 'animate-spin' : ''} />
-            </button>
+            {editCodeDisplay && visibility === 'public' && (
+              <>
+                <span className="text-[10px] font-mono tracking-widest text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                  {editCodeDisplay}
+                </span>
+                <button onClick={handleCopyCode} title="Copy edit code" className="text-gray-300 hover:text-primary transition-colors flex-shrink-0">
+                  {codeCopied ? <CheckCircle size={9} className="text-primary" /> : <Copy size={9} />}
+                </button>
+                <button onClick={handleRotateCode} title="Rotate code (invalidates old)" className="text-gray-300 hover:text-amber-500 transition-colors flex-shrink-0">
+                  <RefreshCw size={9} className={rotating ? 'animate-spin' : ''} />
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
