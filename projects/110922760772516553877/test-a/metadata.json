@@ -4,9 +4,9 @@
   "fileType": "html",
   "currentFile": "test-a.html",
   "ownerId": "110922760772516553877",
-  "visibility": "personal",
+  "visibility": "public",
   "createdAt": "2026-03-19T11:59:03.181Z",
-  "updatedAt": "2026-03-19T11:59:03.181Z",
+  "updatedAt": "2026-03-19T12:23:00.289Z",
   "versions": [
     {
       "version": 1,
@@ -14,5 +14,6 @@
       "fileURL": "https://vekar12.github.io/linkit-storage/projects/110922760772516553877/test-a/test-a.html",
       "uploadedAt": "2026-03-19T11:59:03.181Z"
     }
-  ]
+  ],
+  "editCode": "GRGMW7LW"
 }
