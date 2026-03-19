@@ -192,7 +192,7 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
   return (
     <div
       onClick={() => {
-        const editParam = !isPublicView && project.editCode ? `&editCode=${project.editCode}` : '';
+        const editParam = !isPublicView && project.editCode && project.visibility === 'public' ? `&editCode=${project.editCode}` : '';
         const nameParam = `&name=${encodeURIComponent(project.projectName)}`;
         router.push(`/projects/${project.slug}?owner=${project.ownerId}${nameParam}${editParam}`);
       }}

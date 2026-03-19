@@ -139,8 +139,8 @@ export default function VersionHistoryPage() {
             <div>
               <h1 className="text-xl font-bold text-gray-900">{projectName || slug}</h1>
               <p className="text-gray-400 text-sm mt-0.5 font-mono">{slug}</p>
-              {/* Edit code — shown to owner whenever an edit code exists */}
-              {editCode && (
+              {/* Edit code — shown to owner only when project is public */}
+              {editCode && visibility === 'public' && (
                 <div className="flex items-center gap-2 mt-2 p-2.5 rounded-xl bg-violet-50 border border-violet-100">
                   <KeyRound size={13} className="text-violet-400 flex-shrink-0" />
                   <span className="text-xs text-violet-600 font-medium">Edit code:</span>
