@@ -47,29 +47,83 @@ body { margin:0; font-family:"Segoe UI"; background:#f4f6f9; }
 .panel { background:#fff; margin-top:10px; border-radius:6px; }
 .panel-header { background:#1f3a5f; color:#fff; padding:10px; }
 
-table { width:100%; border-collapse:collapse; }
-th,td { padding:10px; border-bottom:1px solid #eee; font-size:13px; }
-th { background:#f0f3f7; }
+table {
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+
+th, td {
+  padding:10px;
+  border-bottom:1px solid #eee;
+  font-size:13px;
+  vertical-align:middle;
+}
+
+th {
+  background:#f0f3f7;
+  text-align:left;
+}
+
+/* COLUMN WIDTHS */
+th:nth-child(1){width:20%;}
+th:nth-child(2){width:12%;}
+th:nth-child(3){width:12%;}
+th:nth-child(4){width:18%;}
+th:nth-child(5){width:8%; text-align:center;}
+th:nth-child(6){width:30%;}
 
 /* BADGE */
-.badge { padding:4px 8px; border-radius:5px; font-size:11px; color:#fff; }
+.badge {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px 8px;
+  border-radius:5px;
+  font-size:11px;
+  color:#fff;
+}
+
 .pending { background:#fbc02d; color:#000; }
 .progress { background:#f57c00; }
 .submitted { background:#1976d2; }
 .verified { background:#2e7d32; }
 .query { background:#e53935; }
 
+/* DOC ICON */
+.doc-icon {
+  text-align:center;
+  font-size:16px;
+}
+
+/* ACTIONS */
+.actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+}
+
 /* BUTTON */
-button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-size:12px; margin-right:4px;}
+button {
+  padding:4px 6px;
+  border:none;
+  border-radius:4px;
+  font-size:11px;
+}
+
 .blue { background:#1976d2; color:#fff; }
 .greenBtn { background:#2e7d32; color:#fff; }
 .orangeBtn { background:#f57c00; color:#fff; }
-.gray { background:#ccc; cursor:not-allowed; }
+.gray { background:#ccc; color:#666; cursor:not-allowed; }
 
-.locked { opacity:0.4; pointer-events:none; }
-
-.timeline { background:#fff; padding:10px; margin-top:10px; border-radius:6px; font-size:12px; }
-
+/* TIMELINE */
+.timeline {
+  background:#fff;
+  padding:10px;
+  margin-top:10px;
+  border-radius:6px;
+  font-size:12px;
+}
 </style>
 </head>
 
@@ -116,7 +170,8 @@ button { padding:5px 8px; border:none; border-radius:4px; cursor:pointer; font-s
 <th>Status</th>
 <th>Verification</th>
 <th>Action Pending At</th>
-<th>Action</th>
+<th>Docs</th>
+<th>Actions</th>
 </tr>
 </thead>
 
@@ -140,8 +195,14 @@ let roles=["Customer","Sales","Credit"];
 let stage=0;
 
 let tasks=[
- {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending"},
- {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending"}
+ {name:"PAN", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Aadhaar", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Salary Slips", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Bank Statement", owner:"Customer", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Agreement", owner:"Sales", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Property Docs", owner:"Sales", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Credit Check", owner:"Credit", verifier:"Credit", status:"Pending", doc:false},
+ {name:"Final Approval", owner:"Credit", verifier:"Credit", status:"Pending", doc:false}
 ];
 
 let timeline=[];
@@ -151,21 +212,16 @@ function render(){
  let role=roles[stage];
  document.getElementById("roleBanner").innerText="Logged in as: "+role;
 
- /* TRACKER */
  let t="";
  roles.forEach((r,i)=> t+=`<div class="stage ${i<=stage?'active':''}">${r}</div>`);
  document.getElementById("tracker").innerHTML=t;
 
- /* COMPLETION */
- let total=tasks.length;
  let done=tasks.filter(t=>t.status==="Verified").length;
- let percent=Math.round((done/total)*100);
-
  document.getElementById("completionBar").innerText=
- "Case Completion: "+percent+"% ("+done+"/"+total+")";
+ "Case Completion: "+Math.round(done/tasks.length*100)+"%";
 
- /* TABLE */
  let html="";
+
  tasks.forEach((t,i)=>{
 
  let pendingAt =
@@ -173,15 +229,16 @@ function render(){
   t.status==="Verified" ? "Completed" :
   t.owner;
 
- let locked = pendingAt!==role;
+ let icon = t.doc ? "📄" : "—";
 
  html+=`
- <tr class="${locked?'locked':''}">
+ <tr>
   <td>${t.name}</td>
   <td><span class="badge ${t.status.toLowerCase()}">${t.status}</span></td>
   <td>${t.verifier}</td>
   <td>${pendingAt}</td>
-  <td>${locked?'<button class="gray">Locked</button>':actions(i)}</td>
+  <td class="doc-icon">${icon}</td>
+  <td><div class="actions">${renderButtons(i, role, pendingAt)}</div></td>
  </tr>`;
  });
 
@@ -191,98 +248,49 @@ function render(){
  renderTimeline();
 }
 
-/* ACTION ENGINE */
-function actions(i){
+/* BUTTONS */
+function renderButtons(i, role, pendingAt){
+
  let t=tasks[i];
 
- if(t.status==="Pending") return `
-   <button class="blue" onclick="start(${i})">Start</button>
-   <button class="orangeBtn" onclick="raiseQuery(${i})">Query</button>
- `;
+ function btn(label, cls, fn, enable){
+   return `<button class="${enable?cls:'gray'}" ${enable?`onclick="${fn}"`:''}>${label}</button>`;
+ }
 
- if(t.status==="In Progress") return `
-   <button class="greenBtn" onclick="submitTask(${i})">Submit</button>
- `;
+ if(role==="Customer" || role==="Sales"){
+   return `
+     ${btn("Upload","blue",`upload(${i})`, pendingAt===role)}
+     ${btn("Submit","greenBtn",`submitTask(${i})`, t.status==="In Progress")}
+     ${btn("Query","orangeBtn",`raiseQuery(${i})`, true)}
+     ${btn("Re-upload","blue",`reupload(${i})`, t.status==="Query")}
+   `;
+ }
 
- if(t.status==="Submitted") return `
-   <button class="greenBtn" onclick="verify(${i})">Verify</button>
- `;
-
- if(t.status==="Query") return `
-   <button class="blue" onclick="reupload(${i})">Re-upload</button>
- `;
-
- return "";
+ if(role==="Credit"){
+   return `
+     ${btn("Verify","greenBtn",`verify(${i})`, t.status==="Submitted")}
+     ${btn("Query","orangeBtn",`raiseQuery(${i})`, true)}
+   `;
+ }
 }
 
 /* ACTIONS */
-function start(i){
- tasks[i].status="In Progress";
- log("Started "+tasks[i].name);
- render();
-}
+function upload(i){ tasks[i].status="In Progress"; tasks[i].doc=true; log("Uploaded "+tasks[i].name); render(); }
+function submitTask(i){ tasks[i].status="Submitted"; log("Submitted "+tasks[i].name); render(); }
+function verify(i){ tasks[i].status="Verified"; log("Verified "+tasks[i].name); render(); }
+function raiseQuery(i){ tasks[i].status="Query"; log("Query "+tasks[i].name); render(); }
+function reupload(i){ tasks[i].status="Submitted"; log("Re-upload "+tasks[i].name); render(); }
 
-function submitTask(i){
- tasks[i].status="Submitted";
- log("Submitted "+tasks[i].name+" to "+tasks[i].verifier);
- render();
-}
-
-function verify(i){
- tasks[i].status="Verified";
- log("Verified "+tasks[i].name);
- render();
-}
-
-function raiseQuery(i){
- tasks[i].status="Query";
- log("Query raised on "+tasks[i].name);
- render();
-}
-
-function reupload(i){
- tasks[i].status="Submitted";
- log("Re-uploaded "+tasks[i].name);
- render();
-}
-
-/* DEMO BLOCKER CLEAR */
-function clearBlocker(){
-
- let blocker = tasks.find(t=>t.status!=="Verified");
-
- if(blocker){
-   blocker.status="Verified";
-   log("Demo Override: Cleared "+blocker.name);
- }
-
- render();
-}
-
-/* SUBMIT FLOW */
+/* SUBMIT */
 function submit(){
-
  let role=roles[stage];
-
- let pending = tasks.filter(t =>
-   t.owner===role &&
-   !(t.status==="Submitted" || t.status==="Verified")
- );
-
- if(pending.length>0){
-  alert("Complete all tasks first");
-  return;
- }
-
- if(stage<roles.length-1){
-  stage++;
-  alert("Moved to "+roles[stage]);
- }
-
+ let pending=tasks.filter(t=>t.owner===role && t.status!=="Submitted" && t.status!=="Verified");
+ if(pending.length>0){ alert("Complete tasks first"); return; }
+ if(stage<roles.length-1) stage++;
  render();
 }
 
-/* INSIGHTS */
+/* BLOCKER */
 function renderInsights(role){
 
  let blocker = tasks.find(t=>t.status!=="Verified" && t.owner!==role);
@@ -291,22 +299,23 @@ function renderInsights(role){
   document.getElementById("blocker").className="strip red";
   document.getElementById("blocker").innerHTML=
   `BLOCKER: ${blocker.name} pending with ${blocker.owner}
-   <br><br>
-   <button class="orangeBtn" onclick="clearBlocker()">⚡ Clear Blocker</button>`;
+   <br><button class="orangeBtn" onclick="clearBlocker()">⚡ Clear Blocker</button>`;
  } else {
   document.getElementById("blocker").className="strip green";
   document.getElementById("blocker").innerText="No blockers";
  }
 
  let next=tasks.find(t=>t.owner===role && t.status!=="Verified");
-
- if(next){
-  document.getElementById("nextAction").className="strip orange";
-  document.getElementById("nextAction").innerText="Next Action: "+next.name;
- }
+ document.getElementById("nextAction").className="strip orange";
+ document.getElementById("nextAction").innerText=next?"Next Action: "+next.name:"";
 }
 
-/* TIMELINE */
+function clearBlocker(){
+ let blocker = tasks.find(t=>t.status!=="Verified");
+ if(blocker){ blocker.status="Verified"; log("Override cleared "+blocker.name); }
+ render();
+}
+
 function log(msg){
  timeline.unshift(new Date().toLocaleTimeString()+" | "+msg);
 }

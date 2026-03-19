@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Dashboard</title>
+
+<style>
+body {
+  font-family: -apple-system, sans-serif;
+  background:#EEF2F7;
+  margin:0;
+  padding:16px;
+}
+
+.card {
+  background:white;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.06);
+}
+
+.btn {
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  margin-top:6px;
+  width:100%;
+}
+
+.primary { background:#2563EB; color:white; }
+.secondary { background:#E5E7EB; }
+
+.hero {
+  background:linear-gradient(135deg,#1D4ED8,#2563EB);
+  color:white;
+  padding:20px;
+  border-radius:20px;
+  margin-bottom:16px;
+}
+
+.small {
+  font-size:12px;
+  color:#6B7280;
+}
+
+.item {
+  margin-bottom:12px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="hero">
+  <div>67% Completed</div>
+  <div class="small">Only 2 steps left</div>
+</div>
+
+<div class="card">
+  <b>Next Action</b>
+  <div id="nextAction">Upload Property Tax Receipt</div>
+  <button class="btn primary" onclick="uploadDoc('Property Tax Receipt')">Upload</button>
+</div>
+
+<div class="card">
+  <b>Tasks</b>
+
+  <div id="taskList"></div>
+</div>
+
+<script>
+
+let tasks = [
+  {name:"Property Tax Receipt", status:"pending", owner:"Legal"},
+  {name:"Electricity Bill", status:"pending", owner:"Ops"},
+  {name:"Income Proof", status:"verification", owner:"Credit"},
+  {name:"Bank Statement", status:"verification", owner:"Credit"},
+  {name:"Salary Slip", status:"query", owner:"Credit"}
+];
+
+function render() {
+  let html = "";
+
+  tasks.forEach((t,i)=>{
+    html += `<div class="item">
+      <div><b>${t.name}</b></div>
+      <div class="small">Status: ${t.status} • ${t.owner}</div>`;
+
+    if(t.status=="pending"){
+      html += `<button class="btn primary" onclick="uploadDoc('${t.name}')">Upload</button>`;
+    }
+
+    if(t.status=="verification"){
+      html += `<button class="btn secondary" onclick="viewDoc('${t.name}')">View</button>`;
+    }
+
+    if(t.status=="query"){
+      html += `<button class="btn primary" onclick="reupload('${t.name}')">Re-upload</button>`;
+    }
+
+    html += `</div>`;
+  });
+
+  document.getElementById("taskList").innerHTML = html;
+}
+
+function uploadDoc(name){
+  tasks = tasks.map(t => t.name==name ? {...t, status:"verification"} : t);
+  render();
+}
+
+function viewDoc(name){
+  alert("Viewing " + name);
+}
+
+function reupload(name){
+  tasks = tasks.map(t => t.name==name ? {...t, status:"verification"} : t);
+  render();
+}
+
+render();
+
+</script>
+
+</body>
+</html>
