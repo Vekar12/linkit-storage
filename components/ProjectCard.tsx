@@ -274,8 +274,6 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
           <Calendar size={11} />
           {formattedDate}
         </p>
-        <p className="text-xs text-gray-300 mt-0.5 truncate font-mono">{project.slug}</p>
-
         {/* Attribution — shown in public project listings */}
         {isPublicView && project.ownerName && (
           <p className="text-[10px] text-gray-400 mt-0.5 truncate">
