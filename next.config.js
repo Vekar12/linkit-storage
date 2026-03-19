@@ -27,7 +27,7 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline'",   // unsafe-inline needed for Next.js inline scripts
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
-              "connect-src 'self' https://linkit-backend-tuj9.onrender.com",
+              "connect-src 'self' https://linkit-backend-tuj9.onrender.com https://raw.githubusercontent.com",
               "frame-src 'self' https://view.officeapps.live.com https://storage.googleapis.com https:",  // allow file iframes + Office viewer
               "object-src 'none'",
               "base-uri 'self'",
