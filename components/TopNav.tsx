@@ -1,27 +1,57 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Link2, Bell, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X } from 'lucide-react';
+import { Link2, Bell, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X, RefreshCw } from 'lucide-react';
 import { logout } from '@/lib/auth';
 import { getTokenPayload, type TokenPayload } from '@/lib/jwt';
+import { getNotifications, getUnreadCount, markNotificationRead } from '@/services/api';
+import type { Notification } from '@/types';
+import { checkAuth } from '@/lib/auth';
+
+function timeAgo(iso: string) {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 export default function TopNav() {
   const router = useRouter();
   const [user, setUser] = useState<TokenPayload | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setUser(getTokenPayload());
   }, []);
 
-  // Close avatar dropdown on outside click
+  // Poll unread count every 30s
+  const refreshUnreadCount = useCallback(async () => {
+    if (!checkAuth()) return;
+    try {
+      const count = await getUnreadCount();
+      setUnreadCount(count);
+    } catch { /* silent — non-critical */ }
+  }, []);
+
+  useEffect(() => {
+    refreshUnreadCount();
+    const id = setInterval(refreshUnreadCount, 30_000);
+    return () => clearInterval(id);
+  }, [refreshUnreadCount]);
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -31,6 +61,26 @@ export default function TopNav() {
   useEffect(() => {
     setMobileOpen(false);
   }, [router.pathname, router.query]);
+
+  const handleOpenNotif = async () => {
+    const opening = !notifOpen;
+    setNotifOpen(opening);
+    if (!opening) return;
+    setNotifLoading(true);
+    try {
+      const list = await getNotifications();
+      setNotifications(list);
+      // Mark all unread as read
+      const unread = list.filter((n) => !n.read);
+      await Promise.all(unread.map((n) => markNotificationRead(n.id).catch(() => {})));
+      if (unread.length > 0) {
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+        setUnreadCount(0);
+      }
+    } catch { /* silent */ } finally {
+      setNotifLoading(false);
+    }
+  };
 
   const currentView = typeof router.query.view === 'string' ? router.query.view : undefined;
   const isActive = (view?: string) => {
@@ -77,13 +127,68 @@ export default function TopNav() {
 
         {/* Right section */}
         <div className="flex items-center gap-1">
-          {/* Bell — desktop only (notifications coming soon) */}
-          <button
-            className="hidden sm:flex w-9 h-9 rounded-xl items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors relative"
-            title="Notifications"
-          >
-            <Bell size={17} />
-          </button>
+
+          {/* Notification bell — desktop only */}
+          <div className="relative hidden sm:block" ref={notifRef}>
+            <button
+              onClick={handleOpenNotif}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors relative"
+              title="Notifications"
+            >
+              <Bell size={17} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white" />
+              )}
+            </button>
+
+            {notifOpen && (
+              <div
+                className="absolute right-0 mt-2 w-80 bg-white rounded-2xl overflow-hidden z-50"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.06)' }}
+              >
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                  {notifLoading && <RefreshCw size={13} className="text-gray-300 animate-spin" />}
+                </div>
+
+                {notifications.length === 0 && !notifLoading ? (
+                  <div className="px-4 py-8 text-center">
+                    <Bell size={20} className="text-gray-200 mx-auto mb-2" />
+                    <p className="text-xs text-gray-400">No notifications yet.</p>
+                    <p className="text-xs text-gray-300 mt-0.5">You&apos;ll be notified when a project you&apos;ve contributed to is updated.</p>
+                  </div>
+                ) : (
+                  <ul className="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                    {notifications.map((n) => (
+                      <li
+                        key={n.id}
+                        className={`px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors cursor-pointer ${!n.read ? 'bg-violet-50/40' : ''}`}
+                        onClick={() => {
+                          setNotifOpen(false);
+                          router.push(`/projects/${n.slug}?owner=${n.ownerId}`);
+                        }}
+                      >
+                        <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <RefreshCw size={12} className="text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-700 leading-relaxed">
+                            <span className="font-semibold">{n.projectName}</span>
+                            {' '}was updated by{' '}
+                            <span className="font-semibold">{n.updatedBy}</span>
+                          </p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.updatedAt)}</p>
+                        </div>
+                        {!n.read && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Avatar dropdown — always visible */}
           <div className="relative ml-1" ref={menuRef}>

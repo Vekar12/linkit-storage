@@ -4,6 +4,7 @@ import type {
   ProjectMetadata,
   CreateProjectResponse,
   UpdateProjectResponse,
+  Notification,
 } from '@/types';
 
 export const api = axios.create({
@@ -101,4 +102,18 @@ export const setProjectVisibility = async (
 export const getPublicProjects = async (): Promise<Project[]> => {
   const { data } = await api.get<Project[]>('/projects/public');
   return data;
+};
+
+export const getNotifications = async (): Promise<Notification[]> => {
+  const { data } = await api.get<Notification[]>('/notifications');
+  return data;
+};
+
+export const getUnreadCount = async (): Promise<number> => {
+  const { data } = await api.get<{ count: number }>('/notifications/unread-count');
+  return data.count;
+};
+
+export const markNotificationRead = async (id: string): Promise<void> => {
+  await api.patch(`/notifications/${id}/read`);
 };

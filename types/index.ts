@@ -39,3 +39,13 @@ export interface CreateProjectResponse {
 export interface UpdateProjectResponse {
   message: string;
 }
+
+export interface Notification {
+  id: string;
+  projectName: string;
+  slug: string;
+  ownerId: string;
+  updatedBy: string;
+  updatedAt: string;
+  read: boolean;
+}
