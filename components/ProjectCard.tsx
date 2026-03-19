@@ -72,6 +72,7 @@ function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     if (!latestFileURL) return;
     try {
       const res = await fetch(latestFileURL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -80,9 +81,9 @@ function ProjectCard({ project, onDeleted }: ProjectCardProps) {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch {
-      window.open(latestFileURL, '_blank');
+      toast.error('Download failed. Please try again.');
     }
   };
 

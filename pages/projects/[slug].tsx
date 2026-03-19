@@ -80,6 +80,7 @@ export default function VersionHistoryPage() {
   const handleDownloadFile = async (url: string, filename: string) => {
     try {
       const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
       const objUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -88,9 +89,9 @@ export default function VersionHistoryPage() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(objUrl);
+      setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
     } catch {
-      window.open(url, '_blank');
+      toast.error('Download failed. Please try again.');
     }
   };
 
