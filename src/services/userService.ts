@@ -62,6 +62,18 @@ function parseCSV(raw: string): UserRecord[] {
     });
 }
 
+// Returns a map of sub → name for all known users (used to backfill attribution)
+export async function getUserNameMap(): Promise<Map<string, string>> {
+  try {
+    const file = await getFileWithSHA(CSV_PATH);
+    if (!file) return new Map();
+    const raw = Buffer.from(file.content, 'base64').toString('utf-8');
+    return new Map(parseCSV(raw).map((u) => [u.sub, u.name]));
+  } catch {
+    return new Map();
+  }
+}
+
 export async function upsertUserRecord(
   sub: string,
   provider: 'github' | 'google',

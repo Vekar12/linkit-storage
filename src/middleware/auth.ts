@@ -41,6 +41,13 @@ function verifyToken(token: string): CachedUser | null {
   }
 }
 
+// Non-blocking auth check — use where auth is optional (e.g. public endpoints that reveal extra info to owners)
+export function extractUser(req: Request): CachedUser | null {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) return null;
+  return verifyToken(authHeader.slice(7));
+}
+
 export function requireAuth(
   req: Request,
   res: Response,

@@ -18,6 +18,8 @@ import {
   buildPagesUrl,
   deleteProjectFolder,
 } from '../services/githubService';
+import { getUserNameMap } from '../services/userService';
+import { extractUser } from '../middleware/auth';
 
 // 8-char alphanumeric edit code, unambiguous characters
 function generateEditCode(): string {
@@ -296,6 +298,7 @@ export async function getProjects(
 }
 
 // GET /projects/:ownerId/:slug/metadata — public endpoint for share page
+// editCode is included only when the authenticated requester is the project owner
 export async function getProjectMetadata(
   req: Request,
   res: Response,
@@ -310,12 +313,16 @@ export async function getProjectMetadata(
       return;
     }
 
+    const requester = extractUser(req);
+    const isOwner = requester?.id === ownerId;
+
     const cb = new Date(metadata.updatedAt).getTime();
     res.status(200).json({
       fileType: metadata.fileType,
       fileURL: `${buildPagesUrl(ownerId, slug, metadata.currentFile)}?_cb=${cb}`,
       visibility: metadata.visibility ?? 'personal',
       versions: metadata.versions,
+      ...(isOwner && metadata.editCode ? { editCode: metadata.editCode } : {}),
     });
   } catch (err) {
     next(err);
@@ -397,7 +404,22 @@ export async function getPublicProjects(
 ): Promise<void> {
   try {
     const projects = await getAllPublicProjects();
-    res.status(200).json(projects);
+
+    // Backfill ownerName/lastUpdatedByName for projects created before attribution was added
+    const needsEnrich = projects.some((p) => !p.ownerName);
+    if (!needsEnrich) {
+      res.status(200).json(projects);
+      return;
+    }
+
+    const nameMap = await getUserNameMap();
+    res.status(200).json(
+      projects.map((p) => ({
+        ...p,
+        ownerName: p.ownerName ?? nameMap.get(p.ownerId),
+        lastUpdatedByName: p.lastUpdatedByName ?? nameMap.get(p.ownerId),
+      }))
+    );
   } catch (err) {
     next(err);
   }
