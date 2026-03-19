@@ -15,12 +15,14 @@ export interface Project {
   updatedAt: string;
   shareLink?: string;
   versions: ProjectVersion[];
+  visibility: 'personal' | 'public';
 }
 
 export interface ProjectMetadata {
   fileType: string;
   fileURL: string;
   versions: ProjectVersion[];
+  visibility?: 'personal' | 'public';
 }
 
 export interface CreateProjectResponse {

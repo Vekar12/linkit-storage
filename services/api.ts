@@ -76,8 +76,9 @@ export const deleteProject = async (slug: string): Promise<void> => {
 export const setProjectVisibility = async (
   slug: string,
   visibility: 'personal' | 'public'
-): Promise<void> => {
-  await api.patch(`/projects/${slug}`, { visibility });
+): Promise<Project> => {
+  const { data } = await api.patch<Project>(`/projects/${slug}`, { visibility });
+  return data;
 };
 
 export const getPublicProjects = async (): Promise<Project[]> => {

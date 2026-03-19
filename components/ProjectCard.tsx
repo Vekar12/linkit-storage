@@ -4,7 +4,6 @@ import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2,
 import toast from 'react-hot-toast';
 import { deleteProject, setProjectVisibility } from '@/services/api';
 import { addHistory } from '@/lib/history';
-import { getVisibility, setVisibility, type Visibility } from '@/lib/visibility';
 import type { Project } from '@/types';
 
 const typeColors: Record<string, { bg: string; text: string }> = {
@@ -15,33 +14,35 @@ const typeColors: Record<string, { bg: string; text: string }> = {
   jpg:  { bg: 'bg-emerald-100',text: 'text-emerald-600' },
   jpeg: { bg: 'bg-emerald-100',text: 'text-emerald-600' },
   zip:  { bg: 'bg-sky-100',    text: 'text-sky-600' },
-  pptx: { bg: 'bg-amber-100', text: 'text-amber-600' },
+  pptx: { bg: 'bg-amber-100',  text: 'text-amber-600' },
 };
 
 interface ProjectCardProps {
   project: Project;
   onDeleted: (slug: string) => void;
+  onVisibilityChanged?: (slug: string, visibility: 'personal' | 'public') => void;
 }
 
-function ProjectCard({ project, onDeleted }: ProjectCardProps) {
+function ProjectCard({ project, onDeleted, onVisibilityChanged }: ProjectCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [visibility, setVisibilityState] = useState<Visibility>(() => getVisibility(project.slug));
+  const [visibility, setVisibilityState] = useState<'personal' | 'public'>(project.visibility ?? 'personal');
 
   const handleToggleVisibility = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const prev = visibility;
-    const next: Visibility = visibility === 'personal' ? 'public' : 'personal';
+    const next = visibility === 'personal' ? 'public' : 'personal' as const;
     setVisibilityState(next);
-    setVisibility(project.slug, next);
     try {
-      await setProjectVisibility(project.slug, next);
-      toast.success(next === 'public' ? 'Set to Public' : 'Set to Personal');
+      const updated = await setProjectVisibility(project.slug, next);
+      const confirmed = updated.visibility ?? next;
+      setVisibilityState(confirmed);
+      onVisibilityChanged?.(project.slug, confirmed);
+      toast.success(confirmed === 'public' ? 'Set to Public' : 'Set to Personal');
     } catch (err: unknown) {
       setVisibilityState(prev);
-      setVisibility(project.slug, prev);
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
       const status = axiosErr?.response?.status;
       const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;

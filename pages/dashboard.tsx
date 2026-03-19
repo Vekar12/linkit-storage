@@ -13,7 +13,7 @@ import RecentActivity from '@/components/ActivityPane';
 import { getProjects, createProject, getPublicProjects } from '@/services/api';
 import { checkAuth } from '@/lib/auth';
 import { addHistory, getHistory, type HistoryEntry } from '@/lib/history';
-import { setVisibility, getVisibility, type Visibility } from '@/lib/visibility';
+import { type Visibility } from '@/lib/visibility';
 import { getTokenPayload } from '@/lib/jwt';
 import type { Project } from '@/types';
 
@@ -93,6 +93,13 @@ export default function Dashboard() {
 
   // Right panel
   const [recentHistory, setRecentHistory] = useState<HistoryEntry[]>([]);
+
+  const handleVisibilityChanged = (slug: string, visibility: 'personal' | 'public') => {
+    const update = (p: Project) => p.slug === slug ? { ...p, visibility } : p;
+    setProjects((prev) => prev.map(update));
+    setPublicProjects((prev) => prev.map(update));
+    if (_cache) _cache.data = _cache.data.map(update);
+  };
 
   // User greeting
   const payload = getTokenPayload();
@@ -217,7 +224,7 @@ export default function Dashboard() {
   const filteredProjects = useMemo(() => projects.filter((p) => {
     const q = search.toLowerCase();
     const matchesSearch = p.projectName.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q);
-    const matchesVisibility = visibilityFilter === 'all' || getVisibility(p.slug) === visibilityFilter;
+    const matchesVisibility = visibilityFilter === 'all' || (p.visibility ?? 'personal') === visibilityFilter;
     return matchesSearch && matchesVisibility;
   }), [projects, search, visibilityFilter]);
 
@@ -225,8 +232,8 @@ export default function Dashboard() {
   const hasMore = visibleProjects.length < filteredProjects.length;
 
   // Stat card values
-  const publicCount = projects.filter((p) => getVisibility(p.slug) === 'public').length;
-  const personalCount = projects.filter((p) => getVisibility(p.slug) === 'personal').length;
+  const publicCount = projects.filter((p) => (p.visibility ?? 'personal') === 'public').length;
+  const personalCount = projects.filter((p) => (p.visibility ?? 'personal') === 'personal').length;
   const totalVersions = projects.reduce((sum, p) => sum + (p.versions?.length ?? 1), 0);
 
   const statCards = [
@@ -339,6 +346,7 @@ export default function Dashboard() {
                           invalidateCache();
                           setProjects((prev) => prev.filter((p) => p.slug !== slug));
                         }}
+                        onVisibilityChanged={handleVisibilityChanged}
                       />
                     ))}
                   </div>
@@ -402,6 +410,7 @@ export default function Dashboard() {
                               setProjects((prev) => prev.filter((p) => p.slug !== slug));
                               setPublicProjects((prev) => prev.filter((p) => p.slug !== slug));
                             }}
+                            onVisibilityChanged={handleVisibilityChanged}
                           />
                         ))}
                       </div>

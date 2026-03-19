@@ -4,7 +4,6 @@ import { ArrowLeft, Download, Clock, Link2, ExternalLink, RefreshCw, FileText, L
 import toast from 'react-hot-toast';
 import { getProjectMetadata, setProjectVisibility } from '@/services/api';
 import type { ProjectMetadata } from '@/types';
-import { getVisibility, setVisibility, type Visibility } from '@/lib/visibility';
 import DashboardLayout from '@/components/DashboardLayout';
 
 export default function VersionHistoryPage() {
@@ -14,26 +13,20 @@ export default function VersionHistoryPage() {
   const [metadata, setMetadata] = useState<ProjectMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [visibility, setVisibilityState] = useState<Visibility>('personal');
-
-  useEffect(() => {
-    if (slug && typeof slug === 'string') {
-      setVisibilityState(getVisibility(slug));
-    }
-  }, [slug]);
+  const [visibility, setVisibilityState] = useState<'personal' | 'public'>('personal');
 
   const handleToggleVisibility = async () => {
     if (!slug || typeof slug !== 'string') return;
     const prev = visibility;
-    const next: Visibility = visibility === 'personal' ? 'public' : 'personal';
+    const next = visibility === 'personal' ? 'public' : 'personal' as const;
     setVisibilityState(next);
-    setVisibility(slug, next);
     try {
-      await setProjectVisibility(slug, next);
-      toast.success(next === 'public' ? 'Project set to Public' : 'Project set to Personal');
+      const updated = await setProjectVisibility(slug, next);
+      const confirmed = updated.visibility ?? next;
+      setVisibilityState(confirmed);
+      toast.success(confirmed === 'public' ? 'Project set to Public' : 'Project set to Personal');
     } catch (err: unknown) {
       setVisibilityState(prev);
-      setVisibility(slug, prev);
       const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
       const status = axiosErr?.response?.status;
       const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
@@ -44,7 +37,10 @@ export default function VersionHistoryPage() {
   useEffect(() => {
     if (!slug || !ownerId || typeof slug !== 'string' || typeof ownerId !== 'string') return;
     getProjectMetadata(ownerId, slug)
-      .then(setMetadata)
+      .then((data) => {
+        setMetadata(data);
+        if (data.visibility) setVisibilityState(data.visibility);
+      })
       .catch((err) => { if (err?.response?.status === 404) setNotFound(true); })
       .finally(() => setLoading(false));
   }, [slug, ownerId]);
@@ -81,7 +77,8 @@ export default function VersionHistoryPage() {
   const versions = [...(metadata.versions ?? [])].reverse();
 
   const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const downloadUrl = `${baseURL}/projects/${ownerId}/${slug}/download`;
+  const versionDownloadUrl = (version: number) =>
+    `${baseURL}/projects/${ownerId}/${slug}/download?version=${version}`;
 
   const handleDownloadPDF = async (url: string) => {
     try {
@@ -197,10 +194,10 @@ export default function VersionHistoryPage() {
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <a
-                      href={downloadUrl}
+                      href={versionDownloadUrl(v.version)}
                       download
                       className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
-                      title="Download file"
+                      title={`Download v${v.version}`}
                     >
                       <Download size={12} />
                       Download
