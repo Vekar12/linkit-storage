@@ -4,6 +4,7 @@ import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2,
 import toast from 'react-hot-toast';
 import { deleteProject, setProjectVisibility, renameProject, rotateEditCode } from '@/services/api';
 import { addHistory } from '@/lib/history';
+import { getTokenPayload } from '@/lib/jwt';
 import type { Project } from '@/types';
 
 const typeColors: Record<string, { bg: string; text: string }> = {
@@ -189,6 +190,9 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
   const fileKey = project.fileType?.toLowerCase();
   const badge = typeColors[fileKey] ?? { bg: 'bg-gray-100', text: 'text-gray-500' };
 
+  const currentUserId = getTokenPayload()?.sub ?? '';
+  const isOwnProject = isPublicView && !!currentUserId && project.ownerId === currentUserId;
+
   return (
     <div
       onClick={() => {
@@ -196,15 +200,20 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
         const nameParam = `&name=${encodeURIComponent(project.projectName)}`;
         router.push(`/projects/${project.slug}?owner=${project.ownerId}${nameParam}${editParam}`);
       }}
-      className="bg-white rounded-2xl flex flex-col justify-between aspect-square cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
+      className="rounded-2xl flex flex-col justify-between aspect-square cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
       style={{
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
+        backgroundColor: isOwnProject ? '#faf5ff' : '#ffffff',
+        boxShadow: isOwnProject
+          ? '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1.5px rgba(124,58,237,0.3)'
+          : '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.15)';
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = isOwnProject
+          ? '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1.5px rgba(124,58,237,0.3)'
+          : '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)';
       }}
     >
       {/* Top bar */}
@@ -222,9 +231,15 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
           <Trash2 size={12} />
         </button>
 
-        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${badge.bg} ${badge.text}`}>
-          {project.fileType?.toUpperCase()}
-        </span>
+        <div className="flex items-center gap-1.5">
+          {isOwnProject && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold bg-violet-100 text-violet-600">
+              Yours
+            </span>
+          )}
+            {project.fileType?.toUpperCase()}
+          </span>
+        </div>
       </div>
 
       {/* Middle: project info */}
