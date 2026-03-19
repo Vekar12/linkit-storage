@@ -56,8 +56,6 @@ function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     month: 'short', day: 'numeric', year: 'numeric',
   });
 
-  const latestFileURL = project.versions?.[project.versions.length - 1]?.fileURL;
-
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -70,25 +68,7 @@ function ProjectCard({ project, onDeleted }: ProjectCardProps) {
     }
   };
 
-  const handleDownload = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!latestFileURL) return;
-    try {
-      const res = await fetch(latestFileURL);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = project.currentFile;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-    } catch {
-      toast.error('Download failed. Please try again.');
-    }
-  };
+  const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/projects/${project.ownerId}/${project.slug}/download`;
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -201,14 +181,15 @@ function ProjectCard({ project, onDeleted }: ProjectCardProps) {
             }
           </button>
 
-          <button
-            onClick={handleDownload}
-            disabled={!latestFileURL}
+          <a
+            href={downloadUrl}
+            download
+            onClick={(e) => e.stopPropagation()}
             title="Download"
-            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors disabled:opacity-40"
+            className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
           >
             <Download size={13} className="text-gray-400" />
-          </button>
+          </a>
 
           <button
             onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}&owner=${project.ownerId}`); }}

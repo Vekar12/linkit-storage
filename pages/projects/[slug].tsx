@@ -80,23 +80,8 @@ export default function VersionHistoryPage() {
 
   const versions = [...(metadata.versions ?? [])].reverse();
 
-  const handleDownloadFile = async (url: string, filename: string) => {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const objUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = objUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(objUrl), 10000);
-    } catch {
-      toast.error('Download failed. Please try again.');
-    }
-  };
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const downloadUrl = `${baseURL}/projects/${ownerId}/${slug}/download`;
 
   const handleDownloadPDF = async (url: string) => {
     try {
@@ -211,14 +196,15 @@ export default function VersionHistoryPage() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <button
-                      onClick={() => handleDownloadFile(v.fileURL, v.filename)}
+                    <a
+                      href={downloadUrl}
+                      download
                       className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
                       title="Download file"
                     >
                       <Download size={12} />
                       Download
-                    </button>
+                    </a>
                     <button
                       onClick={() => handleDownloadPDF(v.fileURL)}
                       className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
