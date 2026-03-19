@@ -424,6 +424,7 @@ export default function Dashboard() {
                             }}
                             onVisibilityChanged={handleVisibilityChanged}
                             onRenamed={handleRenamed}
+                            isPublicView
                           />
                         ))}
                       </div>

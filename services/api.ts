@@ -48,10 +48,12 @@ export const createProject = async (
 
 export const updateProject = async (
   slug: string,
-  file: File
+  file: File,
+  editCode?: string
 ): Promise<UpdateProjectResponse> => {
   const formData = new FormData();
   formData.append('file', file);
+  if (editCode) formData.append('editCode', editCode);
   const { data } = await api.put<UpdateProjectResponse>(`/projects/${slug}`, formData);
   return data;
 };

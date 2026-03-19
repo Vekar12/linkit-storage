@@ -16,6 +16,9 @@ export interface Project {
   shareLink?: string;
   versions: ProjectVersion[];
   visibility: 'personal' | 'public';
+  editCode?: string;
+  ownerName?: string;
+  lastUpdatedByName?: string;
 }
 
 export interface ProjectMetadata {

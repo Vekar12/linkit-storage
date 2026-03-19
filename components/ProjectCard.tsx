@@ -22,11 +22,13 @@ interface ProjectCardProps {
   onDeleted: (slug: string) => void;
   onVisibilityChanged?: (slug: string, visibility: 'personal' | 'public') => void;
   onRenamed?: (slug: string, projectName: string) => void;
+  isPublicView?: boolean;
 }
 
-function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed }: ProjectCardProps) {
+function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, isPublicView = false }: ProjectCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [visibility, setVisibilityState] = useState<'personal' | 'public'>(project.visibility ?? 'personal');
@@ -99,6 +101,19 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed }: Pro
       setCopied(true);
       toast.success('Link copied!');
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy.');
+    }
+  };
+
+  const handleCopyCode = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!project.editCode) return;
+    try {
+      await navigator.clipboard.writeText(project.editCode);
+      setCodeCopied(true);
+      toast.success('Edit code copied!');
+      setTimeout(() => setCodeCopied(false), 2000);
     } catch {
       toast.error('Could not copy.');
     }
@@ -201,6 +216,16 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed }: Pro
           {formattedDate}
         </p>
         <p className="text-xs text-gray-300 mt-0.5 truncate font-mono">{project.slug}</p>
+
+        {/* Attribution — shown in public project listings */}
+        {isPublicView && project.ownerName && (
+          <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+            {project.lastUpdatedByName && project.lastUpdatedByName !== project.ownerName
+              ? `Updated by ${project.lastUpdatedByName}`
+              : `by ${project.ownerName}`}
+          </p>
+        )}
+
         <button
           onClick={handleToggleVisibility}
           title={visibility === 'personal' ? 'Personal — click to make Public' : 'Public — click to make Personal'}
@@ -213,6 +238,21 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed }: Pro
           {visibility === 'public' ? <Globe size={9} /> : <Lock size={9} />}
           {visibility === 'public' ? 'Public' : 'Personal'}
         </button>
+        {/* Edit code — shown to owner when project is public */}
+        {!isPublicView && project.editCode && visibility === 'public' && (
+          <div className="flex items-center gap-1 mt-1.5" onClick={(e) => e.stopPropagation()}>
+            <span className="text-[10px] font-mono tracking-widest text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+              {project.editCode}
+            </span>
+            <button
+              onClick={handleCopyCode}
+              title="Copy edit code"
+              className="text-gray-300 hover:text-primary transition-colors"
+            >
+              {codeCopied ? <CheckCircle size={9} className="text-primary" /> : <Copy size={9} />}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Bottom actions */}

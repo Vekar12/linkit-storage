@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { CheckCircle, ArrowLeft, Upload, Code2, ExternalLink } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Upload, Code2, ExternalLink, KeyRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { marked } from 'marked';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -16,6 +16,7 @@ export default function UpdatePage() {
   const [uploadMode, setUploadMode] = useState<'file' | 'html'>('file');
   const [file, setFile] = useState<File | null>(null);
   const [htmlCode, setHtmlCode] = useState('');
+  const [editCode, setEditCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [shareLink, setShareLink] = useState('');
 
@@ -64,7 +65,7 @@ export default function UpdatePage() {
 
     const attemptUpdate = async (attemptsLeft: number): Promise<void> => {
       try {
-        await updateProject(cleanSlug, uploadFile!);
+        await updateProject(cleanSlug, uploadFile!, editCode.trim() || undefined);
         addHistory({ type: 'updated', projectName: cleanSlug, slug: cleanSlug });
         const linkPath = ownerId ? `/p/${ownerId}/${cleanSlug}` : `/p/${cleanSlug}`;
         const link = `${window.location.origin}${linkPath}`;
@@ -164,6 +165,23 @@ export default function UpdatePage() {
                 onChange={(e) => setSlug(e.target.value)}
               />
               <p className="text-xs text-gray-400 mt-1.5">Find this on your project card in the dashboard.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                <KeyRound size={13} className="text-gray-400" />
+                Edit Code
+                <span className="text-gray-400 font-normal text-xs">(only needed if you don&apos;t own this project)</span>
+              </label>
+              <input
+                type="text"
+                className="li-input font-mono tracking-widest uppercase"
+                placeholder="e.g. A3X9KZ2M"
+                value={editCode}
+                onChange={(e) => setEditCode(e.target.value.toUpperCase())}
+                maxLength={20}
+              />
+              <p className="text-xs text-gray-400 mt-1.5">Ask the project owner to share their edit code with you.</p>
             </div>
 
             <div
