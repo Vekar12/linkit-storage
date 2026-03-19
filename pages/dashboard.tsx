@@ -13,7 +13,7 @@ import RecentActivity from '@/components/ActivityPane';
 import { getProjects, createProject, getPublicProjects } from '@/services/api';
 import { checkAuth } from '@/lib/auth';
 import { addHistory, getHistory, type HistoryEntry } from '@/lib/history';
-import { type Visibility } from '@/lib/visibility';
+type Visibility = 'personal' | 'public';
 import { getTokenPayload } from '@/lib/jwt';
 import type { Project } from '@/types';
 
@@ -172,7 +172,6 @@ export default function Dashboard() {
     const attemptCreate = async (attemptsLeft: number): Promise<void> => {
       try {
         const result = await createProject(projectName.trim(), uploadFile!, newVisibility);
-        setVisibility(result.slug, newVisibility);
         toast.success('Link created!');
         addHistory({ type: 'created', projectName: projectName.trim(), slug: result.slug });
         invalidateCache();
