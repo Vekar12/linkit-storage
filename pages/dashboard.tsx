@@ -101,6 +101,13 @@ export default function Dashboard() {
     if (_cache) _cache.data = _cache.data.map(update);
   };
 
+  const handleRenamed = (slug: string, projectName: string) => {
+    const update = (p: Project) => p.slug === slug ? { ...p, projectName } : p;
+    setProjects((prev) => prev.map(update));
+    setPublicProjects((prev) => prev.map(update));
+    if (_cache) _cache.data = _cache.data.map(update);
+  };
+
   // User greeting
   const payload = getTokenPayload();
   const displayName = payload?.name || payload?.login || payload?.email?.split('@')[0] || 'there';
@@ -347,6 +354,7 @@ export default function Dashboard() {
                           setProjects((prev) => prev.filter((p) => p.slug !== slug));
                         }}
                         onVisibilityChanged={handleVisibilityChanged}
+                        onRenamed={handleRenamed}
                       />
                     ))}
                   </div>
@@ -411,6 +419,7 @@ export default function Dashboard() {
                               setPublicProjects((prev) => prev.filter((p) => p.slug !== slug));
                             }}
                             onVisibilityChanged={handleVisibilityChanged}
+                            onRenamed={handleRenamed}
                           />
                         ))}
                       </div>

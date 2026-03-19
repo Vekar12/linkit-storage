@@ -1,8 +1,8 @@
 import { memo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe } from 'lucide-react';
+import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { deleteProject, setProjectVisibility } from '@/services/api';
+import { deleteProject, setProjectVisibility, renameProject } from '@/services/api';
 import { addHistory } from '@/lib/history';
 import type { Project } from '@/types';
 
@@ -21,14 +21,18 @@ interface ProjectCardProps {
   project: Project;
   onDeleted: (slug: string) => void;
   onVisibilityChanged?: (slug: string, visibility: 'personal' | 'public') => void;
+  onRenamed?: (slug: string, projectName: string) => void;
 }
 
-function ProjectCard({ project, onDeleted, onVisibilityChanged }: ProjectCardProps) {
+function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed }: ProjectCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [visibility, setVisibilityState] = useState<'personal' | 'public'>(project.visibility ?? 'personal');
+  const [displayName, setDisplayName] = useState(project.projectName);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [nameInput, setNameInput] = useState(project.projectName);
 
   const handleToggleVisibility = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,6 +52,37 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged }: ProjectCardPro
       const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
       toast.error(msg ?? `Could not update visibility (${status ?? 'no response'}).`);
     }
+  };
+
+  const handleStartRename = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNameInput(displayName);
+    setIsRenaming(true);
+  };
+
+  const handleRenameSubmit = async () => {
+    const trimmed = nameInput.trim();
+    if (!trimmed || trimmed === displayName) { setIsRenaming(false); return; }
+    setIsRenaming(false);
+    const prev = displayName;
+    setDisplayName(trimmed);
+    try {
+      const updated = await renameProject(project.slug, trimmed);
+      const confirmed = updated.projectName ?? trimmed;
+      setDisplayName(confirmed);
+      onRenamed?.(project.slug, confirmed);
+      toast.success('Project renamed!');
+    } catch (err: unknown) {
+      setDisplayName(prev);
+      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
+      const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
+      toast.error(msg ?? 'Could not rename project.');
+    }
+  };
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') { e.preventDefault(); handleRenameSubmit(); }
+    if (e.key === 'Escape') { setIsRenaming(false); }
   };
 
   const shareLink = project.shareLink
@@ -135,9 +170,32 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged }: ProjectCardPro
 
       {/* Middle: project info */}
       <div className="flex-1 px-3 py-2">
-        <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2">
-          {project.projectName}
-        </h3>
+        <div className="group flex items-start gap-1 min-w-0" onClick={(e) => e.stopPropagation()}>
+          {isRenaming ? (
+            <input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={handleRenameKeyDown}
+              onBlur={handleRenameSubmit}
+              autoFocus
+              maxLength={80}
+              className="text-sm font-semibold text-gray-800 bg-violet-50 border border-primary rounded-lg px-1.5 py-0.5 w-full outline-none"
+            />
+          ) : (
+            <>
+              <h3 className="font-semibold text-gray-800 text-sm leading-snug line-clamp-2 flex-1 min-w-0">
+                {displayName}
+              </h3>
+              <button
+                onClick={handleStartRename}
+                title="Rename project"
+                className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-0.5 text-gray-300 hover:text-primary mt-0.5"
+              >
+                <Pencil size={10} />
+              </button>
+            </>
+          )}
+        </div>
         <p className="flex items-center gap-1 text-xs text-gray-400 mt-1">
           <Calendar size={11} />
           {formattedDate}

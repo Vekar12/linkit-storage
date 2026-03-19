@@ -73,6 +73,14 @@ export const deleteProject = async (slug: string): Promise<void> => {
   await api.delete(`/projects/${slug}`);
 };
 
+export const renameProject = async (
+  slug: string,
+  projectName: string
+): Promise<Project> => {
+  const { data } = await api.patch<Project>(`/projects/${slug}`, { projectName });
+  return data;
+};
+
 export const setProjectVisibility = async (
   slug: string,
   visibility: 'personal' | 'public'
