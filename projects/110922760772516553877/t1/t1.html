@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mortgage Task-Based System</title>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.5; padding: 20px; }
+h1, h2 { color: #222; }
+h2 { margin-top: 30px; }
+ul { margin: 10px 0; }
+.box { background: #f5f5f5; padding: 12px; border-radius: 8px; margin: 10px 0; }
+.flow { background: #eef; padding: 10px; border-radius: 6px; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<h1>Mortgage Disbursement: Task-Based System</h1>
+
+<h2>1. Current Process (Simplified)</h2>
+<ul>
+<li>Sequential flow: one step after another</li>
+<li>Multiple teams check same documents repeatedly</li>
+<li>Low visibility: unclear where case is stuck</li>
+<li>Heavy dependency on sales for communication</li>
+</ul>
+
+<h2>2. Proposed System</h2>
+<ul>
+<li>No stages, only tasks</li>
+<li>Tasks assigned to stakeholders</li>
+<li>Parallel execution wherever possible</li>
+<li>Clear: who needs to act and what is pending</li>
+</ul>
+
+<h2>3. Task Types</h2>
+<ul>
+<li><b>Independent:</b> starts immediately (e.g. upload doc)</li>
+<li><b>Semi-dependent:</b> needs one trigger (e.g. verify after upload)</li>
+<li><b>Dependent:</b> needs multiple tasks done</li>
+</ul>
+
+<h2>4. Dashboard (Customer + Sales)</h2>
+<ul>
+<li>All tasks shown in one list</li>
+<li>No separation like legal/technical</li>
+<li>Only "what needs to be done"</li>
+</ul>
+
+<div class="box">
+Example tasks:<br>
+- Submit Agreement<br>
+- Pay Processing Fee<br>
+- Fill Beneficiary Details
+</div>
+
+<h2>5. Single Document Flow</h2>
+
+<div class="flow">
+Customer/Sales → Submit
+        ↓
+Local Ops → Verify
+        ↓
+Credit → Final Check
+</div>
+
+<ul>
+<li>If issue → goes back to Customer/Sales</li>
+<li>Each document moves independently</li>
+</ul>
+
+<h2>6. Parallel Example</h2>
+
+<div class="flow">
+Doc A → With Ops
+Doc B → With Customer
+Doc C → With Credit
+</div>
+
+<p>All running at the same time.</p>
+
+<h2>7. OTC / PDD Logic</h2>
+<ul>
+<li>All documents start as mandatory</li>
+<li>If not available → Sales raises request</li>
+</ul>
+
+<div class="box">
+OTC → must be collected before cheque handover<br>
+PDD → must be collected before next tranche
+</div>
+
+<ul>
+<li>System suggests → Credit decides</li>
+</ul>
+
+<h2>8. After Document Completion</h2>
+
+<div class="flow">
+Docs Done → KFS → E-Sign → RCU Check → Ops Final Check → Submit
+</div>
+
+<ul>
+<li>KFS → Customer accepts</li>
+<li>E-sign → Sales initiates, Customer completes</li>
+<li>RCU → verifies documents externally</li>
+<li>Ops → final checklist</li>
+<li>Submit → moves to Finnone</li>
+</ul>
+
+<h2>9. Key Rules</h2>
+<ul>
+<li>Each task has one owner</li>
+<li>Tasks move based on completion, not stages</li>
+<li>Queries affect only that task, not full case</li>
+<li>System shows clearly: what is pending and with whom</li>
+</ul>
+
+<h2>10. Summary</h2>
+<p>
+System = task tracker + flow controller<br>
+Teams = execution<br>
+Goal = faster, clearer, parallel processing
+</p>
+
+</body>
+</html>
