@@ -599,7 +599,17 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
 
 <!-- 4.3 POST INITIATE DISBURSEMENT -->
 <div class="subsection"><h3>4.3 Post Initiate Disbursement – Parallel Task Streams</h3></div>
-<p><strong>Initiate Disbursement</strong> button appears for Sales only after T-L7 (Legal) + T-T6 (Technical) both close. LAN generated at this point. Three streams fire simultaneously.</p>
+
+<p><strong>Three pre-conditions</strong> must all be met before the Initiate Disbursement button is available to Sales. The button shows a checklist so Sales can see exactly which are pending:</p>
+<div class="tbl-wrap"><table>
+  <tr><th>#</th><th>Pre-condition</th><th>How it closes</th></tr>
+  <tr><td>1</td><td>Legal closed</td><td>T-L7 (System parses TSR) complete</td></tr>
+  <tr><td>2</td><td>Technical closed</td><td>T-T6 (Technical report published) complete</td></tr>
+  <tr><td>3</td><td>Pricing Approval confirmed</td><td>T-PRICE task in Sales tray — Sales confirms pricing approval from Credit hierarchy is in place</td></tr>
+</table></div>
+<div class="callout callout-amber"><strong>Property not identified at sanction?</strong> Sales gets a task in their tray — "Initiate Legal / Technical" — once property details are updated on the case. Same initiation flow, delayed trigger. On property change after Legal/Technical are complete, both workstreams fully restart for the new property and all downstream tasks from the old TSR are revised.</div>
+
+<p style="margin-top:12px;">When clicked, LAN is generated and three streams fire simultaneously. The BRE already knows upfront which docs are Mandatory, OTC, and PDD. Sales collects <strong>all mandatory docs first</strong>, then submits as one batch. For any mandatory doc that Sales wants to mark as OTC/PDD, a Credit approval request is raised — <strong>the batch moves to Local Ops only after all mandatory docs are either physically collected or OTC/PDD-approved by Credit.</strong></p>
 
 <div class="flow">
   <div class="flow-title">What Appears in Each Tray on Initiate Disbursement</div>
@@ -609,8 +619,9 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
       <div class="tray-tasks">
         <span class="chip chip-cust">Stream A: Submit Original [Doc 1]</span>
         <span class="chip chip-cust">Stream A: Submit Original [Doc 2…n]</span>
+        <span class="chip chip-cust">Stream B: Pay [Bank Fee] (bank integration)</span>
+        <span class="chip chip-cust">Stream B: Upload receipt for [Other Payment]</span>
         <span class="chip chip-cust">Stream B: Fulfil Sanction Condition [X]</span>
-        <span class="chip chip-cust">Stream B: Fulfil Sanction Condition [Y…]</span>
       </div>
     </div>
     <div class="tray-row">
@@ -625,52 +636,54 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     <div class="tray-row">
       <div class="tray-label" style="color:var(--c-credit);border-color:var(--c-credit);">CREDIT<br>(on request)</div>
       <div class="tray-tasks">
-        <span class="chip chip-credit">Approve / Reject OTC/PDD Request [Doc]</span>
-        <div style="font-size:11px;color:var(--muted);padding:4px 0;width:100%;">Appears only when Sales raises a request because a doc is unavailable</div>
+        <span class="chip chip-credit">Approve / Reject OTC/PDD Request: [Doc]</span>
+        <div style="font-size:11px;color:var(--muted);padding:4px 0;width:100%;">Appears when Sales raises a request for a mandatory doc it cannot physically collect. Batch moves to Local Ops only after all mandatory docs are collected OR OTC/PDD approved.</div>
       </div>
     </div>
   </div>
 </div>
 
+<div class="callout callout-teal"><strong>Stream B — Sanction Condition task types:</strong> Bank payments (e.g. processing fee) → customer pays directly via bank integration, task auto-closes on confirmation. Other payments (e.g. existing loan closure) → upload receipt task for customer + Sales. Document conditions → upload task same as Stream A.</div>
+
 <!-- 4.4 DOC VERIFICATION -->
 <div class="subsection"><h3>4.4 Document Verification Chain</h3></div>
-<p>Runs continuously and in parallel with everything else, from the moment docs start arriving. Documents submitted in batches (4–5 at a time) but verified <strong>independently</strong> — a query on one doc never holds others.</p>
+<p>Triggered once the full mandatory doc batch is cleared (all docs physically collected or OTC/PDD approved by Credit). The entire batch moves to Local Ops together. Local Ops verifies each document <strong>independently</strong> within the batch — a query on one doc never holds others. If a doc fails Credit approval and is resubmitted, it goes back through Local Ops first, then Credit.</p>
 
 <div class="flow">
-  <div class="flow-title">Per-Document Verification (Each Document Runs This Chain Independently)</div>
+  <div class="flow-title">Per-Document Verification (Each Doc Independent Within the Batch)</div>
   <div class="doc-verify-grid">
-    <div class="dv-header l1">LAYER 1 · Customer / Sales</div>
-    <div class="dv-header l2">LAYER 2 · Local Ops</div>
-    <div class="dv-header l3">LAYER 3 · Credit</div>
+    <div class="dv-header l1">LAYER 1 · Sales submits full batch</div>
+    <div class="dv-header l2">LAYER 2 · Local Ops (per doc)</div>
+    <div class="dv-header l3">LAYER 3 · Credit (per doc)</div>
 
     <div class="dv-cell">
-      <div class="dv-action">T-DOC1.x — Submit original document</div>
-      <div class="dv-how">Sales saves batch → each doc enters chain independently</div>
-      <div style="font-size:11px;color:var(--teal);margin-top:4px;">→ Triggers Layer 2 per doc</div>
+      <div class="dv-action">T-DOC1 — Submit mandatory doc batch</div>
+      <div class="dv-how">Sales collects ALL mandatory docs (physically received + OTC/PDD approved) then submits as one batch</div>
+      <div style="font-size:11px;color:var(--teal);margin-top:4px;">→ Each doc in batch enters Layer 2 independently</div>
     </div>
     <div class="dv-cell l2">
       <div class="dv-action">T-DOC2.x — Verify via iLens checklist</div>
-      <div class="dv-how">Task click → redirected to iLens → checklist completion auto-closes task</div>
+      <div class="dv-how">Task click → redirected to iLens → checklist completion auto-closes task in dashboard</div>
       <div class="dv-ok">✓ Verified → triggers Layer 3 for this doc</div>
-      <div class="dv-query">✗ Query → only this doc goes back to Sales. Others continue.</div>
+      <div class="dv-query">✗ Query → this doc back to Sales + Customer. Others continue.<br><br>On resubmission after Credit query → also restarts here first.</div>
     </div>
     <div class="dv-cell l3">
       <div class="dv-action">T-DOC3.x — Credit final approval</div>
       <div class="dv-how">Triggered per doc as soon as Layer 2 clears. Not batched.</div>
       <div class="dv-ok">✓ Approved → doc fully cleared ✅</div>
-      <div class="dv-query">✗ Query → only this doc held. Others continue to approval.</div>
+      <div class="dv-query">✗ Query → this doc back to Sales + Customer. Others continue.<br>On resubmission → goes to Layer 2 first, then back here.</div>
     </div>
   </div>
-  <div style="font-size:11px;color:var(--muted);margin-top:10px;">All mandatory docs must reach Layer 3 ✅ before KFS is auto-triggered.</div>
+  <div style="font-size:11px;color:var(--muted);margin-top:10px;">All 5 Credit tasks (T-DMA1–5) must close before KFS is auto-triggered. Doc approvals (T-DOC3.x) alone are not sufficient.</div>
 </div>
 
 <div class="tbl-wrap"><table>
   <tr><th>Task</th><th>Name</th><th>Tray</th><th>Type</th><th>Predecessor</th></tr>
-  <tr><td class="tid">T-DOC1.x</td><td>Submit original: [doc]</td><td>Customer + Sales</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Initiate Disbursement</td></tr>
-  <tr><td class="tid">T-DOC2.x</td><td>Verify original: [doc] via iLens</td><td>Local Ops → iLens</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Sales saves that doc in batch</td></tr>
-  <tr><td class="tid">T-DOC2.q.x</td><td>Resolve Local Ops query: [doc]</td><td>Sales + Customer</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Local Ops marks query</td></tr>
-  <tr><td class="tid">T-DOC3.x</td><td>Credit approval: [doc]</td><td>Credit</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-DOC2.x verified – per doc, continuous</td></tr>
-  <tr><td class="tid">T-DOC3.q.x</td><td>Resolve Credit query: [doc]</td><td>Sales + Customer</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Credit marks query</td></tr>
+  <tr><td class="tid">T-DOC1</td><td>Submit mandatory doc batch</td><td>Sales</td><td><span class="badge badge-semi">Semi-dep</span></td><td>All mandatory docs collected or OTC/PDD approved by Credit</td></tr>
+  <tr><td class="tid">T-DOC2.x</td><td>Verify original: [doc] via iLens</td><td>Local Ops → iLens</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-DOC1 batch submitted; also re-triggered on Credit query resubmission</td></tr>
+  <tr><td class="tid">T-DOC2.q.x</td><td>Resolve Local Ops query: [doc]</td><td>Sales + Customer</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Local Ops marks query on T-DOC2.x</td></tr>
+  <tr><td class="tid">T-DOC3.x</td><td>Credit approval: [doc]</td><td>Credit</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-DOC2.x verified for that doc</td></tr>
+  <tr><td class="tid">T-DOC3.q.x</td><td>Resolve Credit query: [doc]</td><td>Sales + Customer</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Credit marks query on T-DOC3.x → resubmission re-triggers T-DOC2.x</td></tr>
 </table></div>
 
 <!-- 4.5 DM PREP + CREDIT -->
@@ -689,7 +702,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
       <div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:6px;">↓ both complete</div>
       <div style="padding:10px;background:#d1fae5;border-radius:6px;font-size:11px;margin-bottom:6px;"><strong>T-DMP3</strong> — Own contribution review + flag</div>
       <div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:6px;">↓</div>
-      <div style="padding:10px;background:#d1fae5;border-radius:6px;font-size:11px;"><strong>T-DMP5</strong> — Generate DM &nbsp;&nbsp;<span style="color:var(--muted);font-size:10px;">(T-DMP4 eNACH auto-triggered in parallel)</span></div>
+      <div style="padding:10px;background:#d1fae5;border-radius:6px;font-size:11px;"><strong>T-DMP5</strong> — Generate DM</div>
+      <div style="margin-top:6px;padding:8px 10px;background:#ccfbf1;border-radius:6px;font-size:11px;border-left:3px solid var(--c-sys);"><strong style="color:var(--c-sys);">T-DMP4 eNACH auto-triggered</strong> after Local Ops verifies repayment details (T-DMP2). Must complete before NDC Check.</div>
     </div>
     <div>
       <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:10px;">CREDIT APPROVAL · All 5 parallel</div>
@@ -706,13 +720,13 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
 </div>
 
 <!-- 4.6 KFS → NDC -->
-<div class="subsection"><h3>4.6 KFS → E-Sign → FCBG → NDC</h3></div>
-<p>Sequential chain, triggered once all mandatory docs are Credit-approved.</p>
+<div class="subsection"><h3>4.6 KFS → E-Sign → FCPG → NDC</h3></div>
+<p>Sequential chain. KFS is triggered only after <strong>all 5 Credit tasks (T-DMA1–5) are complete</strong> — not just document approvals alone.</p>
 
 <div class="final-chain">
   <div class="fc-row" style="background:#eaf6f4;">
     <div class="fc-tid">AUTO</div>
-    <div class="fc-task">KFS auto-triggered<div class="fc-note">Key Fact Statement sent to customer on app</div></div>
+    <div class="fc-task">KFS auto-triggered<div class="fc-note">Triggered after all 5 Credit tasks (T-DMA1–5) close. Key Fact Statement sent to customer on app.</div></div>
     <div class="fc-owner"><span class="chip chip-sys" style="font-size:10px;">System</span></div>
   </div>
   <div class="fc-row">
@@ -727,17 +741,22 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
   </div>
   <div class="fc-row">
     <div class="fc-tid">T-ESIGN2</div>
-    <div class="fc-task">Customer completes E-Sign<div class="fc-note">E-signed booklet generated: CFF, Autopay Mandate, KFS, DRF</div></div>
+    <div class="fc-task">Customer completes E-Sign<div class="fc-note">E-signed booklet generated: CFF, Autopay Mandate, KFS, DRF. eNACH mandate included.</div></div>
     <div class="fc-owner"><span class="chip chip-cust" style="font-size:10px;">Customer + Sales</span></div>
   </div>
   <div class="fc-row">
-    <div class="fc-tid">T-FCBG</div>
-    <div class="fc-task">FCBG Physical Verification<div class="fc-note">Verifies originals physically + checks property registration on govt sites</div></div>
+    <div class="fc-tid">T-ENACH</div>
+    <div class="fc-task">eNACH / Autopay mandate complete<div class="fc-note">Must be completed before NDC Check. Triggered after Local Ops verifies repayment details (T-DMP2).</div></div>
+    <div class="fc-owner"><span class="chip chip-sys" style="font-size:10px;">System + Customer</span></div>
+  </div>
+  <div class="fc-row">
+    <div class="fc-tid">T-FCPG</div>
+    <div class="fc-task">FCPG Physical Verification<div class="fc-note">RCU verifies originals physically + checks property registration on govt sites. Predecessor: T-ESIGN2 complete.</div></div>
     <div class="fc-owner"><span class="chip chip-rcu" style="font-size:10px;">RCU</span></div>
   </div>
   <div class="fc-row">
     <div class="fc-tid">T-NDC</div>
-    <div class="fc-task">NDC Check via iLens<div class="fc-note">Credit Ops check merged in. Click redirects to iLens checklist; completion auto-closes task.</div></div>
+    <div class="fc-task">NDC Check via iLens<div class="fc-note">Credit Ops check merged in. Click redirects to iLens NDC checklist; completion auto-closes task. Predecessor: T-FCPG + T-ENACH both complete.</div></div>
     <div class="fc-owner"><span class="chip chip-ops" style="font-size:10px;">Local Ops</span></div>
   </div>
   <div class="fc-row" style="background:#eaf6f4;">
@@ -766,24 +785,34 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     <td><span class="gate-unlocks">T-T1 Initiate Technical appears for Sales (runs in parallel with Legal)</span></td>
   </tr>
   <tr>
-    <td><span class="gate-trigger">T-L7 (Legal closed) + T-T6 (Technical closed)</span></td>
+    <td><span class="gate-trigger">T-L7 (Legal closed) + T-T6 (Technical closed) + T-PRICE (Pricing Approval confirmed)</span></td>
     <td class="gate-arrow">→</td>
-    <td><span class="gate-unlocks">Initiate Disbursement button available for Sales</span></td>
+    <td><span class="gate-unlocks">Initiate Disbursement button available — button shows checklist of which pre-conditions are pending</span></td>
   </tr>
   <tr>
     <td><span class="gate-trigger">Initiate Disbursement clicked</span></td>
     <td class="gate-arrow">→</td>
-    <td><span class="gate-unlocks">Stream A (original doc tasks) + Stream B (sanction conditions) + Stream C (loan details) all fire simultaneously for Customer, Sales</span></td>
+    <td><span class="gate-unlocks">Stream A (original doc tasks) + Stream B (sanction conditions) + Stream C (loan details) all fire simultaneously. LAN generated.</span></td>
   </tr>
   <tr>
-    <td><span class="gate-trigger">Sales saves a document batch (Stream A)</span></td>
+    <td><span class="gate-trigger">All mandatory Stream A docs physically collected OR OTC/PDD approved by Credit</span></td>
     <td class="gate-arrow">→</td>
-    <td><span class="gate-unlocks">T-DOC2.x (Local Ops verify) appears per document immediately</span></td>
+    <td><span class="gate-unlocks">T-DOC1 (full batch submission) available for Sales → batch pushed to Local Ops</span></td>
   </tr>
   <tr>
-    <td><span class="gate-trigger">T-DOC2.x verified (per document)</span></td>
+    <td><span class="gate-trigger">T-DOC1 batch submitted</span></td>
     <td class="gate-arrow">→</td>
-    <td><span class="gate-unlocks">T-DOC3.x (Credit approval) appears for that specific document — continuous</span></td>
+    <td><span class="gate-unlocks">T-DOC2.x (Local Ops verify) appears per document independently</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-DOC2.x verified (per doc)</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-DOC3.x (Credit approval) for that specific doc</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-DOC3.q.x — doc resubmitted after Credit query</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-DOC2.x re-triggered for that doc (Local Ops verifies again first, then Credit)</span></td>
   </tr>
   <tr>
     <td><span class="gate-trigger">All mandatory Stream A + B + C tasks closed</span></td>
@@ -791,12 +820,17 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     <td><span class="gate-unlocks">DM Preparation tasks unlock for Local Ops (T-DMP1 + T-DMP2 in parallel)</span></td>
   </tr>
   <tr>
+    <td><span class="gate-trigger">T-DMP2 repayment details verified by Local Ops</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-ENACH eNACH auto-triggered by system</span></td>
+  </tr>
+  <tr>
     <td><span class="gate-trigger">T-DMP5 (DM Generated)</span></td>
     <td class="gate-arrow">→</td>
     <td><span class="gate-unlocks">All 5 Credit Approval tasks fire simultaneously (T-DMA1–5)</span></td>
   </tr>
   <tr>
-    <td><span class="gate-trigger">All mandatory T-DOC3.x cleared (Credit approved)</span></td>
+    <td><span class="gate-trigger">All 5 Credit tasks (T-DMA1–5) closed</span></td>
     <td class="gate-arrow">→</td>
     <td><span class="gate-unlocks">KFS auto-triggered by system</span></td>
   </tr>
@@ -808,12 +842,12 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
   <tr>
     <td><span class="gate-trigger">T-ESIGN2 (E-Sign complete, booklet generated)</span></td>
     <td class="gate-arrow">→</td>
-    <td><span class="gate-unlocks">T-FCBG (RCU FCBG verification)</span></td>
+    <td><span class="gate-unlocks">T-FCPG (RCU FCPG verification)</span></td>
   </tr>
   <tr>
-    <td><span class="gate-trigger">T-FCBG complete</span></td>
+    <td><span class="gate-trigger">T-FCPG complete + T-ENACH complete</span></td>
     <td class="gate-arrow">→</td>
-    <td><span class="gate-unlocks">T-NDC (Local Ops NDC check)</span></td>
+    <td><span class="gate-unlocks">T-NDC (Local Ops NDC check — Credit Ops check merged in)</span></td>
   </tr>
   <tr>
     <td><span class="gate-trigger">T-NDC complete</span></td>
@@ -821,12 +855,12 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     <td><span class="gate-unlocks">T-SUB (Submit to Finone)</span></td>
   </tr>
   <tr>
-    <td><span class="gate-trigger">OTC doc — cleared by Credit</span></td>
+    <td><span class="gate-trigger">OTC doc — Credit approved</span></td>
     <td class="gate-arrow">→</td>
     <td><span class="gate-unlocks">Gates cheque handover to customer</span></td>
   </tr>
   <tr>
-    <td><span class="gate-trigger">PDD doc — cleared by Credit</span></td>
+    <td><span class="gate-trigger">PDD doc — Credit approved</span></td>
     <td class="gate-arrow">→</td>
     <td><span class="gate-unlocks">Gates release of each subsequent tranche</span></td>
   </tr>
@@ -899,18 +933,21 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
   <div class="sl-phase-row">
     <div class="sl-phase-label p3">INITIATE<br>DISBURSE</div>
     <div class="sl-cell">
-      <div class="sl-task cust">Submit original docs (Stream A)</div>
-      <div class="sl-task cust">Fulfil sanction conditions (Stream B)</div>
+      <div class="sl-task cust">Submit original docs — ALL mandatory at once (Stream A)</div>
+      <div class="sl-task cust">Pay bank fee / upload receipt (Stream B)</div>
+      <div class="sl-task cust">Fulfil other sanction conditions (Stream B)</div>
     </div>
     <div class="sl-cell">
-      <div class="sl-task sales">Click Initiate Disbursement</div>
+      <div class="sl-task sales">T-PRICE: Confirm Pricing Approval (pre-condition)</div>
+      <div class="sl-task sales">Click Initiate Disbursement (after Legal + Technical + Pricing done)</div>
       <div class="sl-task sales">Mirror Stream A + B (DITM)</div>
       <div class="sl-task sales">Fill beneficiary, repayment, own contribution, EMI (Stream C)</div>
-      <div class="sl-task sales">Raise OTC/PDD requests if needed</div>
+      <div class="sl-task sales">Raise OTC/PDD requests for docs that can't be collected</div>
     </div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell">
       <div class="sl-task credit">Approve / reject OTC/PDD requests</div>
+      <div class="sl-handoff">↳ Batch moves to Local Ops only after all mandatory docs collected or OTC/PDD approved</div>
     </div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell">
@@ -921,21 +958,23 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
 
   <!-- Phase 4: Doc Verification (continuous) -->
   <div class="sl-phase-row">
-    <div class="sl-phase-label p4">DOC<br>VERIFY<br>(continuous)</div>
+    <div class="sl-phase-label p4">DOC<br>VERIFY</div>
     <div class="sl-cell">
       <div class="sl-task cust">Resolve Local Ops queries (T-DOC2.q)</div>
       <div class="sl-task cust">Resolve Credit queries (T-DOC3.q)</div>
+      <div class="sl-handoff">↳ On resubmit: goes to Local Ops first, then Credit</div>
     </div>
     <div class="sl-cell">
+      <div class="sl-task sales">T-DOC1: Submit full mandatory batch (once all docs collected or OTC/PDD approved)</div>
       <div class="sl-task sales">Mirror query resolution (DITM)</div>
     </div>
     <div class="sl-cell">
-      <div class="sl-task ops">Verify each original doc via iLens (T-DOC2.x)</div>
-      <div class="sl-handoff">↳ per doc, as batches arrive</div>
+      <div class="sl-task ops">T-DOC2.x: Verify each doc via iLens (per doc, independent)</div>
+      <div class="sl-handoff">↳ Re-triggered if doc resubmitted after Credit query</div>
     </div>
     <div class="sl-cell">
-      <div class="sl-task credit">Final approval per doc (T-DOC3.x)</div>
-      <div class="sl-handoff">↳ continuous, as Local Ops clears each doc</div>
+      <div class="sl-task credit">T-DOC3.x: Final approval per doc (as Local Ops clears each)</div>
+      <div class="sl-handoff">↳ Query → doc back to Local Ops first, then here again</div>
     </div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
@@ -967,7 +1006,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     </div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell">
-      <div class="sl-task sys">eNACH auto-triggered (T-DMP4)</div>
+      <div class="sl-task sys">eNACH auto-triggered after Local Ops verifies repayment details (T-DMP2)</div>
     </div>
   </div>
 
@@ -986,28 +1025,29 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell">
-      <div class="sl-task sys">KFS auto-triggered</div>
-      <div class="sl-task sys">E-signed booklet generated</div>
-      <div class="sl-task sys">eNACH mandate included in booklet</div>
+      <div class="sl-task sys">KFS auto-triggered after all 5 Credit tasks close</div>
+      <div class="sl-task sys">E-signed booklet generated (CFF, Autopay Mandate, KFS, DRF)</div>
     </div>
   </div>
 
-  <!-- Phase 7: FCBG + NDC + Submit -->
+  <!-- Phase 7: FCPG + NDC + Submit -->
   <div class="sl-phase-row">
-    <div class="sl-phase-label p7">FCBG<br>NDC<br>SUBMIT</div>
+    <div class="sl-phase-label p7">FCPG<br>eNACH<br>NDC<br>SUBMIT</div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell">
-      <div class="sl-task ops">NDC check via iLens (T-NDC)</div>
+      <div class="sl-task ops">NDC check via iLens (T-NDC) — after T-FCPG + T-ENACH both complete</div>
       <div class="sl-task ops">Submit to Finone (T-SUB)</div>
       <div class="sl-handoff">↳ Credit Ops check merged into NDC</div>
     </div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell">
-      <div class="sl-task rcu">FCBG physical verification (T-FCBG)</div>
-      <div class="sl-task rcu">Govt site property check</div>
+      <div class="sl-task rcu">FCPG physical verification (T-FCPG)</div>
+      <div class="sl-task rcu">Govt site property registration check</div>
     </div>
-    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task sys">eNACH mandate completion (T-ENACH) — must complete before NDC</div>
+    </div>
   </div>
 
 </div><!-- /swimlane -->
@@ -1028,11 +1068,13 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
   </ul></div>
   <div class="sk-card sk-sales"><div class="sk-hdr">SALES RM</div><ul>
     <li>Mirror of all customer tasks (DITM — Completed by RM)</li>
+    <li>T-PRICE: Confirm Pricing Approval (pre-condition for Initiate Disbursement)</li>
     <li>Initiate Legal + Initiate Technical</li>
     <li>Upload TSR to iLens</li>
-    <li>Click Initiate Disbursement</li>
-    <li>Fill beneficiary, repayment, own contribution, EMI details</li>
-    <li>Raise OTC/PDD request if doc unavailable</li>
+    <li>Click Initiate Disbursement (after Legal + Technical + Pricing all done)</li>
+    <li>Fill beneficiary, repayment, own contribution, EMI details (Stream C)</li>
+    <li>Collect ALL mandatory original docs then submit as one batch (T-DOC1)</li>
+    <li>Raise OTC/PDD request if a mandatory doc cannot be physically collected</li>
     <li>Initiate E-Sign</li>
     <li>Resolve all queries back to customer</li>
   </ul></div>
@@ -1055,8 +1097,9 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     <li>Review and correct own contribution</li>
   </ul></div>
   <div class="sk-card sk-rcu"><div class="sk-hdr">RCU</div><ul>
-    <li>FCBG: physically verify all original documents</li>
+    <li>FCPG: physically verify all original documents</li>
     <li>Cross-check property registration on govt websites</li>
+    <li>Prerequisite: E-Sign complete before FCPG begins</li>
   </ul></div>
   <div class="sk-card sk-tadmin"><div class="sk-hdr">TECH ADMIN + TM</div><ul>
     <li>Verify uploaded docs for technical initiation</li>
@@ -1076,8 +1119,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     <li>Generate BRE-driven doc task lists (Legal, Technical, Disbursement)</li>
     <li>Parse TSR → seed List A (original doc tasks) + List C (Credit flags)</li>
     <li>Generate LAN on Initiate Disbursement</li>
-    <li>Auto-trigger KFS when mandatory docs Credit-approved</li>
-    <li>Auto-trigger eNACH alongside E-Sign</li>
+    <li>Auto-trigger eNACH after Local Ops verifies repayment details (T-DMP2)</li>
+    <li>Auto-trigger KFS after all 5 Credit tasks (T-DMA1–5) close</li>
     <li>Generate e-signed booklet on E-Sign completion</li>
     <li>Auto-close dashboard tasks on iLens checklist completion</li>
   </ul></div>
