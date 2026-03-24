@@ -794,131 +794,432 @@ body{font-family:var(--f);background:var(--bg);color:var(--tx);font-size:13px;li
 </div>
 
 <!-- ═══════════════════════════════════════
-     TMA — CUSTOMER
+     TMA — CUSTOMER (Apple-inspired)
 ═══════════════════════════════════════ -->
+<style>
+/* ── TMA Apple-style reset ── */
+.tma2{background:#f2f2f7;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-font-smoothing:antialiased;}
+
+/* Status bar */
+.a-statusbar{background:#fff;height:52px;display:flex;align-items:center;padding:0 20px;gap:0;border-bottom:1px solid rgba(0,0,0,.08);}
+.a-back{color:#007aff;font-size:16px;font-weight:400;display:flex;align-items:center;gap:3px;text-decoration:none;}
+.a-pagetitle{flex:1;text-align:center;font-size:17px;font-weight:600;color:#000;letter-spacing:-.3px;}
+.a-avatar{width:30px;height:30px;background:#ff6b35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;}
+
+/* Hero card */
+.a-hero{margin:16px;background:linear-gradient(145deg,#1c1c1e,#2c2c2e);border-radius:20px;padding:22px 22px 20px;color:#fff;position:relative;overflow:hidden;}
+.a-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;background:rgba(255,107,53,.15);border-radius:50%;}
+.a-hero::after{content:'';position:absolute;bottom:-20px;left:60px;width:100px;height:100px;background:rgba(0,122,255,.1);border-radius:50%;}
+.a-hero-label{font-size:12px;font-weight:500;opacity:.5;letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;}
+.a-hero-name{font-size:15px;font-weight:600;opacity:.85;margin-bottom:3px;}
+.a-hero-amount{font-size:32px;font-weight:700;letter-spacing:-1px;margin-bottom:14px;}
+.a-hero-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;color:#34d399;margin-bottom:14px;}
+.a-hero-pill .dot{width:6px;height:6px;border-radius:50%;background:#34d399;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.a-hero-meta{display:flex;gap:0;border-top:1px solid rgba(255,255,255,.08);padding-top:14px;}
+.a-hero-mi{flex:1;border-right:1px solid rgba(255,255,255,.08);padding-right:12px;margin-right:12px;}
+.a-hero-mi:last-child{border-right:none;padding-right:0;margin-right:0;}
+.a-hero-mi label{font-size:10px;opacity:.4;display:block;margin-bottom:2px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;}
+.a-hero-mi span{font-size:12px;font-weight:500;opacity:.85;}
+
+/* Journey stepper */
+.a-stepper{margin:0 16px 16px;background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.a-step-title{font-size:13px;font-weight:600;color:#000;margin-bottom:12px;}
+.a-steps{display:flex;align-items:center;gap:0;}
+.a-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+.a-step:not(:last-child)::after{content:'';position:absolute;top:11px;left:calc(50% + 11px);width:calc(100% - 22px);height:2px;background:#e5e5ea;z-index:0;}
+.a-step:not(:last-child).done::after{background:#34c759;}
+.a-step-circle{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;z-index:1;position:relative;}
+.a-step.done .a-step-circle{background:#34c759;color:#fff;}
+.a-step.active .a-step-circle{background:#007aff;color:#fff;box-shadow:0 0 0 3px rgba(0,122,255,.2);}
+.a-step.wait .a-step-circle{background:#e5e5ea;color:#8e8e93;}
+.a-step-label{font-size:9.5px;font-weight:500;margin-top:5px;text-align:center;line-height:1.2;}
+.a-step.done .a-step-label{color:#34c759;}
+.a-step.active .a-step-label{color:#007aff;font-weight:600;}
+.a-step.wait .a-step-label{color:#8e8e93;}
+
+/* Progress ring summary */
+.a-progress-row{margin:0 16px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);align-items:center;}
+.a-ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0;}
+.a-ring-wrap svg{transform:rotate(-90deg);}
+.a-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.a-ring-pct{font-size:17px;font-weight:700;color:#000;line-height:1;}
+.a-ring-sub{font-size:9px;color:#8e8e93;font-weight:500;}
+.a-prog-detail{display:flex;flex-direction:column;gap:6px;}
+.a-prog-row{display:flex;align-items:center;gap:8px;}
+.a-prog-name{font-size:12px;font-weight:500;color:#3c3c43;min-width:100px;}
+.a-prog-name.you{color:#ff6b35;font-weight:600;}
+.a-prog-bar{flex:1;background:#e5e5ea;border-radius:10px;height:5px;overflow:hidden;}
+.a-prog-fill{height:100%;border-radius:10px;}
+.a-prog-frac{font-size:11px;font-weight:600;min-width:28px;text-align:right;}
+
+/* Section header */
+.a-sec-hdr{padding:0 16px;margin:8px 0 6px;display:flex;align-items:baseline;justify-content:space-between;}
+.a-sec-label{font-size:20px;font-weight:700;color:#000;letter-spacing:-.3px;}
+.a-sec-ct{font-size:13px;font-weight:500;color:#8e8e93;}
+
+/* Task list — Apple grouped list style */
+.a-list{margin:0 16px 8px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.a-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(0,0,0,.06);position:relative;}
+.a-item:last-child{border-bottom:none;}
+.a-item-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.a-item-body{flex:1;min-width:0;}
+.a-item-title{font-size:14px;font-weight:600;color:#000;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.a-item-sub{font-size:12px;color:#8e8e93;font-weight:400;}
+.a-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+.a-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.a-badge-red{background:#ff3b30;color:#fff;}
+.a-badge-amber{background:#ff9500;color:#fff;}
+.a-badge-blue{background:#007aff;color:#fff;}
+.a-badge-green{background:#34c759;color:#fff;}
+.a-badge-grey{background:#e5e5ea;color:#8e8e93;}
+.a-chevron{color:#c7c7cc;font-size:12px;font-weight:600;}
+/* Action button inline */
+.a-action-btn{display:block;background:#007aff;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px;width:100%;text-align:center;}
+.a-action-btn.red{background:#ff3b30;}
+.a-action-btn.ghost{background:#f2f2f7;color:#007aff;}
+
+/* Expandable item */
+.a-item.expandable{cursor:pointer;}
+.a-expand-body{display:none;padding:0 16px 14px 62px;}
+.a-expand-body.open{display:block;}
+.a-expand-card{background:#f2f2f7;border-radius:12px;padding:12px 14px;font-size:13px;color:#3c3c43;line-height:1.5;}
+.a-expand-card .eq-label{font-size:11px;font-weight:700;color:#ff3b30;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;}
+
+/* Pending with tag */
+.a-with{font-size:11px;color:#8e8e93;font-weight:500;}
+.a-with strong{color:#3c3c43;}
+
+/* Status dot inline */
+.sdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.sdot-g{background:#34c759;}
+.sdot-b{background:#007aff;}
+.sdot-o{background:#ff9500;}
+.sdot-r{background:#ff3b30;}
+.sdot-gr{background:#c7c7cc;}
+
+/* Activity feed */
+.a-feed{margin:0 16px 24px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.a-feed-item{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(0,0,0,.05);position:relative;}
+.a-feed-item:last-child{border-bottom:none;}
+.a-feed-line{position:absolute;left:22px;top:30px;bottom:-11px;width:1px;background:rgba(0,0,0,.06);}
+.a-feed-item:last-child .a-feed-line{display:none;}
+.a-feed-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:2px;border:2px solid #fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.1);}
+.a-feed-time{font-size:11px;color:#8e8e93;min-width:34px;font-variant-numeric:tabular-nums;}
+.a-feed-text{font-size:13px;color:#3c3c43;line-height:1.4;}
+</style>
+
 <div id="scr-tma" class="scr">
-<div class="tma">
-  <div class="tma-nb">
-    <div class="tma-logo">iLens <small>Track My Application</small></div>
-    <div style="margin-left:auto;margin-right:10px;text-align:right;">
-      <div style="font-weight:700;font-size:13px;">Good morning, Rajesh 👋</div>
-      <div style="font-size:10px;color:var(--mu);">25 Mar 2026</div>
+<div class="tma2">
+
+  <!-- Status bar -->
+  <div class="a-statusbar">
+    <a class="a-back" href="#">‹ Home</a>
+    <div class="a-pagetitle">My Application</div>
+    <div class="a-avatar">RC</div>
+  </div>
+
+  <!-- Hero -->
+  <div class="a-hero">
+    <div class="a-hero-label">Home Loan · Non BT</div>
+    <div class="a-hero-name">Rajesh Chhaganbhai Godhaniya</div>
+    <div class="a-hero-amount">₹ 69,40,109</div>
+    <div class="a-hero-pill"><span class="dot"></span> Disbursement In Progress</div>
+    <div class="a-hero-meta">
+      <div class="a-hero-mi"><label>App Date</label><span>08 Jan 2026</span></div>
+      <div class="a-hero-mi"><label>App No.</label><span>77212387114</span></div>
+      <div class="a-hero-mi"><label>Product</label><span>Tranche 1</span></div>
     </div>
-    <div class="tma-av">RC</div>
   </div>
 
-  <div class="hero">
-    <div class="h-pill">In Progress</div>
-    <div class="h-lbl">Home Loan</div>
-    <div class="h-name">Rajesh Chhaganbhai Godhaniya</div>
-    <div class="h-amt">₹ 69,40,109</div>
-    <div class="h-meta">
-      <div class="h-mi"><label>App Date</label><span>08 Jan 2026</span></div>
-      <div class="h-mi"><label>Product</label><span>Home Loan · Non BT</span></div>
-      <div class="h-mi"><label>App No.</label><span>77212387114</span></div>
-    </div>
-  </div>
-
-  <div class="ms-row">
-    <div class="ms ms-d">✓ Sanctioned</div>
-    <div class="ms ms-d">✓ Legal Complete</div>
-    <div class="ms ms-d">✓ Technical Complete</div>
-    <div class="ms ms-p">⏳ Disbursement In Progress</div>
-  </div>
-
-  <div class="urg">
-    <div class="urg-n">3</div>
-    <div class="urg-t"><strong>3 actions pending from your end</strong> — Complete them to avoid delays in disbursement.</div>
-  </div>
-
-  <div class="tma-prog">
-    <div class="tp-h"><div class="tp-ttl">Disbursement Progress</div><div class="tp-pct">58%</div></div>
-    <div class="tp-bar"><div class="tp-fill" style="width:58%;"></div></div>
-    <div class="tma-sk">
-      <div class="tsi hl">
-        <div class="tsi-n">Your Tasks</div>
-        <div class="tsi-f" style="color:var(--org);">3/6</div>
-        <div class="tsi-bar"><div class="tsi-bf" style="width:50%;background:var(--org);"></div></div>
-        <div class="tsi-st" style="color:var(--org);">3 Pending</div>
+  <!-- Journey stepper -->
+  <div class="a-stepper">
+    <div class="a-step-title">Your Loan Journey</div>
+    <div class="a-steps">
+      <div class="a-step done">
+        <div class="a-step-circle">✓</div>
+        <div class="a-step-label">Sanctioned</div>
       </div>
-      <div class="tsi">
-        <div class="tsi-n">Bank Team</div>
-        <div class="tsi-f" style="color:var(--bl);">10/17</div>
-        <div class="tsi-bar"><div class="tsi-bf" style="width:59%;background:var(--bl);"></div></div>
-        <div class="tsi-st" style="color:var(--bl);">In Progress</div>
+      <div class="a-step done">
+        <div class="a-step-circle">✓</div>
+        <div class="a-step-label">Legal Done</div>
       </div>
-      <div class="tsi">
-        <div class="tsi-n">Automated</div>
-        <div class="tsi-f" style="color:var(--tl);">1/3</div>
-        <div class="tsi-bar"><div class="tsi-bf" style="width:33%;background:var(--tl);"></div></div>
-        <div class="tsi-st" style="color:var(--tl);">Running</div>
+      <div class="a-step done">
+        <div class="a-step-circle">✓</div>
+        <div class="a-step-label">Technical Done</div>
+      </div>
+      <div class="a-step active">
+        <div class="a-step-circle">4</div>
+        <div class="a-step-label">Disbursement</div>
+      </div>
+      <div class="a-step wait">
+        <div class="a-step-circle">5</div>
+        <div class="a-step-label">Cheque Handover</div>
       </div>
     </div>
   </div>
 
-  <div class="tma-sec">
-    <div class="tma-stl">Action Required <span class="tma-ct">3</span></div>
-    <div class="tma-t u">
-      <div class="tma-tr">
-        <div class="tma-ti" style="background:#fee2e2;">📄</div>
-        <div style="flex:1;">
-          <div class="tma-tt">Submit Original — Patta / Khata</div>
-          <div class="tma-td">Your original Patta/Khata is required for loan security. Please hand it to your RM or schedule a pickup.</div>
-          <button class="tma-btn r">Contact RM / Schedule Pickup</button>
-        </div>
-        <span class="tma-ts" style="background:#fee2e2;color:var(--re);">Urgent</span>
+  <!-- Progress ring -->
+  <div class="a-progress-row">
+    <div class="a-ring-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="30" fill="none" stroke="#e5e5ea" stroke-width="6"/>
+        <circle cx="36" cy="36" r="30" fill="none" stroke="#34c759" stroke-width="6"
+          stroke-dasharray="188.5" stroke-dashoffset="79" stroke-linecap="round"/>
+      </svg>
+      <div class="a-ring-label">
+        <span class="a-ring-pct">58%</span>
+        <span class="a-ring-sub">done</span>
       </div>
     </div>
-    <div class="tma-t p">
-      <div class="tma-tr">
-        <div class="tma-ti" style="background:#fef3c7;">🏠</div>
-        <div style="flex:1;">
-          <div class="tma-tt">Upload Existing Loan Closure NOC</div>
-          <div class="tma-td">Please upload the No Objection Certificate from your previous lender confirming loan closure.</div>
-          <button class="tma-btn n">Upload Document</button>
-        </div>
-        <span class="tma-ts" style="background:#fef3c7;color:var(--am);">Pending</span>
+    <div class="a-prog-detail">
+      <div class="a-prog-row">
+        <span class="a-prog-name you">You</span>
+        <div class="a-prog-bar"><div class="a-prog-fill" style="width:50%;background:#ff6b35;"></div></div>
+        <span class="a-prog-frac" style="color:#ff6b35;">3/6</span>
       </div>
-    </div>
-    <div class="tma-t p">
-      <div class="tma-tr">
-        <div class="tma-ti" style="background:#fef3c7;">📋</div>
-        <div style="flex:1;">
-          <div class="tma-tt">Upload Attested Income Proof</div>
-          <div class="tma-td">Please upload your salary slip attested by your employer.</div>
-          <button class="tma-btn n">Upload Document</button>
-        </div>
-        <span class="tma-ts" style="background:#fef3c7;color:var(--am);">Pending</span>
+      <div class="a-prog-row">
+        <span class="a-prog-name">Bank Team</span>
+        <div class="a-prog-bar"><div class="a-prog-fill" style="width:59%;background:#007aff;"></div></div>
+        <span class="a-prog-frac" style="color:#007aff;">10/17</span>
+      </div>
+      <div class="a-prog-row">
+        <span class="a-prog-name">Automated</span>
+        <div class="a-prog-bar"><div class="a-prog-fill" style="width:33%;background:#34c759;"></div></div>
+        <span class="a-prog-frac" style="color:#34c759;">1/3</span>
       </div>
     </div>
   </div>
 
-  <div class="tma-sec">
-    <div class="tma-stl">Completed ✓</div>
-    <div class="tma-t d">
-      <div class="tma-tr">
-        <div class="tma-ti" style="background:#dcfce7;">✅</div>
-        <div style="flex:1;"><div class="tma-tt">Processing Fee — ₹ 17,350 paid</div><div class="tma-td">Paid on 10 Jan 2026. Confirmed.</div></div>
-        <span class="tma-ts" style="background:#dcfce7;color:var(--gn);">Done</span>
+  <!-- ── ACTION REQUIRED ── -->
+  <div class="a-sec-hdr">
+    <span class="a-sec-label">Action Required</span>
+    <span class="a-sec-ct">3 tasks</span>
+  </div>
+
+  <div class="a-list">
+    <!-- Urgent: Patta/Khata -->
+    <div class="a-item expandable" onclick="toggleExpand('e1')">
+      <div class="a-item-icon" style="background:#fff0ee;"><span style="font-size:18px;">📄</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Submit Original — Patta / Khata</div>
+        <div class="a-item-sub">Hand to RM or schedule a pickup</div>
+      </div>
+      <div class="a-item-right">
+        <span class="a-badge a-badge-red">Urgent</span>
+        <span class="a-chevron">›</span>
       </div>
     </div>
-    <div class="tma-t d">
-      <div class="tma-tr">
-        <div class="tma-ti" style="background:#dcfce7;">✅</div>
-        <div style="flex:1;"><div class="tma-tt">Property Documents Uploaded</div><div class="tma-td">Sale Agreement, Title Deed, Encumbrance Certificate, Property Tax Receipt — all verified.</div></div>
-        <span class="tma-ts" style="background:#dcfce7;color:var(--gn);">Done</span>
+    <div class="a-expand-body" id="e1">
+      <div class="a-expand-card">
+        Your original Patta/Khata document is required to create the loan security. Without it, disbursement cannot proceed.
+        <button class="a-action-btn red" onclick="alert('Contacting RM for pickup')">Contact RM / Schedule Pickup</button>
+      </div>
+    </div>
+
+    <!-- Pending: Loan Closure NOC -->
+    <div class="a-item expandable" onclick="toggleExpand('e2')">
+      <div class="a-item-icon" style="background:#fff8ee;"><span style="font-size:18px;">🏠</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Upload Loan Closure NOC</div>
+        <div class="a-item-sub">From your previous lender</div>
+      </div>
+      <div class="a-item-right">
+        <span class="a-badge a-badge-amber">Pending</span>
+        <span class="a-chevron">›</span>
+      </div>
+    </div>
+    <div class="a-expand-body" id="e2">
+      <div class="a-expand-card">
+        Please upload the No Objection Certificate (NOC) from your previous lender confirming closure of your existing home loan.
+        <button class="a-action-btn" onclick="alert('Upload NOC')">Upload Document</button>
+      </div>
+    </div>
+
+    <!-- Pending: Income Proof -->
+    <div class="a-item expandable" onclick="toggleExpand('e3')">
+      <div class="a-item-icon" style="background:#fff8ee;"><span style="font-size:18px;">📋</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Upload Attested Income Proof</div>
+        <div class="a-item-sub">Salary slip attested by employer</div>
+      </div>
+      <div class="a-item-right">
+        <span class="a-badge a-badge-amber">Pending</span>
+        <span class="a-chevron">›</span>
+      </div>
+    </div>
+    <div class="a-expand-body" id="e3">
+      <div class="a-expand-card">
+        Please upload your salary slip attested by your employer. This is required as per your sanction conditions.
+        <button class="a-action-btn" onclick="alert('Upload income proof')">Upload Document</button>
       </div>
     </div>
   </div>
 
-  <div class="tma-sec">
-    <div class="tma-stl">Recent Activity</div>
-    <div class="tl-wrap">
-      <div class="tl-i"><div class="tl-d" style="background:var(--re);"></div><div class="tl-tm">13:30</div><div class="tl-tx">RCU verification initiated for property documents</div></div>
-      <div class="tl-i"><div class="tl-d" style="background:var(--gn);"></div><div class="tl-tm">12:15</div><div class="tl-tx">Sale Agreement verified by bank team</div></div>
-      <div class="tl-i"><div class="tl-d" style="background:var(--bl);"></div><div class="tl-tm">11:00</div><div class="tl-tx">Income proof submitted via portal</div></div>
-      <div class="tl-i"><div class="tl-d" style="background:var(--tl);"></div><div class="tl-tm">09:45</div><div class="tl-tx">Credit assessment completed — CIBIL check passed</div></div>
-      <div class="tl-i"><div class="tl-d" style="background:var(--am);"></div><div class="tl-tm">08:30</div><div class="tl-tx">Application moved to disbursement stage</div></div>
+  <!-- ── IN PROGRESS (Bank & you) ── -->
+  <div class="a-sec-hdr" style="margin-top:8px;">
+    <span class="a-sec-label">In Progress</span>
+    <span class="a-sec-ct">8 tasks</span>
+  </div>
+
+  <div class="a-list">
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0f8ff;"><span style="font-size:18px;">📑</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Sale Agreement — Re-upload</div>
+        <div class="a-item-sub"><span class="sdot sdot-r"></span>Queried · Your RM is handling this</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-blue">RM Acting</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0f8ff;"><span style="font-size:18px;">📜</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Title Deed — Bank Review</div>
+        <div class="a-item-sub"><span class="sdot sdot-b"></span>Pending · Credit team reviewing</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Bank</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0f8ff;"><span style="font-size:18px;">🔍</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Document Completeness Check</div>
+        <div class="a-item-sub"><span class="sdot sdot-b"></span>In progress · Operations team</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Bank</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0f8ff;"><span style="font-size:18px;">✔️</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Data Accuracy Verification</div>
+        <div class="a-item-sub"><span class="sdot sdot-b"></span>In progress · Operations team</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Bank</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f5f0ff;"><span style="font-size:18px;">⏳</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Credit Team Review</div>
+        <div class="a-item-sub"><span class="sdot sdot-gr"></span>Waiting · Unlocks after operations complete</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Waiting</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f5f0ff;"><span style="font-size:18px;">📝</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Key Fact Statement (KFS)</div>
+        <div class="a-item-sub"><span class="sdot sdot-gr"></span>Waiting · We'll notify you when ready</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Waiting</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f5f0ff;"><span style="font-size:18px;">✍️</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">E-Sign Documents</div>
+        <div class="a-item-sub"><span class="sdot sdot-gr"></span>Waiting · After KFS approval</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Waiting</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f5f0ff;"><span style="font-size:18px;">🛡️</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Document Verification (RCU)</div>
+        <div class="a-item-sub"><span class="sdot sdot-gr"></span>Waiting · After E-Sign</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Waiting</span></div>
+    </div>
+  </div>
+
+  <!-- ── COMPLETED ── -->
+  <div class="a-sec-hdr" style="margin-top:8px;">
+    <span class="a-sec-label">Completed</span>
+    <span class="a-sec-ct">6 tasks</span>
+  </div>
+
+  <div class="a-list">
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Processing Fee Paid</div>
+        <div class="a-item-sub">₹ 17,350 · 10 Jan 2026</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Encumbrance Certificate</div>
+        <div class="a-item-sub">Original submitted · Approved by bank</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Property Documents Uploaded</div>
+        <div class="a-item-sub">Sale Agreement, Title Deed, Tax Receipt</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Loan Details Confirmed</div>
+        <div class="a-item-sub">Beneficiary, EMI, repayment — all set</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Legal Verification Complete</div>
+        <div class="a-item-sub">TSR report generated and uploaded</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Technical Verification Complete</div>
+        <div class="a-item-sub">Property inspected and report published</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+  </div>
+
+  <!-- ── RECENT ACTIVITY ── -->
+  <div class="a-sec-hdr" style="margin-top:8px;">
+    <span class="a-sec-label">Recent Activity</span>
+  </div>
+
+  <div class="a-feed">
+    <div class="a-feed-item">
+      <div class="a-feed-line"></div>
+      <div class="a-feed-dot" style="background:#ff3b30;"></div>
+      <div class="a-feed-time">13:30</div>
+      <div class="a-feed-text">RCU verification initiated for property documents</div>
+    </div>
+    <div class="a-feed-item">
+      <div class="a-feed-line"></div>
+      <div class="a-feed-dot" style="background:#34c759;"></div>
+      <div class="a-feed-time">12:15</div>
+      <div class="a-feed-text">Sale Agreement verified by bank team</div>
+    </div>
+    <div class="a-feed-item">
+      <div class="a-feed-line"></div>
+      <div class="a-feed-dot" style="background:#007aff;"></div>
+      <div class="a-feed-time">11:00</div>
+      <div class="a-feed-text">Income proof submitted via portal</div>
+    </div>
+    <div class="a-feed-item">
+      <div class="a-feed-line"></div>
+      <div class="a-feed-dot" style="background:#34c759;"></div>
+      <div class="a-feed-time">09:45</div>
+      <div class="a-feed-text">Credit assessment completed — CIBIL check passed</div>
+    </div>
+    <div class="a-feed-item">
+      <div class="a-feed-dot" style="background:#ff9500;"></div>
+      <div class="a-feed-time">08:30</div>
+      <div class="a-feed-text">Application moved to disbursement stage</div>
     </div>
   </div>
 
@@ -942,6 +1243,10 @@ function tog(h){
 function eqr(id){
   const r=document.getElementById(id);
   r.style.display=r.style.display==='table-row'?'none':'table-row';
+}
+function toggleExpand(id){
+  const b=document.getElementById(id);
+  b.classList.toggle('open');
 }
 function filter(m){
   document.getElementById('fa').classList.toggle('on',m==='all');
