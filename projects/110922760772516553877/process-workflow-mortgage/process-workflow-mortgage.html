@@ -885,14 +885,21 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     <div class="sl-header-cell" style="color:#5eead4;">SYSTEM / VENDOR</div>
   </div>
 
-  <!-- Phase 1: Sourcing -->
+  <!-- Phase 1: Sourcing (includes scanned doc upload which enables Legal/Technical) -->
   <div class="sl-phase-row">
-    <div class="sl-phase-label p1">SOURCING</div>
-    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-phase-label p1">SOURCING<br><span style="font-size:9px;opacity:.7;">(incl. Legal &amp; Technical)</span></div>
+    <div class="sl-cell">
+      <div class="sl-task cust">Upload scanned docs (T-L1.x) — during Underwriting</div>
+      <div class="sl-task cust">Upload queried docs if Legal/Tech Admin raises query (T-L4.x, T-T2.q)</div>
+      <div class="sl-handoff">↳ These uploads are what enable Legal + Technical to be initiated</div>
+    </div>
     <div class="sl-cell">
       <div class="sl-task sales">Data entry</div>
-      <div class="sl-task sales">Initiate Legal (T-L2)</div>
-      <div class="sl-task sales">Initiate Technical (T-T1)</div>
+      <div class="sl-task sales">Mirror scanned doc uploads (DITM)</div>
+      <div class="sl-task sales">Initiate Legal (T-L2) — after mandatory T-L1.x close</div>
+      <div class="sl-task sales">Initiate Technical (T-T1) — after BRE subset uploaded</div>
+      <div class="sl-task sales">Upload TSR to iLens (T-L6)</div>
+      <div class="sl-task sales">T-PRICE: Confirm Pricing Approval</div>
     </div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell">
@@ -901,31 +908,13 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
     </div>
     <div class="sl-cell"><span class="sl-waiting">–</span></div>
     <div class="sl-cell">
+      <div class="sl-task sys">BRE generates scanned doc list (T-L1.x)</div>
+      <div class="sl-task sys">System parses TSR → seeds List A + C (T-L7)</div>
       <div class="sl-task vendor">Legal: review docs (T-L3)</div>
       <div class="sl-task vendor">Legal: generate TSR (T-L5)</div>
       <div class="sl-task vendor">Tech Admin: verify + allocate TM (T-T2, T-T3)</div>
       <div class="sl-task vendor">TM: site inspection (T-T4)</div>
       <div class="sl-task vendor">Tech Admin: Rapid validate + publish (T-T5, T-T6)</div>
-    </div>
-  </div>
-
-  <!-- Phase 2: Doc upload (scanned) -->
-  <div class="sl-phase-row">
-    <div class="sl-phase-label p2">SCAN DOC<br>UPLOAD</div>
-    <div class="sl-cell">
-      <div class="sl-task cust">Upload scanned docs (T-L1.x)</div>
-      <div class="sl-task cust">Upload queried docs if needed (T-L4.x)</div>
-    </div>
-    <div class="sl-cell">
-      <div class="sl-task sales">Mirror of customer tasks (DITM)</div>
-      <div class="sl-task sales">Upload TSR to iLens (T-L6)</div>
-    </div>
-    <div class="sl-cell"><span class="sl-waiting">–</span></div>
-    <div class="sl-cell"><span class="sl-waiting">–</span></div>
-    <div class="sl-cell"><span class="sl-waiting">–</span></div>
-    <div class="sl-cell">
-      <div class="sl-task sys">BRE generates doc list (T-L1.x)</div>
-      <div class="sl-task sys">System parses TSR → seeds List A + C (T-L7)</div>
     </div>
   </div>
 
