@@ -104,9 +104,13 @@ export const getPublicProjects = async (): Promise<Project[]> => {
   return data;
 };
 
-export const getNotifications = async (): Promise<Notification[]> => {
-  const { data } = await api.get<Notification[]>('/notifications');
+export const getNotifications = async (params?: { limit?: number; offset?: number }): Promise<Notification[]> => {
+  const { data } = await api.get<Notification[]>('/notifications', { params });
   return data;
+};
+
+export const clearNotifications = async (): Promise<void> => {
+  await api.delete('/notifications');
 };
 
 export const getUnreadCount = async (): Promise<number> => {
@@ -116,4 +120,9 @@ export const getUnreadCount = async (): Promise<number> => {
 
 export const markNotificationRead = async (id: string): Promise<void> => {
   await api.patch(`/notifications/${id}/read`);
+};
+
+export const markNotificationsRead = async (ids: string[]): Promise<void> => {
+  if (ids.length === 0) return;
+  await api.patch('/notifications/read', { ids });
 };

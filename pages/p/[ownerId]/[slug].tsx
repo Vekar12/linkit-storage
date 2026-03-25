@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Download, LayoutDashboard, Link2 } from 'lucide-react';
+import { Download, LayoutDashboard, Link2, FileText } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { getProjectMetadata } from '@/services/api';
 import type { ProjectMetadata } from '@/types';
 
@@ -49,6 +50,27 @@ export default function PublicViewPage() {
 
   const rawURL = metadata.versions?.[metadata.versions.length - 1]?.fileURL ?? fileURL;
   const latestURL = `${rawURL}${rawURL.includes('?') ? '&' : '?'}_cb=${Date.now()}`;
+
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const downloadUrl = `${baseURL}/projects/${ownerId}/${slug}/download`;
+
+  const handleSaveAsPdf = async () => {
+    const win = window.open('', '_blank');
+    if (!win) { toast.error('Allow popups to save as PDF.'); return; }
+    try {
+      const res = await fetch(downloadUrl);
+      const html = await res.text();
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+      win.focus();
+      win.onload = () => win.print();
+      setTimeout(() => { if (!win.closed) win.print(); }, 2000);
+    } catch {
+      try { win.close(); } catch {}
+      toast.error('Could not load file for PDF export.');
+    }
+  };
 
   return (
     <div className="flex flex-col" style={{ height: '100vh' }}>
@@ -99,11 +121,25 @@ export default function PublicViewPage() {
           LinkIt
         </div>
         <div className="flex items-center gap-4">
-          <a href={rawURL} download target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1 text-white/70 hover:text-white transition-colors">
+          <a
+            href={downloadUrl}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-white/70 hover:text-white transition-colors"
+          >
             <Download size={13} />
             Download
           </a>
+          {isHTML && (
+            <button
+              onClick={handleSaveAsPdf}
+              className="flex items-center gap-1 text-white/70 hover:text-white transition-colors"
+            >
+              <FileText size={13} />
+              Save as PDF
+            </button>
+          )}
           <button
             onClick={() => router.push('/dashboard')}
             className="flex items-center gap-1 text-white/70 hover:text-white transition-colors"

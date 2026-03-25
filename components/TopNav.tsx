@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Link2, Bell, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X, RefreshCw } from 'lucide-react';
+import { Link2, Bell, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X, RefreshCw, Trash2 } from 'lucide-react';
 import { logout } from '@/lib/auth';
 import { getTokenPayload, type TokenPayload } from '@/lib/jwt';
-import { getNotifications, getUnreadCount, markNotificationRead } from '@/services/api';
+import { getNotifications, getUnreadCount, markNotificationsRead, clearNotifications } from '@/services/api';
 import type { Notification } from '@/types';
 import { checkAuth } from '@/lib/auth';
 
@@ -25,7 +25,11 @@ export default function TopNav() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notifLoading, setNotifLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const PAGE_SIZE = 20;
   const menuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -72,12 +76,12 @@ export default function TopNav() {
     if (notifLoading) return;
     setNotifLoading(true);
     try {
-      const list = await getNotifications();
+      const list = await getNotifications({ limit: PAGE_SIZE, offset: 0 });
       setNotifications(list);
-      // Mark all unread as read
+      setHasMore(list.length === PAGE_SIZE);
       const unread = list.filter((n) => !n.read);
-      await Promise.all(unread.map((n) => markNotificationRead(n.id).catch(() => {})));
       if (unread.length > 0) {
+        await markNotificationsRead(unread.map((n) => n.id)).catch(() => {});
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
         setUnreadCount(0);
       }
@@ -85,6 +89,41 @@ export default function TopNav() {
       if (process.env.NODE_ENV !== 'production') console.warn('[TopNav] notifications fetch failed', err);
     } finally {
       setNotifLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const list = await getNotifications({ limit: PAGE_SIZE, offset: notifications.length });
+      setNotifications((prev) => [...prev, ...list]);
+      setHasMore(list.length === PAGE_SIZE);
+      const unread = list.filter((n) => !n.read);
+      if (unread.length > 0) {
+        const unreadIds = new Set(unread.map((n) => n.id));
+        await markNotificationsRead(unread.map((n) => n.id)).catch(() => {});
+        setNotifications((prev) => prev.map((n) => (unreadIds.has(n.id) ? { ...n, read: true } : n)));
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[TopNav] load more failed', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (clearing) return;
+    setNotifications([]);
+    setHasMore(false);
+    setUnreadCount(0);
+    setClearing(true);
+    try {
+      await clearNotifications();
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[TopNav] clear notifications failed', err);
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -155,7 +194,20 @@ export default function TopNav() {
               >
                 <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                   <p className="text-sm font-semibold text-gray-900">Notifications</p>
-                  {notifLoading && <RefreshCw size={13} className="text-gray-300 animate-spin" />}
+                  <div className="flex items-center gap-2">
+                    {notifications.length > 0 && !notifLoading && (
+                      <button
+                        onClick={handleClearAll}
+                        disabled={clearing}
+                        className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                        title="Clear all"
+                      >
+                        <Trash2 size={11} />
+                        Clear all
+                      </button>
+                    )}
+                    {(notifLoading || clearing) && <RefreshCw size={13} className="text-gray-300 animate-spin" />}
+                  </div>
                 </div>
 
                 {notifications.length === 0 && !notifLoading ? (
@@ -165,6 +217,7 @@ export default function TopNav() {
                     <p className="text-xs text-gray-300 mt-0.5">You&apos;ll be notified when a project you&apos;ve contributed to is updated.</p>
                   </div>
                 ) : (
+                  <>
                   <ul className="max-h-72 overflow-y-auto divide-y divide-gray-50">
                     {notifications.map((n) => (
                       <li
@@ -192,6 +245,19 @@ export default function TopNav() {
                       </li>
                     ))}
                   </ul>
+                  {hasMore && (
+                    <div className="px-4 py-2.5 border-t border-gray-50">
+                      <button
+                        onClick={handleLoadMore}
+                        disabled={loadingMore}
+                        className="w-full flex items-center justify-center gap-1.5 text-xs text-violet-600 hover:text-violet-700 font-medium py-1 disabled:opacity-50 transition-colors"
+                      >
+                        {loadingMore && <RefreshCw size={11} className="animate-spin" />}
+                        {loadingMore ? 'Loading...' : 'Load more'}
+                      </button>
+                    </div>
+                  )}
+                  </>
                 )}
               </div>
             )}
