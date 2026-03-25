@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>iLens – Disbursement Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --r:    #9b1c1c;
+  --rd:   #7a1414;
+  --org:  #e8600a;
+  --nv:   #0f1f3d;
+  --bl:   #1e40af;
+  --tl:   #0f766e;
+  --gn:   #15803d;
+  --am:   #92400e;
+  --re:   #b91c1c;
+  --pu:   #6d28d9;
+  --bg:   #f5f6f8;
+  --sur:  #ffffff;
+  --bd:   #e5e7eb;
+  --bd2:  #f0f1f3;
+  --tx:   #111827;
+  --tx2:  #374151;
+  --mu:   #6b7280;
+  --mu2:  #9ca3af;
+  --mono: 'JetBrains Mono', monospace;
+  --f:    'Inter', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--f);background:var(--bg);color:var(--tx);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+/* ── SWITCHER ── */
+.sw-bar{position:fixed;bottom:24px;right:24px;z-index:9999;background:var(--nv);border-radius:40px;padding:6px 8px;display:flex;gap:4px;box-shadow:0 8px 24px rgba(0,0,0,.25);}
+.sw{padding:6px 16px;border-radius:32px;border:none;cursor:pointer;font-family:var(--f);font-size:11px;font-weight:600;letter-spacing:.2px;transition:all .2s;}
+.sw.on{background:var(--org);color:#fff;}
+.sw:not(.on){background:transparent;color:rgba(255,255,255,.55);}
+.scr{display:none;}
+.scr.on{display:block;}
+
+/* ══════════════════════════════════════
+   iLENS CHROME
+══════════════════════════════════════ */
+.nb{height:46px;background:var(--r);display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:100;}
+.nb-logo{color:#fff;font-weight:700;font-size:17px;font-style:italic;letter-spacing:-.3px;line-height:1.1;}
+.nb-logo small{display:block;font-size:9px;font-weight:400;font-style:normal;opacity:.55;margin-top:-1px;}
+.nb-search{flex:1;max-width:380px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:5px 11px;color:#fff;font-family:var(--f);font-size:11.5px;outline:none;}
+.nb-search::placeholder{color:rgba(255,255,255,.4);}
+.nb-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.nb-dt{color:rgba(255,255,255,.55);font-size:10.5px;font-family:var(--mono);}
+.nb-av{width:26px;height:26px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:9.5px;}
+.nb-name{color:#fff;font-size:11px;text-align:right;line-height:1.25;}
+.nb-name strong{display:block;font-size:11.5px;}
+
+.tn{background:var(--rd);display:flex;padding:0 20px;gap:0;overflow-x:auto;}
+.tn a{color:rgba(255,255,255,.55);text-decoration:none;font-size:11px;font-weight:500;padding:9px 11px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .12s;}
+.tn a:hover,.tn a.on{color:#fff;border-bottom-color:var(--org);}
+
+.ab{background:#fff;border-bottom:1px solid var(--bd);padding:8px 20px;display:flex;align-items:center;gap:12px;}
+.ab-name{color:var(--bl);font-weight:700;font-size:13.5px;}
+.ab-meta{color:var(--mu);font-size:11.5px;}
+.ab-r{margin-left:auto;display:flex;gap:18px;align-items:center;}
+.ab-ri label{color:var(--mu);font-size:10px;display:block;margin-bottom:1px;}
+.ab-ri strong{font-size:12.5px;color:var(--tx);}
+.b-ip{background:#fef3c7;color:#78350f;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;}
+.b-tat{color:var(--gn);font-weight:700;font-size:13px;}
+
+/* ══ LAYOUT ══ */
+.layout{display:flex;min-height:calc(100vh - 113px);}
+
+.side{width:200px;flex-shrink:0;background:#fff;border-right:1px solid var(--bd);padding:14px 0;}
+.side-prod{margin:0 12px 14px;background:var(--nv);border-radius:7px;padding:11px 13px;color:#fff;}
+.side-prod .tr{font-size:9.5px;opacity:.45;margin-bottom:1px;}
+.side-prod .pn{font-weight:600;font-size:12.5px;}
+.side-prod .am{font-size:17px;font-weight:700;color:#fbbf24;margin-top:3px;}
+.side-nav a{display:block;padding:8px 14px;color:var(--mu);font-size:11.5px;font-weight:500;text-decoration:none;border-left:2px solid transparent;transition:all .12s;}
+.side-nav a.on{color:var(--r);background:#fef2f2;border-left-color:var(--r);font-weight:600;}
+
+.main{flex:1;padding:16px 20px 32px;overflow-x:hidden;min-width:0;}
+
+/* ══ DASHBOARD HEADER ROW ══ */
+.dh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.dh-title{font-size:15px;font-weight:700;color:var(--tx);}
+.dh-ctx{font-size:11px;color:var(--mu);background:#f9fafb;border:1px solid var(--bd);border-radius:5px;padding:4px 10px;}
+.dh-ctx strong{color:var(--bl);}
+.ft{display:flex;background:#f3f4f6;border-radius:6px;padding:2px;gap:2px;}
+.ft-b{padding:5px 12px;border-radius:4px;border:none;cursor:pointer;font-family:var(--f);font-size:11px;font-weight:600;background:transparent;color:var(--mu);transition:all .15s;}
+.ft-b.on{background:#fff;color:var(--nv);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+
+/* ══ TOP ROW: progress + my tasks ══ */
+.top-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+
+/* Progress card */
+.prog-card{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:16px 18px;}
+.pc-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+.pc-title{font-size:12px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;}
+.pc-pct{font-size:26px;font-weight:700;color:var(--tl);}
+.pc-sub{font-size:11px;color:var(--mu);margin-bottom:10px;}
+.pc-bar{background:#f3f4f6;border-radius:20px;height:6px;overflow:hidden;margin-bottom:14px;}
+.pc-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--tl),#34d399);}
+
+/* Stakeholder rows — clean, no icons */
+.sk-rows{display:flex;flex-direction:column;gap:6px;}
+.sk-row{display:flex;align-items:center;gap:8px;}
+.sk-label{font-size:11px;font-weight:500;color:var(--tx2);min-width:90px;}
+.sk-label.me{color:var(--org);font-weight:600;}
+.sk-mini-bar{flex:1;background:#f3f4f6;border-radius:20px;height:4px;overflow:hidden;}
+.sk-mini-fill{height:100%;border-radius:20px;}
+.sk-frac{font-size:11px;font-family:var(--mono);font-weight:500;min-width:36px;text-align:right;}
+.sk-st{font-size:10px;font-weight:600;min-width:72px;text-align:right;}
+
+/* My tasks card */
+.mt-card{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:16px 18px;}
+.mt-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.mt-title{font-size:12px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;}
+.mt-ct{background:var(--org);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;font-family:var(--mono);}
+.mt-list{display:flex;flex-direction:column;gap:0;}
+.mt-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd2);}
+.mt-item:last-child{border-bottom:none;}
+.mt-dot{width:5px;height:5px;border-radius:50%;background:var(--org);flex-shrink:0;}
+.mt-text{font-size:12px;font-weight:500;color:var(--tx2);flex:1;}
+.mt-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;}
+.mt-urg{background:#fef2f2;color:var(--re);}
+.mt-pnd{background:#fefce8;color:var(--am);}
+.mt-wt{background:#f3f4f6;color:var(--mu2);}
+
+/* ══ TASK SECTIONS ══ */
+.ts{background:#fff;border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.ts-hdr{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid var(--bd);}
+.ts-hdr:hover{background:#fafafa;}
+.ts-left{display:flex;align-items:center;gap:10px;}
+.ts-title{font-size:12.5px;font-weight:600;color:var(--tx);}
+.ts-bk{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;font-family:var(--mono);}
+.ts-tog{color:var(--mu2);font-size:10px;transition:transform .18s;}
+.ts-tog.op{transform:rotate(180deg);}
+
+/* Sub-header within sections */
+.sh{padding:5px 16px;background:#f8f9fa;border-bottom:1px solid var(--bd2);font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px;}
+.sh-ct{font-family:var(--mono);font-size:10px;color:var(--mu2);}
+
+/* ══ UNIFORM TABLE ══ */
+.t{width:100%;border-collapse:collapse;font-size:12px;}
+.t th{background:#f8f9fa;color:var(--mu);font-weight:600;font-size:10.5px;padding:6px 12px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap;letter-spacing:.2px;text-transform:uppercase;}
+.t td{padding:8px 12px;border-bottom:1px solid var(--bd2);vertical-align:middle;}
+.t tbody tr:last-child td{border-bottom:none;}
+.t tbody tr:hover td{background:#fafbfc;}
+.t tbody tr.mine td{background:#fffbf5;}
+.t tbody tr.mine:hover td{background:#fff3e0;}
+.t tbody tr.arch td{background:#f9fafb;}
+.t tbody tr.arch td *{color:var(--mu2) !important;}
+.t tbody tr.arch:hover td{background:#f3f4f6;}
+
+/* UNIFORM columns for all tables */
+/* Col 1: #  Col 2: Task/Document  Col 3: Status  Col 4: Pending With  Col 5: View Doc  Col 6: Actions */
+
+/* Status */
+.st{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;white-space:nowrap;}
+.st-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.s-done .st-dot{background:#16a34a;} .s-done{color:#15803d;}
+.s-recv .st-dot{background:#2563eb;} .s-recv{color:#1d4ed8;}
+.s-opnd .st-dot{background:#ea580c;} .s-opnd{color:#c2410c;}
+.s-pend .st-dot{background:#d97706;} .s-pend{color:#92400e;}
+.s-prog .st-dot{background:#2563eb;} .s-prog{color:#1d4ed8;}
+.s-qry  .st-dot{background:#dc2626;} .s-qry {color:#b91c1c;}
+.s-wait .st-dot{background:#9ca3af;} .s-wait{color:#6b7280;}
+.s-mty  .st-dot{background:#d1d5db;} .s-mty {color:#9ca3af;}
+
+/* Pending-with */
+.pw{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10.5px;font-weight:600;white-space:nowrap;}
+.p-cu{background:#dbeafe;color:#1e3a8a;}
+.p-sa{background:#fff3e0;color:#9a3412;}
+.p-op{background:#dcfce7;color:#14532d;}
+.p-cr{background:#fee2e2;color:#7f1d1d;}
+.p-rc{background:#ede9fe;color:#4c1d95;}
+.p-sy{background:#f0fdfa;color:#134e4a;}
+.p-no{color:var(--mu2);font-size:11px;}
+
+/* Blocked chips — inside task name cell */
+.blocked{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;}
+.bchip{padding:2px 7px;background:#f3f4f6;color:var(--mu2);border:1px dashed #d1d5db;border-radius:3px;font-size:10px;font-weight:500;cursor:default;position:relative;}
+.bchip .tip{position:absolute;bottom:calc(100%+4px);left:0;background:var(--nv);color:#fff;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:30;min-width:180px;}
+.bchip:hover .tip{opacity:1;}
+
+/* Task name */
+.tn-wrap .name{font-size:12px;font-weight:500;color:var(--tx);}
+.tn-wrap .mine-tag{font-size:9.5px;font-weight:700;color:var(--org);margin-left:5px;font-family:var(--mono);}
+
+/* Query expand row */
+.qr{display:none;background:#fff8f8;}
+.qr td{padding:8px 16px 10px 48px !important;}
+.qd{border-left:3px solid #fca5a5;background:#fff1f2;padding:8px 12px;border-radius:0 5px 5px 0;font-size:11px;line-height:1.5;}
+.qd strong{color:var(--re);display:block;margin-bottom:3px;font-size:10.5px;}
+
+/* Buttons */
+.btn{padding:4px 10px;border-radius:4px;border:none;cursor:pointer;font-family:var(--f);font-size:11px;font-weight:600;transition:all .12s;white-space:nowrap;}
+.b-nv{background:var(--nv);color:#fff;} .b-nv:hover{background:#1e3a70;}
+.b-tl{background:var(--tl);color:#fff;} .b-tl:hover{background:#0d6560;}
+.b-up{background:var(--bl);color:#fff;} .b-up:hover{background:#1e3a8a;}
+.b-gh{background:#fff;color:var(--mu);border:1px solid var(--bd);} .b-gh:hover{background:#f9fafb;}
+.b-rm{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;} .b-rm:hover{background:#fef3c7;}
+.b-fi{background:var(--org);color:#fff;} .b-fi:hover{background:#c2500a;}
+.b-of{background:#f3f4f6;color:var(--mu2);cursor:not-allowed;}
+.b-qy{background:#fff1f2;color:var(--re);border:1px solid #fecaca;} .b-qy:hover{background:#fee2e2;}
+.acts{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;}
+
+/* FinnOne badge */
+.finn{font-family:var(--mono);font-size:9.5px;background:var(--nv);color:#fbbf24;padding:1px 5px;border-radius:3px;margin-left:3px;font-weight:500;}
+
+/* ══ TMA ══ */
+.tma{background:#f0f4f8;min-height:100vh;}
+.tma-nb{background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;height:50px;padding:0 16px;gap:10px;}
+.tma-logo{font-size:15px;font-weight:700;color:var(--r);font-style:italic;line-height:1.1;}
+.tma-logo small{display:block;font-size:8.5px;font-weight:400;font-style:normal;color:var(--mu);}
+.tma-av{width:30px;height:30px;background:var(--org);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;margin-left:auto;}
+
+.hero{margin:14px;background:var(--nv);border-radius:12px;padding:18px 20px;color:#fff;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:rgba(255,255,255,.03);border-radius:50%;}
+.h-lbl{font-size:10px;opacity:.45;margin-bottom:2px;}
+.h-name{font-size:14px;font-weight:600;margin-bottom:1px;}
+.h-amt{font-size:24px;font-weight:700;color:#fbbf24;margin-bottom:10px;}
+.h-meta{display:flex;gap:14px;flex-wrap:wrap;}
+.h-mi label{font-size:9px;opacity:.4;display:block;}
+.h-mi span{font-size:11px;font-weight:500;}
+.h-pill{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;color:#34d399;}
+
+.ms-row{margin:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap;}
+.ms{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid;}
+.ms-d{background:#f0fdf4;color:#15803d;border-color:#86efac;}
+.ms-p{background:#f9fafb;color:var(--mu2);border-color:var(--bd);}
+
+.urg{margin:0 14px 10px;background:#fff1f2;border:1.5px solid #fecaca;border-radius:8px;padding:9px 13px;display:flex;align-items:center;gap:10px;}
+.urg-n{background:var(--re);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;}
+.urg-t{font-size:12px;color:#991b1b;font-weight:500;}
+
+.tma-prog{margin:0 14px 12px;background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.tp-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.tp-ttl{font-size:12px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;}
+.tp-pct{font-size:22px;font-weight:700;color:var(--tl);}
+.tp-bar{background:#e5e7eb;border-radius:20px;height:6px;overflow:hidden;margin-bottom:12px;}
+.tp-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--tl),#34d399);}
+.tma-sk{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.tsi{text-align:center;padding:10px 6px;background:#f9fafb;border-radius:8px;border:1px solid var(--bd);}
+.tsi.hl{border-color:var(--org);background:#fff7ed;}
+.tsi-n{font-size:10px;color:var(--mu);font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px;}
+.tsi-f{font-size:16px;font-weight:700;}
+.tsi-bar{height:3px;border-radius:2px;background:#e5e7eb;margin:4px 3px 3px;}
+.tsi-bf{height:100%;border-radius:2px;}
+.tsi-st{font-size:10px;font-weight:600;}
+
+.tma-sec{margin:0 14px 12px;}
+.tma-stl{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.tma-ct{background:var(--re);color:#fff;padding:2px 7px;border-radius:10px;font-size:10.5px;font-weight:700;font-family:var(--mono);}
+
+.tma-t{background:#fff;border-radius:9px;padding:12px 14px;margin-bottom:7px;border-left:3px solid;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.tma-t.u{border-left-color:var(--re);}
+.tma-t.p{border-left-color:#d97706;}
+.tma-t.d{border-left-color:#86efac;opacity:.7;}
+.tma-tr{display:flex;align-items:flex-start;gap:10px;}
+.tma-ti{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.tma-tt{font-size:12.5px;font-weight:600;margin-bottom:2px;}
+.tma-td{font-size:11px;color:var(--mu);margin-bottom:7px;line-height:1.4;}
+.tma-btn{padding:5px 13px;border-radius:7px;border:none;cursor:pointer;font-family:var(--f);font-size:11.5px;font-weight:600;margin-right:5px;}
+.tma-btn.r{background:var(--re);color:#fff;}
+.tma-btn.n{background:var(--nv);color:#fff;}
+.tma-ts{font-size:10px;font-weight:600;padding:3px 7px;border-radius:4px;flex-shrink:0;}
+
+.tl-wrap{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.tl-i{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--bd2);}
+.tl-i:last-child{border-bottom:none;}
+.tl-d{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.tl-tm{font-family:var(--mono);font-size:10px;color:var(--mu);min-width:34px;}
+.tl-tx{font-size:11.5px;color:var(--tx2);}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — MOBILE
+══════════════════════════════════════ */
+@media(max-width:768px){
+
+  /* Switcher — bottom of screen, full width feel */
+  .sw-bar{left:50%;transform:translateX(-50%);right:auto;bottom:16px;padding:5px 8px;}
+  .sw{font-size:10px;padding:5px 12px;}
+
+  /* iLens navbar */
+  .nb{height:auto;flex-wrap:wrap;padding:10px 14px;gap:8px;}
+  .nb-search{max-width:100%;order:3;flex:1 1 100%;}
+  .nb-right{gap:8px;}
+  .nb-dt{display:none;}
+  .nb-name{font-size:10px;}
+  .nb-name strong{font-size:10.5px;}
+
+  /* Top nav — scrollable, smaller */
+  .tn a{font-size:10px;padding:8px 9px;}
+
+  /* App bar — stack vertically */
+  .ab{flex-wrap:wrap;gap:6px;padding:8px 14px;}
+  .ab-name{font-size:12.5px;width:100%;}
+  .ab-meta{font-size:11px;}
+  .ab-r{margin-left:0;width:100%;gap:12px;flex-wrap:wrap;}
+  .ab-ri label{font-size:9px;}
+  .ab-ri strong{font-size:11.5px;}
+  .b-ip{font-size:10px;padding:2px 7px;}
+  .b-tat{font-size:12px;}
+
+  /* Layout — hide sidebar, full width main */
+  .layout{flex-direction:column;}
+  .side{display:none;}
+  .main{padding:12px 14px 80px;}
+
+  /* Dashboard header */
+  .dh{flex-direction:column;gap:8px;align-items:flex-start;}
+  .dh-title{font-size:14px;}
+  .ft{align-self:stretch;}
+  .ft-b{flex:1;text-align:center;}
+
+  /* Top row — stack */
+  .top-row{grid-template-columns:1fr;gap:10px;}
+
+  /* Progress card */
+  .prog-card{padding:14px;}
+  .pc-pct{font-size:22px;}
+
+  /* Stakeholder rows */
+  .sk-label{min-width:80px;font-size:10.5px;}
+  .sk-frac{font-size:10.5px;}
+  .sk-st{font-size:9.5px;min-width:60px;}
+
+  /* My tasks card */
+  .mt-card{padding:14px;}
+  .mt-text{font-size:11.5px;}
+
+  /* Task sections */
+  .ts-hdr{padding:10px 14px;}
+  .ts-title{font-size:12px;}
+  .ts-bk{font-size:9.5px;}
+
+  /* Tables — make them scroll horizontally on mobile */
+  .ts-body{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .t{min-width:600px;}
+
+  /* Sub-headers */
+  .sh{font-size:9.5px;padding:5px 14px;}
+
+  /* Section context pill — hide on mobile */
+  .dh-ctx{display:none;}
+}
+
+@media(max-width:480px){
+  /* Extra small phones */
+  .nb{padding:8px 12px;}
+  .main{padding:10px 12px 80px;}
+  .prog-card,.mt-card,.ts{border-radius:8px;}
+  .pc-pct{font-size:20px;}
+
+  /* Safe area insets for notched phones */
+  .sw-bar{padding-bottom:max(8px, env(safe-area-inset-bottom));}
+  .tma2{padding-bottom:max(80px, calc(60px + env(safe-area-inset-bottom)));}
+  .main{padding-bottom:max(80px, calc(60px + env(safe-area-inset-bottom)));}
+
+  /* TMA Apple styles — already mobile-first, just tweak margins */
+  .a-hero{margin:12px;padding:18px 18px 16px;border-radius:18px;}
+  .a-hero-amount{font-size:28px;}
+  .a-stepper{margin:0 12px 12px;padding:14px 16px;}
+  .a-progress-row{margin:0 12px 12px;}
+  .a-sec-hdr{padding:0 12px;}
+  .a-list{margin:0 12px 8px;}
+  .a-feed{margin:0 12px 24px;}
+  .a-item-title{font-size:13px;}
+  .a-item-sub{font-size:11.5px;}
+  .a-prog-name{min-width:80px;font-size:11px;}
+}
+</style>
+</head>
+<body>
+
+<div class="sw-bar">
+  <button class="sw on" onclick="showScr('il',this)">iLens · Sales RM</button>
+  <button class="sw" onclick="showScr('tma',this)">TMA · Customer</button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     iLENS
+═══════════════════════════════════════ -->
+<div id="scr-il" class="scr on">
+  <div class="nb">
+    <div class="nb-logo">iLens <small>Mortgage Loan</small></div>
+    <input class="nb-search" placeholder="Search — Application Number, iLens ID, Applicant Name, PAN">
+    <div class="nb-right">
+      <span class="nb-dt">📅 25 Mar 2026 · 00:16</span>
+      <div class="nb-av">MD</div>
+      <div class="nb-name"><strong>MAHARSHI DIVEKAR (90106339)</strong>Sales RM</div>
+    </div>
+  </div>
+  <div class="tn">
+    <a href="#">Home</a><a href="#" class="on">Loan Application</a>
+    <a href="#">Prospects</a><a href="#">CPC</a><a href="#">Invoice</a>
+    <a href="#">APF</a><a href="#">PAS Reports</a><a href="#">Agencies</a><a href="#">Bio KYC</a>
+    <a href="#" style="margin-left:auto;">Quick Links</a>
+  </div>
+  <div class="ab">
+    <span class="ab-name">RAJESH CHHAGANBHAI GODHANIYA</span>
+    <span class="ab-meta">77212387114</span><span class="ab-meta">69.40 Lakhs</span>
+    <span class="ab-meta">Home Loan · Non BT</span>
+    <div class="ab-r">
+      <div class="ab-ri"><label>Application Date</label><strong>08 Jan 2026</strong></div>
+      <div class="ab-ri"><label>Status</label><span class="b-ip">Disbursement – In Progress</span></div>
+      <div class="ab-ri"><label>TAT</label><span class="b-tat">2 hrs 45 mins</span></div>
+    </div>
+  </div>
+
+  <!-- Mobile breadcrumb (hidden on desktop) -->
+  <div id="mob-breadcrumb" style="display:none;background:#fef2f2;border-bottom:1px solid var(--bd);padding:8px 14px;font-size:12px;font-weight:600;color:var(--r);">📊 Disbursement Dashboard</div>
+
+  <div class="layout">
+    <div class="side">
+      <div class="side-prod">
+        <div class="tr">Product 1 · Tranche 1</div>
+        <div class="pn">Home Loan</div>
+        <div class="am">₹ 69,40,109</div>
+      </div>
+      <div class="side-nav"><a href="#" class="on">Disbursement Dashboard</a></div>
+    </div>
+
+    <div class="main">
+
+      <!-- DASHBOARD HEADER -->
+      <div class="dh">
+        <div>
+          <div class="dh-title">Disbursement Dashboard</div>
+          <div style="font-size:11px;color:var(--mu);margin-top:2px;">Legal &amp; Technical complete · Original document collection in progress · Physical verification running</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="ft">
+            <button class="ft-b on" id="fa" onclick="filter('all')">All Tasks</button>
+            <button class="ft-b" id="fm" onclick="filter('mine')">My Tasks</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP ROW -->
+      <div class="top-row">
+
+        <!-- Progress -->
+        <div class="prog-card">
+          <div class="pc-hdr">
+            <span class="pc-title">Overall Progress</span>
+            <span class="pc-pct">58%</span>
+          </div>
+          <div class="pc-sub">14 of 24 tasks completed</div>
+          <div class="pc-bar"><div class="pc-fill" style="width:58%;"></div></div>
+          <div class="sk-rows">
+            <div class="sk-row">
+              <span class="sk-label me">Sales RM (You)</span>
+              <div class="sk-mini-bar"><div class="sk-mini-fill" style="width:55%;background:var(--org);"></div></div>
+              <span class="sk-frac" style="color:var(--org);">6/11</span>
+              <span class="sk-st" style="color:var(--org);">5 pending</span>
+            </div>
+            <div class="sk-row">
+              <span class="sk-label">Customer</span>
+              <div class="sk-mini-bar"><div class="sk-mini-fill" style="width:50%;background:var(--bl);"></div></div>
+              <span class="sk-frac" style="color:var(--bl);">3/6</span>
+              <span class="sk-st" style="color:var(--bl);">In progress</span>
+            </div>
+            <div class="sk-row">
+              <span class="sk-label">Local Ops</span>
+              <div class="sk-mini-bar"><div class="sk-mini-fill" style="width:40%;background:var(--tl);"></div></div>
+              <span class="sk-frac" style="color:var(--tl);">2/5</span>
+              <span class="sk-st" style="color:var(--tl);">In progress</span>
+            </div>
+            <div class="sk-row">
+              <span class="sk-label">Credit</span>
+              <div class="sk-mini-bar"><div class="sk-mini-fill" style="width:20%;background:var(--re);"></div></div>
+              <span class="sk-frac" style="color:var(--re);">1/5</span>
+              <span class="sk-st" style="color:var(--re);">Pending</span>
+            </div>
+            <div class="sk-row">
+              <span class="sk-label">RCU</span>
+              <div class="sk-mini-bar"><div class="sk-mini-fill" style="width:0%;background:var(--pu);"></div></div>
+              <span class="sk-frac" style="color:var(--mu2);">0/1</span>
+              <span class="sk-st" style="color:var(--mu2);">Not started</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- My tasks -->
+        <div class="mt-card">
+          <div class="mt-hdr">
+            <span class="mt-title">Your Pending Tasks</span>
+            <span class="mt-ct">5</span>
+          </div>
+          <div class="mt-list">
+            <div class="mt-item"><span class="mt-dot"></span><span class="mt-text">Submit Patta / Khata — original</span><span class="mt-badge mt-urg">Urgent</span></div>
+            <div class="mt-item"><span class="mt-dot"></span><span class="mt-text">Re-upload Sale Agreement — page missing</span><span class="mt-badge mt-urg">Queried</span></div>
+            <div class="mt-item"><span class="mt-dot"></span><span class="mt-text">Remind customer — Existing Loan NOC</span><span class="mt-badge mt-pnd">Pending</span></div>
+            <div class="mt-item"><span class="mt-dot"></span><span class="mt-text">Remind customer — Income Proof Attestation</span><span class="mt-badge mt-pnd">Pending</span></div>
+            <div class="mt-item"><span class="mt-dot"></span><span class="mt-text">Confirm Pricing Approval</span><span class="mt-badge mt-pnd">Pending</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DOCUMENTS ══ -->
+      <div class="ts">
+        <div class="ts-hdr" onclick="tog(this)">
+          <div class="ts-left">
+            <span class="ts-title">Documents</span>
+            <span class="ts-bk" style="background:#fefce8;color:#78350f;">2 pending · 1 queried</span>
+          </div>
+          <span class="ts-tog op">▼</span>
+        </div>
+        <div class="ts-body">
+
+          <!-- Originals required -->
+          <div class="sh">Originals Required for Security Creation <span class="sh-ct">4 documents</span></div>
+          <table class="t">
+            <thead>
+              <tr>
+                <th style="width:28px;">#</th>
+                <th>Document</th>
+                <th style="width:145px;">Status</th>
+                <th style="width:115px;">Pending With</th>
+                <th style="width:80px;">View Doc</th>
+                <th style="width:210px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 1. Pending — action required from Sales/Customer -->
+              <tr class="mine">
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">01</td>
+                <td>
+                  <div class="tn-wrap">
+                    <span class="name">Patta / Khata <span class="mine-tag">· YOURS</span></span>
+                  </div>
+                </td>
+                <td><span class="st s-opnd"><span class="st-dot"></span>Original Pending</span></td>
+                <td><span class="pw p-sa">Customer / Sales</span></td>
+                <td><button class="btn b-gh">Scanned ↗</button></td>
+                <td class="acts">
+                  <button class="btn b-nv" onclick="alert('Mark as received')">Mark Received</button>
+                  <button class="btn b-rm" onclick="alert('OTC/PDD request raised')">Request OTC/PDD</button>
+                </td>
+              </tr>
+
+              <!-- 2. Queried — action required from Sales -->
+              <tr class="mine">
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">02</td>
+                <td>
+                  <div class="tn-wrap">
+                    <span class="name">Sale Agreement <span class="mine-tag">· YOURS</span></span>
+                  </div>
+                </td>
+                <td><span class="st s-qry"><span class="st-dot"></span>Queried by Local Ops</span></td>
+                <td><span class="pw p-sa">Sales RM</span></td>
+                <td><button class="btn b-gh" onclick="alert('View scanned copy')">Scanned ↗</button></td>
+                <td class="acts">
+                  <button class="btn b-fi" onclick="eqr('q1')">View Query ↓</button>
+                  <button class="btn b-nv" onclick="alert('Re-upload original')">Re-upload</button>
+                </td>
+              </tr>
+              <tr class="qr" id="q1">
+                <td colspan="6"><div class="qd"><strong>Local Ops Query · 24 Mar 2026, 11:30</strong>Page 3 missing — document cover shows 8 pages but only 7 present. Please resubmit complete original.</div></td>
+              </tr>
+
+              <!-- 3. Blocked by another stakeholder — pending with Credit -->
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">03</td>
+                <td>
+                  <div class="tn-wrap">
+                    <span class="name">Title Deed</span>
+                  </div>
+                </td>
+                <td><span class="st s-prog"><span class="st-dot"></span>Credit Approval Pending</span></td>
+                <td><span class="pw p-cr">Credit</span></td>
+                <td><button class="btn b-gh">Scanned ↗</button></td>
+                <td class="acts"><button class="btn b-rm" onclick="alert('Reminder sent to Credit')">Remind Credit</button></td>
+              </tr>
+
+              <!-- 4. Completed -->
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">04</td>
+                <td><div class="tn-wrap"><span class="name">Encumbrance Certificate</span></div></td>
+                <td><span class="st s-done"><span class="st-dot"></span>Approved</span></td>
+                <td><span class="p-no">—</span></td>
+                <td><button class="btn b-gh">Scanned ↗</button></td>
+                <td style="color:var(--gn);font-size:11px;font-weight:600;">✓ Complete</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Additional docs per TSR -->
+          <div class="sh" style="margin-top:1px;">Additional Documents — Per Legal TSR <span class="sh-ct">uploaded during legal process</span></div>
+          <table class="t">
+            <thead>
+              <tr><th style="width:28px;">#</th><th>Document</th><th style="width:170px;">Status</th><th style="width:130px;">Uploaded By</th><th style="width:90px;">View Doc</th><th style="width:180px;">Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">01</td>
+                <td><div class="tn-wrap"><span class="name">Property Sketch / Survey Map</span></div></td>
+                <td><span class="st s-done"><span class="st-dot"></span>Verified by Legal</span></td>
+                <td><span class="pw p-sa">Sales RM</span></td>
+                <td><button class="btn b-gh">View ↗</button></td>
+                <td style="color:var(--gn);font-size:11px;font-weight:600;">✓ Complete</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Completed scanned archive -->
+          <div class="sh" style="margin-top:1px;">Scanned Copies — Legal &amp; Technical Completed <span class="sh-ct">for reference by downstream stakeholders</span></div>
+          <table class="t">
+            <thead>
+              <tr><th style="width:28px;">#</th><th>Document</th><th style="width:170px;">Status</th><th style="width:130px;">Used For</th><th style="width:90px;">View Doc</th><th style="width:180px;">Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr class="arch"><td style="font-family:var(--mono);font-size:10px;">01</td><td><div class="tn-wrap"><span class="name">Property Tax Receipt</span></div></td><td><span class="st s-done"><span class="st-dot"></span>Verified</span></td><td><span style="font-size:11px;">Legal</span></td><td><button class="btn b-gh">View ↗</button></td><td>—</td></tr>
+              <tr class="arch"><td style="font-family:var(--mono);font-size:10px;">02</td><td><div class="tn-wrap"><span class="name">Address Proof</span></div></td><td><span class="st s-done"><span class="st-dot"></span>Verified</span></td><td><span style="font-size:11px;">Technical</span></td><td><button class="btn b-gh">View ↗</button></td><td>—</td></tr>
+              <tr class="arch"><td style="font-family:var(--mono);font-size:10px;">03</td><td><div class="tn-wrap"><span class="name">Sale Agreement (scanned)</span></div></td><td><span class="st s-done"><span class="st-dot"></span>Verified</span></td><td><span style="font-size:11px;">Legal + Technical</span></td><td><button class="btn b-gh">View ↗</button></td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ SANCTION CONDITIONS ══ -->
+      <div class="ts">
+        <div class="ts-hdr" onclick="tog(this)">
+          <div class="ts-left">
+            <span class="ts-title">Sanction Conditions</span>
+            <span class="ts-bk" style="background:#fefce8;color:#78350f;">2 pending</span>
+          </div>
+          <span class="ts-tog op">▼</span>
+        </div>
+        <div class="ts-body">
+          <table class="t">
+            <thead>
+              <tr><th style="width:28px;">#</th><th>Condition</th><th style="width:170px;">Status</th><th style="width:130px;">Pending With</th><th style="width:90px;">View Doc</th><th style="width:180px;">Actions</th></tr>
+            </thead>
+            <tbody>
+              <!-- 1. Pending — action required -->
+              <tr class="mine">
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">01</td>
+                <td><div class="tn-wrap"><span class="name">Existing Loan Closure NOC <span class="mine-tag">· YOURS</span></span></div></td>
+                <td><span class="st s-pend"><span class="st-dot"></span>Pending</span></td>
+                <td><span class="pw p-sa">Customer / Sales</span></td>
+                <td>—</td>
+                <td class="acts">
+                  <button class="btn b-up" onclick="alert('Upload NOC')">Upload</button>
+                  <button class="btn b-rm" onclick="alert('Reminder sent')">Remind</button>
+                </td>
+              </tr>
+              <tr class="mine">
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">02</td>
+                <td><div class="tn-wrap"><span class="name">Income Proof Attestation <span class="mine-tag">· YOURS</span></span></div></td>
+                <td><span class="st s-pend"><span class="st-dot"></span>Pending</span></td>
+                <td><span class="pw p-sa">Customer / Sales</span></td>
+                <td>—</td>
+                <td class="acts">
+                  <button class="btn b-up" onclick="alert('Upload')">Upload</button>
+                  <button class="btn b-rm" onclick="alert('Reminder sent')">Remind</button>
+                </td>
+              </tr>
+              <!-- 2. Completed -->
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">03</td>
+                <td><div class="tn-wrap"><span class="name">Processing Fee Payment — ₹ 17,350</span></div></td>
+                <td><span class="st s-done"><span class="st-dot"></span>Confirmed</span></td>
+                <td><span class="p-no">—</span></td>
+                <td><button class="btn b-gh">Receipt ↗</button></td>
+                <td style="color:var(--gn);font-size:11px;font-weight:600;">✓ Complete</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ LOAN DETAILS ══ -->
+      <div class="ts">
+        <div class="ts-hdr" onclick="tog(this)">
+          <div class="ts-left">
+            <span class="ts-title">Loan Details</span>
+            <span class="ts-bk" style="background:#fefce8;color:#78350f;">1 pending</span>
+          </div>
+          <span class="ts-tog op">▼</span>
+        </div>
+        <div class="ts-body">
+          <table class="t">
+            <thead>
+              <tr><th style="width:28px;">#</th><th>Field</th><th style="width:170px;">Status</th><th style="width:130px;">Filled By</th><th style="width:90px;">Value</th><th style="width:180px;">Actions</th></tr>
+            </thead>
+            <tbody>
+              <!-- 1. Pending — action required -->
+              <tr class="mine">
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">01</td>
+                <td><div class="tn-wrap"><span class="name">Pricing Approval Confirmation <span class="mine-tag">· YOURS · PRE-CONDITION</span></span></div></td>
+                <td><span class="st s-mty"><span class="st-dot"></span>Not Confirmed</span></td>
+                <td><span class="pw p-sa">Sales RM</span></td>
+                <td>—</td>
+                <td><button class="btn b-fi" onclick="alert('Confirming pricing approval')">Confirm Now</button></td>
+              </tr>
+              <!-- 2. Completed -->
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">02</td>
+                <td><div class="tn-wrap"><span class="name">Beneficiary Account</span></div></td>
+                <td><span class="st s-done"><span class="st-dot"></span>Filled</span></td>
+                <td><span class="pw p-sa">Sales RM</span></td>
+                <td style="font-family:var(--mono);font-size:11px;">HDFC ••••4521</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">03</td>
+                <td><div class="tn-wrap"><span class="name">Repayment Details</span></div></td>
+                <td><span class="st s-done"><span class="st-dot"></span>Filled</span></td>
+                <td><span class="pw p-sa">Sales RM</span></td>
+                <td style="font-family:var(--mono);font-size:11px;">₹ 58,240/mo</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">04</td>
+                <td><div class="tn-wrap"><span class="name">Own Contribution</span></div></td>
+                <td><span class="st s-done"><span class="st-dot"></span>Filled</span></td>
+                <td><span class="pw p-sa">Sales RM</span></td>
+                <td style="font-family:var(--mono);font-size:11px;">₹ 17,35,000</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">05</td>
+                <td><div class="tn-wrap"><span class="name">EMI Start &amp; Tenure</span></div></td>
+                <td><span class="st s-done"><span class="st-dot"></span>Filled</span></td>
+                <td><span class="pw p-sa">Sales RM</span></td>
+                <td style="font-family:var(--mono);font-size:11px;">01 May 2026 · 240m</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ VERIFICATION & APPROVALS ══ -->
+      <div class="ts">
+        <div class="ts-hdr" onclick="tog(this)">
+          <div class="ts-left">
+            <span class="ts-title">Verification &amp; Approvals</span>
+            <span class="ts-bk" style="background:#fefce8;color:#78350f;">2 in progress · 3 waiting</span>
+          </div>
+          <span class="ts-tog op">▼</span>
+        </div>
+        <div class="ts-body">
+          <div class="sh">Local Ops Check</div>
+          <table class="t">
+            <thead>
+              <tr><th style="width:28px;">#</th><th>Task</th><th style="width:170px;">Status</th><th style="width:130px;">Pending With</th><th style="width:90px;">View Doc</th><th style="width:180px;">Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">01</td>
+                <td>
+                  <div class="tn-wrap">
+                    <span class="name">Physical Completeness Check</span>
+                  </div>
+                </td>
+                <td><span class="st s-prog"><span class="st-dot"></span>In Progress</span></td>
+                <td><span class="pw p-op">Local Ops</span></td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">02</td>
+                <td>
+                  <div class="tn-wrap">
+                    <span class="name">System Data Accuracy Check</span>
+                  </div>
+                </td>
+                <td><span class="st s-prog"><span class="st-dot"></span>In Progress</span></td>
+                <td><span class="pw p-op">Local Ops</span></td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="sh" style="margin-top:1px;">Credit Approval</div>
+          <table class="t">
+            <thead>
+              <tr><th style="width:28px;">#</th><th>Task</th><th style="width:170px;">Status</th><th style="width:130px;">Pending With</th><th style="width:90px;">View Doc</th><th style="width:180px;">Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">03</td>
+                <td>
+                  <div class="tn-wrap">
+                    <span class="name">Sanction Condition Revalidation</span>
+                  </div>
+                </td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-cr">Credit</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">Unlocks after Disbursement Memo</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">04</td>
+                <td>
+                  <div class="tn-wrap">
+                    <span class="name">Original Documents vs TSR Review</span>
+                  </div>
+                </td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-cr">Credit</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">Unlocks after Disbursement Memo</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">05</td>
+                <td>
+                  <div class="tn-wrap">
+                    <span class="name">Pricing &amp; Own Contribution Review</span>
+                  </div>
+                </td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-cr">Credit</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">Unlocks after Disbursement Memo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ KFS / E-SIGN / FCPG / FinnOne ══ -->
+      <div class="ts">
+        <div class="ts-hdr" onclick="tog(this)">
+          <div class="ts-left">
+            <span class="ts-title">KFS · E-Sign · FCPG · <span class="finn">FinnOne</span> NDC</span>
+            <span class="ts-bk" style="background:#f3f4f6;color:var(--mu);">Waiting — all Credit approvals needed first</span>
+          </div>
+          <span class="ts-tog op">▼</span>
+        </div>
+        <div class="ts-body">
+          <table class="t">
+            <thead>
+              <tr><th style="width:28px;">#</th><th>Task</th><th style="width:170px;">Status</th><th style="width:130px;">Pending With</th><th style="width:90px;">View Doc</th><th style="width:180px;">Unlocks After</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">01</td>
+                <td><div class="tn-wrap"><span class="name">KFS — Customer Review &amp; Acceptance</span></div></td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-cu">Customer / Sales</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">All 5 Credit approvals close</td>
+              </tr>
+              <tr class="mine">
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">02</td>
+                <td><div class="tn-wrap"><span class="name">E-Sign — Initiate &amp; Customer Signs <span class="mine-tag">· YOURS</span></span></div></td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-sa">Sales RM</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">KFS accepted</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">03</td>
+                <td><div class="tn-wrap"><span class="name">eNACH / Autopay Mandate</span></div></td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-sy">System Auto</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">Repayment details verified by Local Ops</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">04</td>
+                <td><div class="tn-wrap"><span class="name">FCPG — RCU Physical Verification</span></div></td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-rc">RCU</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">E-Sign complete</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">05</td>
+                <td><div class="tn-wrap"><span class="name">NDC Check — <span class="finn">FinnOne</span> Checklist</span></div></td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-op">Local Ops</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">FCPG + eNACH both complete</td>
+              </tr>
+              <tr>
+                <td style="color:var(--mu2);font-family:var(--mono);font-size:10px;">06</td>
+                <td><div class="tn-wrap"><span class="name">Submit to <span class="finn">FinnOne</span></span></div></td>
+                <td><span class="st s-wait"><span class="st-dot"></span>Waiting</span></td>
+                <td><span class="pw p-op">Local Ops</span></td>
+                <td>—</td>
+                <td style="font-size:11px;color:var(--mu2);">NDC Check complete</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     TMA — CUSTOMER (Apple-inspired)
+═══════════════════════════════════════ -->
+<style>
+/* ── TMA Apple-style reset ── */
+.tma2{background:#f2f2f7;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-font-smoothing:antialiased;}
+
+/* Status bar */
+.a-statusbar{background:#fff;height:52px;display:flex;align-items:center;padding:0 20px;gap:0;border-bottom:1px solid rgba(0,0,0,.08);}
+.a-back{color:#007aff;font-size:16px;font-weight:400;display:flex;align-items:center;gap:3px;text-decoration:none;}
+.a-pagetitle{flex:1;text-align:center;font-size:17px;font-weight:600;color:#000;letter-spacing:-.3px;}
+.a-avatar{width:30px;height:30px;background:#ff6b35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;}
+
+/* Hero card */
+.a-hero{margin:16px;background:linear-gradient(145deg,#1c1c1e,#2c2c2e);border-radius:20px;padding:22px 22px 20px;color:#fff;position:relative;overflow:hidden;}
+.a-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;background:rgba(255,107,53,.15);border-radius:50%;}
+.a-hero::after{content:'';position:absolute;bottom:-20px;left:60px;width:100px;height:100px;background:rgba(0,122,255,.1);border-radius:50%;}
+.a-hero-label{font-size:12px;font-weight:500;opacity:.5;letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;}
+.a-hero-name{font-size:15px;font-weight:600;opacity:.85;margin-bottom:3px;}
+.a-hero-amount{font-size:32px;font-weight:700;letter-spacing:-1px;margin-bottom:14px;}
+.a-hero-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;color:#34d399;margin-bottom:14px;}
+.a-hero-pill .dot{width:6px;height:6px;border-radius:50%;background:#34d399;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.a-hero-meta{display:flex;gap:0;border-top:1px solid rgba(255,255,255,.08);padding-top:14px;}
+.a-hero-mi{flex:1;border-right:1px solid rgba(255,255,255,.08);padding-right:12px;margin-right:12px;}
+.a-hero-mi:last-child{border-right:none;padding-right:0;margin-right:0;}
+.a-hero-mi label{font-size:10px;opacity:.4;display:block;margin-bottom:2px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;}
+.a-hero-mi span{font-size:12px;font-weight:500;opacity:.85;}
+
+/* Journey stepper */
+.a-stepper{margin:0 16px 16px;background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.a-step-title{font-size:13px;font-weight:600;color:#000;margin-bottom:12px;}
+.a-steps{display:flex;align-items:center;gap:0;}
+.a-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+.a-step:not(:last-child)::after{content:'';position:absolute;top:11px;left:calc(50% + 11px);width:calc(100% - 22px);height:2px;background:#e5e5ea;z-index:0;}
+.a-step:not(:last-child).done::after{background:#34c759;}
+.a-step-circle{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;z-index:1;position:relative;}
+.a-step.done .a-step-circle{background:#34c759;color:#fff;}
+.a-step.active .a-step-circle{background:#007aff;color:#fff;box-shadow:0 0 0 3px rgba(0,122,255,.2);}
+.a-step.wait .a-step-circle{background:#e5e5ea;color:#8e8e93;}
+.a-step-label{font-size:9.5px;font-weight:500;margin-top:5px;text-align:center;line-height:1.2;}
+.a-step.done .a-step-label{color:#34c759;}
+.a-step.active .a-step-label{color:#007aff;font-weight:600;}
+.a-step.wait .a-step-label{color:#8e8e93;}
+
+/* Progress ring summary */
+.a-progress-row{margin:0 16px 16px;display:grid;grid-template-columns:auto 1fr;gap:14px;background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);align-items:center;}
+.a-ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0;}
+.a-ring-wrap svg{transform:rotate(-90deg);}
+.a-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.a-ring-pct{font-size:17px;font-weight:700;color:#000;line-height:1;}
+.a-ring-sub{font-size:9px;color:#8e8e93;font-weight:500;}
+.a-prog-detail{display:flex;flex-direction:column;gap:6px;}
+.a-prog-row{display:flex;align-items:center;gap:8px;}
+.a-prog-name{font-size:12px;font-weight:500;color:#3c3c43;min-width:100px;}
+.a-prog-name.you{color:#ff6b35;font-weight:600;}
+.a-prog-bar{flex:1;background:#e5e5ea;border-radius:10px;height:5px;overflow:hidden;}
+.a-prog-fill{height:100%;border-radius:10px;}
+.a-prog-frac{font-size:11px;font-weight:600;min-width:28px;text-align:right;}
+
+/* Section header */
+.a-sec-hdr{padding:0 16px;margin:8px 0 6px;display:flex;align-items:baseline;justify-content:space-between;}
+.a-sec-label{font-size:20px;font-weight:700;color:#000;letter-spacing:-.3px;}
+.a-sec-ct{font-size:13px;font-weight:500;color:#8e8e93;}
+
+/* Task list — Apple grouped list style */
+.a-list{margin:0 16px 8px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.a-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(0,0,0,.06);position:relative;}
+.a-item:last-child{border-bottom:none;}
+.a-item-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.a-item-body{flex:1;min-width:0;}
+.a-item-title{font-size:14px;font-weight:600;color:#000;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.a-item-sub{font-size:12px;color:#8e8e93;font-weight:400;}
+.a-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+.a-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.a-badge-red{background:#ff3b30;color:#fff;}
+.a-badge-amber{background:#ff9500;color:#fff;}
+.a-badge-blue{background:#007aff;color:#fff;}
+.a-badge-green{background:#34c759;color:#fff;}
+.a-badge-grey{background:#e5e5ea;color:#8e8e93;}
+.a-chevron{color:#c7c7cc;font-size:12px;font-weight:600;}
+/* Action button inline */
+.a-action-btn{display:block;background:#007aff;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px;width:100%;text-align:center;}
+.a-action-btn.red{background:#ff3b30;}
+.a-action-btn.ghost{background:#f2f2f7;color:#007aff;}
+
+/* Expandable item */
+.a-item.expandable{cursor:pointer;}
+.a-expand-body{display:none;padding:0 16px 14px 62px;}
+.a-expand-body.open{display:block;}
+.a-expand-card{background:#f2f2f7;border-radius:12px;padding:12px 14px;font-size:13px;color:#3c3c43;line-height:1.5;}
+.a-expand-card .eq-label{font-size:11px;font-weight:700;color:#ff3b30;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;}
+
+/* Pending with tag */
+.a-with{font-size:11px;color:#8e8e93;font-weight:500;}
+.a-with strong{color:#3c3c43;}
+
+/* Status dot inline */
+.sdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;}
+.sdot-g{background:#34c759;}
+.sdot-b{background:#007aff;}
+.sdot-o{background:#ff9500;}
+.sdot-r{background:#ff3b30;}
+.sdot-gr{background:#c7c7cc;}
+
+/* Activity feed */
+.a-feed{margin:0 16px 24px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.a-feed-item{display:flex;align-items:flex-start;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(0,0,0,.05);position:relative;}
+.a-feed-item:last-child{border-bottom:none;}
+.a-feed-line{position:absolute;left:22px;top:30px;bottom:-11px;width:1px;background:rgba(0,0,0,.06);}
+.a-feed-item:last-child .a-feed-line{display:none;}
+.a-feed-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:2px;border:2px solid #fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.1);}
+.a-feed-time{font-size:11px;color:#8e8e93;min-width:34px;font-variant-numeric:tabular-nums;}
+.a-feed-text{font-size:13px;color:#3c3c43;line-height:1.4;}
+</style>
+
+<div id="scr-tma" class="scr">
+<div class="tma2">
+
+  <!-- Status bar -->
+  <div class="a-statusbar">
+    <a class="a-back" href="#">‹ Home</a>
+    <div class="a-pagetitle">My Application</div>
+    <div class="a-avatar">RC</div>
+  </div>
+
+  <!-- Hero -->
+  <div class="a-hero">
+    <div class="a-hero-label">Home Loan · Non BT</div>
+    <div class="a-hero-name">Rajesh Chhaganbhai Godhaniya</div>
+    <div class="a-hero-amount">₹ 69,40,109</div>
+    <div class="a-hero-pill"><span class="dot"></span> Disbursement In Progress</div>
+    <div class="a-hero-meta">
+      <div class="a-hero-mi"><label>App Date</label><span>08 Jan 2026</span></div>
+      <div class="a-hero-mi"><label>App No.</label><span>77212387114</span></div>
+      <div class="a-hero-mi"><label>Product</label><span>Tranche 1</span></div>
+    </div>
+  </div>
+
+  <!-- Journey stepper -->
+  <div class="a-stepper">
+    <div class="a-step-title">Your Loan Journey</div>
+    <div class="a-steps">
+      <div class="a-step done">
+        <div class="a-step-circle">✓</div>
+        <div class="a-step-label">Sanctioned</div>
+      </div>
+      <div class="a-step done">
+        <div class="a-step-circle">✓</div>
+        <div class="a-step-label">Legal Done</div>
+      </div>
+      <div class="a-step done">
+        <div class="a-step-circle">✓</div>
+        <div class="a-step-label">Technical Done</div>
+      </div>
+      <div class="a-step active">
+        <div class="a-step-circle">4</div>
+        <div class="a-step-label">Disbursement</div>
+      </div>
+      <div class="a-step wait">
+        <div class="a-step-circle">5</div>
+        <div class="a-step-label">Cheque Handover</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress ring -->
+  <div class="a-progress-row">
+    <div class="a-ring-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="30" fill="none" stroke="#e5e5ea" stroke-width="6"/>
+        <circle cx="36" cy="36" r="30" fill="none" stroke="#34c759" stroke-width="6"
+          stroke-dasharray="188.5" stroke-dashoffset="79" stroke-linecap="round"/>
+      </svg>
+      <div class="a-ring-label">
+        <span class="a-ring-pct">58%</span>
+        <span class="a-ring-sub">done</span>
+      </div>
+    </div>
+    <div class="a-prog-detail">
+      <div class="a-prog-row">
+        <span class="a-prog-name you">You</span>
+        <div class="a-prog-bar"><div class="a-prog-fill" style="width:50%;background:#ff6b35;"></div></div>
+        <span class="a-prog-frac" style="color:#ff6b35;">3/6</span>
+      </div>
+      <div class="a-prog-row">
+        <span class="a-prog-name">Bank Team</span>
+        <div class="a-prog-bar"><div class="a-prog-fill" style="width:59%;background:#007aff;"></div></div>
+        <span class="a-prog-frac" style="color:#007aff;">10/17</span>
+      </div>
+      <div class="a-prog-row">
+        <span class="a-prog-name">Automated</span>
+        <div class="a-prog-bar"><div class="a-prog-fill" style="width:33%;background:#34c759;"></div></div>
+        <span class="a-prog-frac" style="color:#34c759;">1/3</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ACTION REQUIRED ── -->
+  <div class="a-sec-hdr">
+    <span class="a-sec-label">Action Required</span>
+    <span class="a-sec-ct">3 tasks</span>
+  </div>
+
+  <div class="a-list">
+    <!-- Urgent: Patta/Khata -->
+    <div class="a-item expandable" onclick="toggleExpand('e1')">
+      <div class="a-item-icon" style="background:#fff0ee;"><span style="font-size:18px;">📄</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Submit Original — Patta / Khata</div>
+        <div class="a-item-sub">Hand to RM or schedule a pickup</div>
+      </div>
+      <div class="a-item-right">
+        <span class="a-badge a-badge-red">Urgent</span>
+        <span class="a-chevron">›</span>
+      </div>
+    </div>
+    <div class="a-expand-body" id="e1">
+      <div class="a-expand-card">
+        Your original Patta/Khata document is required to create the loan security. Without it, disbursement cannot proceed.
+        <button class="a-action-btn red" onclick="alert('Contacting RM for pickup')">Contact RM / Schedule Pickup</button>
+      </div>
+    </div>
+
+    <!-- Pending: Loan Closure NOC -->
+    <div class="a-item expandable" onclick="toggleExpand('e2')">
+      <div class="a-item-icon" style="background:#fff8ee;"><span style="font-size:18px;">🏠</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Upload Loan Closure NOC</div>
+        <div class="a-item-sub">From your previous lender</div>
+      </div>
+      <div class="a-item-right">
+        <span class="a-badge a-badge-amber">Pending</span>
+        <span class="a-chevron">›</span>
+      </div>
+    </div>
+    <div class="a-expand-body" id="e2">
+      <div class="a-expand-card">
+        Please upload the No Objection Certificate (NOC) from your previous lender confirming closure of your existing home loan.
+        <button class="a-action-btn" onclick="alert('Upload NOC')">Upload Document</button>
+      </div>
+    </div>
+
+    <!-- Pending: Income Proof -->
+    <div class="a-item expandable" onclick="toggleExpand('e3')">
+      <div class="a-item-icon" style="background:#fff8ee;"><span style="font-size:18px;">📋</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Upload Attested Income Proof</div>
+        <div class="a-item-sub">Salary slip attested by employer</div>
+      </div>
+      <div class="a-item-right">
+        <span class="a-badge a-badge-amber">Pending</span>
+        <span class="a-chevron">›</span>
+      </div>
+    </div>
+    <div class="a-expand-body" id="e3">
+      <div class="a-expand-card">
+        Please upload your salary slip attested by your employer. This is required as per your sanction conditions.
+        <button class="a-action-btn" onclick="alert('Upload income proof')">Upload Document</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── IN PROGRESS (Bank & you) ── -->
+  <div class="a-sec-hdr" style="margin-top:8px;">
+    <span class="a-sec-label">In Progress</span>
+    <span class="a-sec-ct">8 tasks</span>
+  </div>
+
+  <div class="a-list">
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0f8ff;"><span style="font-size:18px;">📑</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Sale Agreement — Re-upload</div>
+        <div class="a-item-sub"><span class="sdot sdot-r"></span>Queried · Your RM is handling this</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-blue">RM Acting</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0f8ff;"><span style="font-size:18px;">📜</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Title Deed — Bank Review</div>
+        <div class="a-item-sub"><span class="sdot sdot-b"></span>Pending · Credit team reviewing</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Bank</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0f8ff;"><span style="font-size:18px;">🔍</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Document Completeness Check</div>
+        <div class="a-item-sub"><span class="sdot sdot-b"></span>In progress · Operations team</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Bank</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0f8ff;"><span style="font-size:18px;">✔️</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Data Accuracy Verification</div>
+        <div class="a-item-sub"><span class="sdot sdot-b"></span>In progress · Operations team</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Bank</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f5f0ff;"><span style="font-size:18px;">⏳</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Credit Team Review</div>
+        <div class="a-item-sub"><span class="sdot sdot-gr"></span>Waiting · Unlocks after operations complete</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Waiting</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f5f0ff;"><span style="font-size:18px;">📝</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Key Fact Statement (KFS)</div>
+        <div class="a-item-sub"><span class="sdot sdot-gr"></span>Waiting · We'll notify you when ready</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Waiting</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f5f0ff;"><span style="font-size:18px;">✍️</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">E-Sign Documents</div>
+        <div class="a-item-sub"><span class="sdot sdot-gr"></span>Waiting · After KFS approval</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Waiting</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f5f0ff;"><span style="font-size:18px;">🛡️</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Document Verification (RCU)</div>
+        <div class="a-item-sub"><span class="sdot sdot-gr"></span>Waiting · After E-Sign</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-grey">Waiting</span></div>
+    </div>
+  </div>
+
+  <!-- ── COMPLETED ── -->
+  <div class="a-sec-hdr" style="margin-top:8px;">
+    <span class="a-sec-label">Completed</span>
+    <span class="a-sec-ct">6 tasks</span>
+  </div>
+
+  <div class="a-list">
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Processing Fee Paid</div>
+        <div class="a-item-sub">₹ 17,350 · 10 Jan 2026</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Encumbrance Certificate</div>
+        <div class="a-item-sub">Original submitted · Approved by bank</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Property Documents Uploaded</div>
+        <div class="a-item-sub">Sale Agreement, Title Deed, Tax Receipt</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Loan Details Confirmed</div>
+        <div class="a-item-sub">Beneficiary, EMI, repayment — all set</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Legal Verification Complete</div>
+        <div class="a-item-sub">TSR report generated and uploaded</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+    <div class="a-item">
+      <div class="a-item-icon" style="background:#f0fdf4;"><span style="font-size:18px;">✅</span></div>
+      <div class="a-item-body">
+        <div class="a-item-title">Technical Verification Complete</div>
+        <div class="a-item-sub">Property inspected and report published</div>
+      </div>
+      <div class="a-item-right"><span class="a-badge a-badge-green">Done</span></div>
+    </div>
+  </div>
+
+  <!-- ── RECENT ACTIVITY ── -->
+  <div class="a-sec-hdr" style="margin-top:8px;">
+    <span class="a-sec-label">Recent Activity</span>
+  </div>
+
+  <div class="a-feed">
+    <div class="a-feed-item">
+      <div class="a-feed-line"></div>
+      <div class="a-feed-dot" style="background:#ff3b30;"></div>
+      <div class="a-feed-time">13:30</div>
+      <div class="a-feed-text">RCU verification initiated for property documents</div>
+    </div>
+    <div class="a-feed-item">
+      <div class="a-feed-line"></div>
+      <div class="a-feed-dot" style="background:#34c759;"></div>
+      <div class="a-feed-time">12:15</div>
+      <div class="a-feed-text">Sale Agreement verified by bank team</div>
+    </div>
+    <div class="a-feed-item">
+      <div class="a-feed-line"></div>
+      <div class="a-feed-dot" style="background:#007aff;"></div>
+      <div class="a-feed-time">11:00</div>
+      <div class="a-feed-text">Income proof submitted via portal</div>
+    </div>
+    <div class="a-feed-item">
+      <div class="a-feed-line"></div>
+      <div class="a-feed-dot" style="background:#34c759;"></div>
+      <div class="a-feed-time">09:45</div>
+      <div class="a-feed-text">Credit assessment completed — CIBIL check passed</div>
+    </div>
+    <div class="a-feed-item">
+      <div class="a-feed-dot" style="background:#ff9500;"></div>
+      <div class="a-feed-time">08:30</div>
+      <div class="a-feed-text">Application moved to disbursement stage</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function showScr(n,btn){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.sw').forEach(b=>b.classList.remove('on'));
+  document.getElementById('scr-'+n).classList.add('on');
+  btn.classList.add('on');
+}
+
+// Show mobile breadcrumb when sidebar is hidden
+function checkMobile(){
+  const bc = document.getElementById('mob-breadcrumb');
+  if(bc) bc.style.display = window.innerWidth <= 768 ? 'block' : 'none';
+}
+window.addEventListener('resize', checkMobile);
+document.addEventListener('DOMContentLoaded', checkMobile);
+checkMobile();
+function tog(h){
+  const b=h.nextElementSibling;
+  const t=h.querySelector('.ts-tog');
+  const op=t.classList.contains('op');
+  b.style.display=op?'none':'block';
+  t.classList.toggle('op',!op);
+}
+function eqr(id){
+  const r=document.getElementById(id);
+  r.style.display=r.style.display==='table-row'?'none':'table-row';
+}
+function toggleExpand(id){
+  const b=document.getElementById(id);
+  b.classList.toggle('open');
+}
+function filter(m){
+  document.getElementById('fa').classList.toggle('on',m==='all');
+  document.getElementById('fm').classList.toggle('on',m==='mine');
+  document.querySelectorAll('.t tbody tr:not(.qr)').forEach(r=>{
+    if(m==='mine'){
+      r.style.display=(r.classList.contains('mine'))?'':'none';
+    } else {
+      r.style.display='';
+    }
+  });
+  document.querySelectorAll('.t tbody tr.arch').forEach(r=>{
+    r.style.display=m==='mine'?'none':'';
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mortgage Disbursement – Process Redesign</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:   #0f1f3d;
+  --blue:   #1a4fa0;
+  --orange: #e8600a;
+  --teal:   #0d7e6e;
+  --red:    #c0392b;
+  --amber:  #d68910;
+  --bg:     #f7f8fa;
+  --surface:#ffffff;
+  --border: #dde2ea;
+  --text:   #1a1a2e;
+  --muted:  #6b7280;
+  --mono:   'IBM Plex Mono', monospace;
+  --sans:   'IBM Plex Sans', sans-serif;
+  /* stakeholder colours */
+  --c-cust:   #1565c0;
+  --c-sales:  #e65100;
+  --c-ops:    #1b5e20;
+  --c-credit: #b71c1c;
+  --c-rcu:    #4a148c;
+  --c-sys:    #004d40;
+  --c-vendor: #37474f;
+  --c-tadmin: #006064;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;}
+
+/* ── COVER ── */
+.cover{background:var(--navy);color:white;padding:60px 64px 48px;position:relative;overflow:hidden;}
+.cover::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;
+  background:radial-gradient(circle,rgba(26,79,160,.4) 0%,transparent 70%);border-radius:50%;}
+.cover-tag{font-family:var(--mono);font-size:11px;color:var(--orange);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.cover h1{font-size:36px;font-weight:600;line-height:1.2;max-width:600px;margin-bottom:12px;}
+.cover-sub{color:rgba(255,255,255,.6);font-size:15px;margin-bottom:36px;}
+.cover-pills{display:flex;gap:10px;flex-wrap:wrap;}
+.pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);padding:5px 14px;border-radius:20px;font-size:12px;color:rgba(255,255,255,.7);}
+.orange-bar{height:4px;background:linear-gradient(90deg,var(--orange),#f4a743);}
+
+/* ── LAYOUT ── */
+.container{max-width:980px;margin:0 auto;padding:40px 32px;}
+
+/* ── TOC ── */
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:28px 32px;margin-bottom:40px;}
+.toc h2{font-size:11px;font-family:var(--mono);letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;}
+.toc-item{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px dotted var(--border);}
+.toc-item:last-child{border-bottom:none;}
+.toc-num{font-family:var(--mono);font-size:11px;color:var(--orange);min-width:28px;}
+.toc-title{font-size:13px;color:var(--navy);font-weight:500;}
+.toc-sub{padding-left:20px;}
+.toc-sub .toc-title{font-weight:400;color:var(--muted);}
+
+/* ── SECTION HEADERS ── */
+.section-header{display:flex;align-items:center;gap:14px;margin:48px 0 20px;padding-bottom:12px;border-bottom:2px solid var(--navy);}
+.section-num{font-family:var(--mono);font-size:11px;background:var(--navy);color:white;padding:3px 8px;border-radius:3px;}
+.section-header h2{font-size:20px;font-weight:600;color:var(--navy);}
+.subsection{margin:28px 0 12px;}
+.subsection h3{font-size:15px;font-weight:600;color:var(--blue);border-left:3px solid var(--blue);padding-left:10px;}
+
+p{margin-bottom:10px;color:#2c3e50;}
+ul{padding-left:18px;margin-bottom:10px;}
+li{margin-bottom:5px;color:#2c3e50;}
+strong{color:var(--navy);}
+
+/* ── CALLOUT ── */
+.callout{border-radius:6px;padding:14px 18px;margin:14px 0;border-left:4px solid;font-size:13px;}
+.callout-blue {background:#eaf1fb;border-color:var(--blue);}
+.callout-amber{background:#fef9ec;border-color:var(--amber);}
+.callout-teal {background:#eaf6f4;border-color:var(--teal);}
+.callout strong{display:block;margin-bottom:4px;}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;margin:14px 0;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--navy);color:white;text-align:left;padding:9px 12px;font-weight:500;}
+td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+tr:nth-child(even) td{background:#f9fafc;}
+tr:hover td{background:#eef3fb;}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-family:var(--mono);font-weight:500;}
+.badge-ind {background:#e8f5e9;color:#2e7d32;}
+.badge-semi{background:#fff8e1;color:#f57f17;}
+.badge-dep {background:#fce4ec;color:#c62828;}
+.badge-auto{background:#e3f2fd;color:#1565c0;}
+.tid{font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:500;}
+
+/* ── LEGEND ── */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 20px;padding:14px;background:white;border:1px solid var(--border);border-radius:8px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ── FLOW BOX ── */
+.flow{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;margin:20px 0;overflow-x:auto;}
+.flow-title{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:20px;}
+
+/* ── STAGE BLOCK ── */
+.stage-block{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;}
+.stage-header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--navy);color:white;}
+.stage-name{font-weight:600;font-size:13px;}
+.stage-owner{margin-left:auto;font-size:11px;font-family:var(--mono);background:rgba(255,255,255,.12);padding:2px 8px;border-radius:10px;}
+.stage-body{padding:12px 16px;font-size:13px;background:white;}
+.stage-pain{margin-top:8px;padding:6px 10px;background:#fdf0ef;border-left:3px solid var(--red);border-radius:0 4px 4px 0;font-size:11px;color:var(--red);}
+
+/* ── TRANSFORM GRID ── */
+.transform-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:14px 0;}
+.transform-col-header{padding:10px 16px;font-size:12px;font-weight:600;font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;}
+.col-current {background:#fee2e2;color:#991b1b;border-right:1px solid var(--border);}
+.col-proposed{background:#d1fae5;color:#065f46;}
+.transform-cell{padding:8px 16px;font-size:12px;border-top:1px solid var(--border);}
+.transform-cell:nth-child(odd){border-right:1px solid var(--border);background:#fdf8f8;}
+.transform-cell:nth-child(even){background:#f8fdf8;}
+
+/* ── STAKEHOLDER CHIPS ── */
+.chip{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:500;border:1.5px solid;display:inline-block;margin:2px;}
+.chip-cust  {background:#dbeafe;border-color:var(--c-cust);  color:var(--c-cust);}
+.chip-sales {background:#fef3c7;border-color:var(--c-sales); color:var(--c-sales);}
+.chip-ops   {background:#d1fae5;border-color:var(--c-ops);   color:var(--c-ops);}
+.chip-credit{background:#fee2e2;border-color:var(--c-credit);color:var(--c-credit);}
+.chip-rcu   {background:#ede9fe;border-color:var(--c-rcu);   color:var(--c-rcu);}
+.chip-sys   {background:#ccfbf1;border-color:var(--c-sys);   color:var(--c-sys);}
+.chip-vendor{background:#f1f5f9;border-color:var(--c-vendor);color:var(--c-vendor);}
+.chip-tadmin{background:#e0f7fa;border-color:var(--c-tadmin);color:var(--c-tadmin);}
+
+/* ── VERTICAL FLOW STEPS ── */
+.vflow{display:flex;flex-direction:column;gap:0;}
+.vflow-step{display:flex;align-items:flex-start;gap:12px;padding-bottom:4px;}
+.vflow-left{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0;}
+.vflow-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.vflow-line{width:2px;flex:1;background:var(--border);min-height:24px;}
+.vflow-content{flex:1;padding-bottom:14px;}
+.vflow-label{font-weight:600;font-size:12px;color:var(--navy);margin-bottom:3px;}
+.vflow-meta{font-size:11px;color:var(--muted);}
+.vflow-branch{margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;}
+.branch-box{flex:1;min-width:160px;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.branch-hdr{padding:5px 10px;font-size:11px;font-weight:600;font-family:var(--mono);}
+.branch-hdr.a{background:#e8f5e9;color:#2e7d32;}
+.branch-hdr.b{background:#fff8e1;color:#f57f17;}
+.branch-hdr.c{background:#fce4ec;color:#c62828;}
+.branch-body{padding:6px 10px;font-size:11px;color:var(--text);}
+.query-note{margin-top:6px;padding:5px 10px;background:#fff8e1;border-left:3px solid var(--amber);border-radius:0 4px 4px 0;font-size:11px;color:#92400e;}
+
+/* ── TECHNICAL FLOW (fixed, vertical layout) ── */
+.tech-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0;}
+.tech-node{background:white;border:1px solid var(--border);border-radius:8px;padding:12px;position:relative;}
+.tech-node-id{font-family:var(--mono);font-size:10px;color:var(--orange);margin-bottom:4px;}
+.tech-node-name{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:4px;}
+.tech-node-owner{font-size:10px;color:var(--muted);}
+.tech-node.highlight{border-color:var(--blue);background:#eaf1fb;}
+.tech-node.end{border-color:var(--teal);background:#eaf6f4;}
+.tech-arrow-row{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;padding:4px 0;}
+.tech-connector{display:flex;align-items:flex-start;gap:8px;}
+.connector-line{width:2px;background:var(--border);margin:0 auto;min-height:20px;}
+.loop-note{background:#fff8e1;border:1px dashed var(--amber);border-radius:6px;padding:6px 10px;font-size:11px;color:#92400e;margin:8px 0;}
+
+/* ── DOC VERIFICATION ── */
+.doc-verify-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:14px 0;}
+.dv-header{padding:10px 14px;font-size:11px;font-weight:600;font-family:var(--mono);text-align:center;border-bottom:2px solid var(--border);}
+.dv-header.l1{background:#dbeafe;color:var(--c-cust);}
+.dv-header.l2{background:#d1fae5;color:var(--c-ops);border-left:1px solid var(--border);}
+.dv-header.l3{background:#fee2e2;color:var(--c-credit);border-left:1px solid var(--border);}
+.dv-cell{padding:12px 14px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:top;}
+.dv-cell.l2,.dv-cell.l3{border-left:1px solid var(--border);}
+.dv-action{font-weight:600;color:var(--navy);margin-bottom:4px;}
+.dv-how{color:var(--muted);font-size:11px;margin-bottom:6px;}
+.dv-query{padding:5px 8px;background:#fff8e1;border-left:3px solid var(--amber);font-size:11px;color:#92400e;border-radius:0 4px 4px 0;}
+.dv-ok{padding:5px 8px;background:#e8f5e9;border-left:3px solid #2e7d32;font-size:11px;color:#1b5e20;border-radius:0 4px 4px 0;margin-bottom:4px;}
+.arrow-col{display:flex;align-items:center;justify-content:center;padding:12px 0;font-size:20px;color:var(--muted);border-left:1px solid var(--border);}
+
+/* ── PARALLEL TRAY VIEW ── */
+.tray-view{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:14px 0;}
+.tray-row{display:flex;align-items:flex-start;border-bottom:1px solid var(--border);}
+.tray-row:last-child{border-bottom:none;}
+.tray-label{width:110px;flex-shrink:0;padding:12px 14px;font-family:var(--mono);font-size:10px;font-weight:600;border-right:2px solid var(--border);background:#f9fafc;display:flex;align-items:center;}
+.tray-tasks{padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;flex:1;}
+
+/* ── GATES TABLE ── */
+.gates-table{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0;}
+.gates-table th{background:var(--navy);color:white;padding:9px 14px;text-align:left;}
+.gates-table td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top;}
+.gates-table tr:nth-child(even) td{background:#f9fafc;}
+.gate-trigger{font-weight:600;color:var(--navy);}
+.gate-arrow{font-size:16px;color:var(--orange);padding:0 8px;}
+.gate-unlocks{color:var(--teal);font-weight:500;}
+
+/* ── FINAL CHAIN ── */
+.final-chain{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:14px 0;}
+.fc-row{display:flex;align-items:flex-start;border-bottom:1px solid var(--border);padding:10px 16px;gap:14px;}
+.fc-row:last-child{border-bottom:none;}
+.fc-tid{font-family:var(--mono);font-size:11px;color:var(--blue);min-width:80px;flex-shrink:0;padding-top:1px;}
+.fc-task{font-size:13px;font-weight:600;color:var(--navy);flex:1;}
+.fc-owner{font-size:11px;color:var(--muted);min-width:120px;text-align:right;padding-top:1px;}
+.fc-note{font-size:11px;color:var(--muted);margin-top:2px;font-weight:400;}
+
+/* ── STAKEHOLDER CARDS ── */
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+@media(max-width:640px){.sk-grid{grid-template-columns:1fr;}.tech-flow{grid-template-columns:1fr;}.doc-verify-grid{grid-template-columns:1fr;}}
+.sk-card{border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.sk-hdr{padding:8px 14px;font-weight:600;font-size:12px;font-family:var(--mono);}
+.sk-card ul{padding:10px 14px 10px 28px;}
+.sk-card li{font-size:12px;margin-bottom:4px;}
+.sk-cust  .sk-hdr{background:#dbeafe;color:var(--c-cust);}
+.sk-sales .sk-hdr{background:#fef3c7;color:var(--c-sales);}
+.sk-ops   .sk-hdr{background:#d1fae5;color:var(--c-ops);}
+.sk-credit.sk-hdr,.sk-credit .sk-hdr{background:#fee2e2;color:var(--c-credit);}
+.sk-rcu   .sk-hdr{background:#ede9fe;color:var(--c-rcu);}
+.sk-tadmin.sk-hdr,.sk-tadmin .sk-hdr{background:#e0f7fa;color:var(--c-tadmin);}
+.sk-legal .sk-hdr{background:#f1f5f9;color:var(--c-vendor);}
+.sk-sys   .sk-hdr{background:#ccfbf1;color:var(--c-sys);}
+
+/* ══ MASTER SWIMLANE ══ */
+.swimlane-wrap{overflow-x:auto;margin:20px 0;}
+.swimlane{min-width:900px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.sl-header-row{display:grid;grid-template-columns:100px repeat(6,1fr);background:var(--navy);}
+.sl-header-cell{padding:10px 8px;font-family:var(--mono);font-size:10px;font-weight:600;color:white;text-align:center;border-right:1px solid rgba(255,255,255,.15);}
+.sl-header-cell:last-child{border-right:none;}
+.sl-phase-row{display:grid;grid-template-columns:100px repeat(6,1fr);border-bottom:1px solid var(--border);}
+.sl-phase-row:last-child{border-bottom:none;}
+.sl-phase-label{padding:10px 8px;font-family:var(--mono);font-size:10px;font-weight:600;color:white;writing-mode:horizontal-tb;display:flex;align-items:flex-start;justify-content:center;text-align:center;border-right:2px solid var(--border);}
+.sl-cell{padding:8px 6px;border-right:1px solid var(--border);min-height:60px;vertical-align:top;}
+.sl-cell:last-child{border-right:none;}
+.sl-task{padding:4px 8px;border-radius:4px;font-size:10px;font-weight:500;margin-bottom:4px;line-height:1.3;}
+.sl-task.cust  {background:#dbeafe;color:var(--c-cust);}
+.sl-task.sales {background:#fef3c7;color:var(--c-sales);}
+.sl-task.ops   {background:#d1fae5;color:var(--c-ops);}
+.sl-task.credit{background:#fee2e2;color:var(--c-credit);}
+.sl-task.rcu   {background:#ede9fe;color:var(--c-rcu);}
+.sl-task.sys   {background:#ccfbf1;color:var(--c-sys);}
+.sl-task.vendor{background:#f1f5f9;color:var(--c-vendor);}
+.sl-waiting{padding:4px 8px;border-radius:4px;font-size:10px;color:#9ca3af;font-style:italic;background:#f9fafb;border:1px dashed #e5e7eb;}
+.sl-phase-label.p1{background:#1a3a6b;}
+.sl-phase-label.p2{background:#0f5132;}
+.sl-phase-label.p3{background:#7c2d12;}
+.sl-phase-label.p4{background:#1e3a5f;}
+.sl-phase-label.p5{background:#3b0f6e;}
+.sl-phase-label.p6{background:#134e4a;}
+.sl-phase-label.p7{background:#422006;}
+.sl-handoff{font-size:9px;color:var(--orange);font-weight:600;margin-top:2px;}
+
+/* GLOSSARY */
+.glossary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;}
+@media(max-width:640px){.glossary-grid{grid-template-columns:1fr;}}
+.gl-item{display:flex;gap:10px;padding:8px;background:white;border:1px solid var(--border);border-radius:6px;}
+.gl-term{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--orange);min-width:64px;padding-top:1px;}
+.gl-def{font-size:12px;color:var(--text);}
+
+hr.divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
+.footer{text-align:center;font-size:11px;color:var(--muted);font-family:var(--mono);padding:24px 0;border-top:1px solid var(--border);margin-top:48px;}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-tag">Internal Documentation</div>
+  <h1>Mortgage Disbursement<br>Process Redesign</h1>
+  <p class="cover-sub">iLens Platform · ICICI Bank · Disbursement Module Transformation</p>
+  <div class="cover-pills">
+    <span class="pill">Confidential</span><span class="pill">Internal Use Only</span>
+    <span class="pill">2025</span><span class="pill">v2.0</span>
+  </div>
+</div>
+<div class="orange-bar"></div>
+
+<div class="container">
+
+<!-- LEGEND -->
+<div class="legend" style="margin-top:24px;">
+  <strong style="font-size:11px;color:var(--muted);margin-right:6px;align-self:center;">STAKEHOLDER KEY:</strong>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-cust);"></div>Customer</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-sales);"></div>Sales RM</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-ops);"></div>Local Ops</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-credit);"></div>Credit</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-rcu);"></div>RCU</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-sys);"></div>System (Auto)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-vendor);"></div>Legal Vendor</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-tadmin);"></div>Tech Admin / TM</div>
+  <div style="margin-left:12px;display:flex;gap:8px;align-items:center;">
+    <strong style="font-size:11px;color:var(--muted);">TASK TYPES:</strong>
+    <span class="badge badge-ind">Independent</span>
+    <span class="badge badge-semi">Semi-dep</span>
+    <span class="badge badge-dep">Dependent</span>
+    <span class="badge badge-auto">Auto</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h2>Contents</h2>
+  <div class="toc-item"><span class="toc-num">1</span><span class="toc-title">Overview &amp; What's Changing</span></div>
+  <div class="toc-item"><span class="toc-num">2</span><span class="toc-title">Current Process</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">2.1</span><span class="toc-title">Sourcing Phase</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">2.2</span><span class="toc-title">Disbursement Stages</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">2.3</span><span class="toc-title">Problems</span></div>
+  <div class="toc-item"><span class="toc-num">3</span><span class="toc-title">Proposed Model – Core Concepts</span></div>
+  <div class="toc-item"><span class="toc-num">4</span><span class="toc-title">Task Workflows</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.1</span><span class="toc-title">Legal Workstream</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.2</span><span class="toc-title">Technical Workstream</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.3</span><span class="toc-title">Post Initiate Disbursement</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.4</span><span class="toc-title">Document Verification Chain</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.5</span><span class="toc-title">DM Prep → Credit Approval</span></div>
+  <div class="toc-item toc-sub"><span class="toc-num">4.6</span><span class="toc-title">KFS → E-Sign → FCBG → NDC</span></div>
+  <div class="toc-item"><span class="toc-num">5</span><span class="toc-title">What Gates What</span></div>
+  <div class="toc-item"><span class="toc-num">6</span><span class="toc-title">Master Swimlane – Full Journey</span></div>
+  <div class="toc-item"><span class="toc-num">7</span><span class="toc-title">Stakeholder Task Summary</span></div>
+  <div class="toc-item"><span class="toc-num">8</span><span class="toc-title">Glossary</span></div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- S1: OVERVIEW -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section-header"><span class="section-num">01</span><h2>Overview &amp; What's Changing</h2></div>
+
+<p>Today's disbursement runs on <strong>sequential stages with hard gates</strong>. One pending item in a stage holds everything — even work that has no dependency on it. The proposed model breaks everything into <strong>discrete tasks</strong> with explicit dependencies. Parallel work runs in parallel. Only genuine dependencies block progress.</p>
+
+<div class="transform-grid">
+  <div class="transform-col-header col-current">❌ Current</div>
+  <div class="transform-col-header col-proposed">✓ Proposed</div>
+  <div class="transform-cell">Sequential stages, hard blockers at each gate</div>
+  <div class="transform-cell">Parallel tasks, only genuine dependencies block</div>
+  <div class="transform-cell">Whole stage blocked if one item is pending</div>
+  <div class="transform-cell">Only the specific dependent task is blocked</div>
+  <div class="transform-cell">Stakeholder sees "stage in progress"</div>
+  <div class="transform-cell">Stakeholder sees exactly what's in their tray</div>
+  <div class="transform-cell">34-pt checklist repeated at Docket Login + DM Prep</div>
+  <div class="transform-cell">Once per document, continuously, via iLens</div>
+  <div class="transform-cell">Customer has no direct task visibility</div>
+  <div class="transform-cell">Customer has their own live task tray</div>
+  <div class="transform-cell">Credit reviews all docs in bulk at DM Approval</div>
+  <div class="transform-cell">Credit approves each doc as Local Ops clears it</div>
+  <div class="transform-cell">Docket Login as a separate stage</div>
+  <div class="transform-cell">Eliminated — replaced by per-document tasks</div>
+  <div class="transform-cell">OTC/PDD manually tagged by DM Prep team</div>
+  <div class="transform-cell">BRE-driven classification, known upfront</div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- S2: CURRENT PROCESS -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section-header"><span class="section-num">02</span><h2>Current Process</h2></div>
+
+<div class="subsection"><h3>2.1 Sourcing Phase</h3></div>
+<p>Three steps: Data Entry → Underwriting → Sanction. Legal and Technical verification can be initiated during Underwriting. A system block prevents disbursement from starting until both are complete.</p>
+<div class="flow">
+  <div class="flow-title">Sourcing → Disbursement Trigger</div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <div style="background:var(--navy);color:white;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;">Data Entry</div>
+    <div style="color:var(--muted);font-size:18px;">→</div>
+    <div style="background:var(--blue);color:white;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;">Underwriting<br><span style="font-size:10px;font-weight:400;opacity:.8;">↳ Legal &amp; Technical initiated here</span></div>
+    <div style="color:var(--muted);font-size:18px;">→</div>
+    <div style="background:var(--teal);color:white;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;">Sanction</div>
+    <div style="color:var(--muted);font-size:18px;">→</div>
+    <div style="background:var(--orange);color:white;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;">IGF<br><span style="font-size:10px;font-weight:400;opacity:.8;">System block if Legal/Tech pending</span></div>
+  </div>
+</div>
+
+<div class="subsection"><h3>2.2 Disbursement Stages</h3></div>
+
+<div class="stage-block">
+  <div class="stage-header"><span class="stage-name">IGF</span><span class="stage-owner">Sales</span></div>
+  <div class="stage-body">Collects original doc list (per TSR), verifies sanction conditions, fills repayment / beneficiary / EMI / own contribution. LAN generated here.
+    <div class="stage-pain">⚠ System blocks until both Legal and Technical are complete.</div>
+  </div>
+</div>
+<div class="stage-block">
+  <div class="stage-header"><span class="stage-name">Docket Login</span><span class="stage-owner">Local Ops</span></div>
+  <div class="stage-body">34-point checklist on received documents. Checks presence, not authenticity.
+    <div class="stage-pain">⚠ Same checklist is repeated at DM Prep — fully redundant.</div>
+  </div>
+</div>
+<div class="stage-block">
+  <div class="stage-header"><span class="stage-name">DM Preparation</span><span class="stage-owner">Local Ops</span></div>
+  <div class="stage-body">Repeats checklist. Page-by-page physical completeness check. Cross-verifies system data. Fills POP sheet (received / OTC / PDD). Calculates own contribution. eNACH auto-triggered on completion.
+    <div class="stage-pain">⚠ OTC/PDD classification manual, not system-driven.</div>
+  </div>
+</div>
+<div class="stage-block">
+  <div class="stage-header"><span class="stage-name">DM Under Approval</span><span class="stage-owner">Credit</span></div>
+  <div class="stage-body">Revalidates sanction conditions, checks docs vs TSR, reviews OTC/PDD, validates pricing, corrects own contribution.
+    <div class="stage-pain">⚠ Credit sees all docs in bulk here — even though earlier approval is possible.</div>
+  </div>
+</div>
+<div class="stage-block">
+  <div class="stage-header"><span class="stage-name">NDC In Progress (5 sub-steps)</span><span class="stage-owner">Multiple</span></div>
+  <div class="stage-body">KFS → eNACH / Autopay → E-Sign → FCBG (RCU verifies originals + govt sites) → Credit Ops Check (replicates FCBG).</div>
+</div>
+<div class="stage-block">
+  <div class="stage-header"><span class="stage-name">NDC Check → Finone</span><span class="stage-owner">Local Ops</span></div>
+  <div class="stage-body">iLens checklist; cross-checks e-signed doc vs DM vs originals. On completion → submit to Finone Maker/Checker (out of scope).</div>
+</div>
+
+<div class="subsection"><h3>2.3 Problems</h3></div>
+<ul>
+  <li><strong>Sequential blocking</strong> — one missing document holds the entire stage, even for unrelated work.</li>
+  <li><strong>Duplicate checklist</strong> — 34-point check done twice with no additional value.</li>
+  <li><strong>Manual TSR handoff</strong> — TSR received by email, manually uploaded; no structured parsing.</li>
+  <li><strong>Bulk credit review</strong> — Credit sees all docs only at DM Approval, not as they arrive.</li>
+  <li><strong>No customer visibility</strong> — all communication routed through Sales RM.</li>
+  <li><strong>Manual OTC/PDD</strong> — classified manually instead of being BRE-driven.</li>
+</ul>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- S3: PROPOSED MODEL -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section-header"><span class="section-num">03</span><h2>Proposed Model – Core Concepts</h2></div>
+
+<div class="tbl-wrap">
+  <table>
+    <tr><th>Concept</th><th>Definition</th></tr>
+    <tr><td><span class="badge badge-ind">Independent</span></td><td>No predecessor. Appears in tray immediately on trigger.</td></tr>
+    <tr><td><span class="badge badge-semi">Semi-dependent</span></td><td>One predecessor must close first. Appears only after that predecessor closes.</td></tr>
+    <tr><td><span class="badge badge-dep">Dependent</span></td><td>Multiple predecessors must all close. Appears only when all are done.</td></tr>
+    <tr><td><strong>Tray</strong></td><td>Each stakeholder's personalised view — only their currently actionable tasks. Hidden until unblocked.</td></tr>
+    <tr><td><strong>DITM</strong></td><td>Do It For Me — Sales can act on any customer task. Recorded as "Completed by RM".</td></tr>
+  </table>
+</div>
+
+<p><strong>Two separate document phases:</strong></p>
+<div class="tbl-wrap">
+  <table>
+    <tr><th>Phase</th><th>Type</th><th>Purpose</th><th>When</th></tr>
+    <tr><td>Legal &amp; Technical</td><td>Scanned / uploaded copies</td><td>Property verification, TSR, technical report</td><td>During Underwriting</td></tr>
+    <tr><td>Post Initiate Disbursement</td><td>Original documents</td><td>Security creation, loan disbursal</td><td>After Legal + Technical close</td></tr>
+  </table>
+</div>
+
+<p><strong>Original document timing tags</strong> (BRE-driven, based on product + variant + state):</p>
+<div class="tbl-wrap">
+  <table>
+    <tr><th>Tag</th><th>Meaning</th><th>Gates</th></tr>
+    <tr><td><strong>Mandatory</strong></td><td>Cannot proceed without this doc for this product/variant/state</td><td>Blocks further movement</td></tr>
+    <tr><td><strong>OTC</strong></td><td>Collected just before cheque is handed to customer</td><td>Gates cheque handover</td></tr>
+    <tr><td><strong>PDD</strong></td><td>Collected before next tranche is released</td><td>Gates each subsequent tranche</td></tr>
+  </table>
+</div>
+<div class="callout callout-amber">
+  Customer and Sales see all documents as a flat task list — no OTC/PDD labels. If a doc can't be submitted, Sales raises a <strong>Request OTC/PDD</strong> query. Credit approves or rejects.
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- S4: TASK WORKFLOWS -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section-header"><span class="section-num">04</span><h2>Task Workflows</h2></div>
+
+<!-- 4.1 LEGAL -->
+<div class="subsection"><h3>4.1 Legal Workstream</h3></div>
+<p>Runs during Underwriting. Closes before Initiate Disbursement is available. Sales bridges between external vendor (email) and iLens.</p>
+
+<div class="flow">
+  <div class="flow-title">Legal Flow</div>
+  <div class="vflow">
+    <div class="vflow-step">
+      <div class="vflow-left"><div class="vflow-dot" style="background:var(--c-cust);"></div><div class="vflow-line"></div></div>
+      <div class="vflow-content">
+        <div class="vflow-label">T-L1.x — Upload [Document Name] &nbsp;<span style="font-weight:400;color:var(--muted);font-size:11px;">one task per document, BRE-driven list</span></div>
+        <div class="vflow-meta"><span class="chip chip-cust">Customer</span> <span class="chip chip-sales">Sales (DITM)</span> &nbsp;·&nbsp; <span class="badge badge-ind">Independent</span> &nbsp;·&nbsp; Mandatory docs must all close before T-L2</div>
+      </div>
+    </div>
+    <div class="vflow-step">
+      <div class="vflow-left"><div class="vflow-dot" style="background:var(--c-sales);"></div><div class="vflow-line"></div></div>
+      <div class="vflow-content">
+        <div class="vflow-label">T-L2 — Initiate Legal</div>
+        <div class="vflow-meta"><span class="chip chip-sales">Sales</span> &nbsp;·&nbsp; <span class="badge badge-semi">Semi-dep</span> &nbsp;·&nbsp; After all mandatory T-L1.x close · Docs auto-pushed to vendor (iLens + email)</div>
+      </div>
+    </div>
+    <div class="vflow-step">
+      <div class="vflow-left"><div class="vflow-dot" style="background:var(--c-vendor);"></div><div class="vflow-line"></div></div>
+      <div class="vflow-content">
+        <div class="vflow-label">T-L3 — Legal Vendor Reviews Documents</div>
+        <div class="vflow-meta"><span class="chip chip-vendor">Legal Vendor</span> &nbsp;·&nbsp; <span class="badge badge-semi">Semi-dep</span> &nbsp;·&nbsp; After T-L2</div>
+        <div class="vflow-branch">
+          <div class="branch-box"><div class="branch-hdr a">Outcome A – Sufficient</div><div class="branch-body">All docs OK → proceed to T-L5 (TSR generation)</div></div>
+          <div class="branch-box"><div class="branch-hdr b">Outcome B – Query</div><div class="branch-body">Missing docs → T-L4.x created for Customer/Sales → on upload loops back to T-L3</div></div>
+          <div class="branch-box"><div class="branch-hdr c">Outcome C – Flagged</div><div class="branch-body">TSR generatable but certain docs flagged for bank verification → flags seeded to Credit at DM Approval</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="vflow-step">
+      <div class="vflow-left"><div class="vflow-dot" style="background:var(--c-vendor);"></div><div class="vflow-line"></div></div>
+      <div class="vflow-content">
+        <div class="vflow-label">T-L5 — Vendor Generates TSR</div>
+        <div class="vflow-meta"><span class="chip chip-vendor">Legal Vendor</span> &nbsp;·&nbsp; <span class="badge badge-semi">Semi-dep</span> &nbsp;·&nbsp; After T-L3 Outcome A or C · Shared with Sales via email</div>
+      </div>
+    </div>
+    <div class="vflow-step">
+      <div class="vflow-left"><div class="vflow-dot" style="background:var(--c-sales);"></div><div class="vflow-line"></div></div>
+      <div class="vflow-content">
+        <div class="vflow-label">T-L6 — Upload TSR to iLens</div>
+        <div class="vflow-meta"><span class="chip chip-sales">Sales</span> &nbsp;·&nbsp; <span class="badge badge-semi">Semi-dep</span> &nbsp;·&nbsp; After T-L5</div>
+      </div>
+    </div>
+    <div class="vflow-step">
+      <div class="vflow-left"><div class="vflow-dot" style="background:var(--c-sys);"></div></div>
+      <div class="vflow-content">
+        <div class="vflow-label">T-L7 — System Parses TSR &nbsp;<span style="font-weight:400;font-size:11px;color:var(--muted);">(auto)</span></div>
+        <div class="vflow-meta"><span class="chip chip-sys">System</span> &nbsp;·&nbsp; <span class="badge badge-auto">Auto</span> &nbsp;·&nbsp; Seeds <strong>List A</strong> (original doc tasks for disbursement) + <strong>List C</strong> (Credit verification flags)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tbl-wrap"><table>
+  <tr><th>Task</th><th>Name</th><th>Tray</th><th>Type</th><th>Predecessor</th></tr>
+  <tr><td class="tid">T-L1.x</td><td>Upload [Document] – scanned copy</td><td>Customer + Sales</td><td><span class="badge badge-ind">Independent</span></td><td>None – BRE populates list</td></tr>
+  <tr><td class="tid">T-L2</td><td>Initiate Legal</td><td>Sales</td><td><span class="badge badge-semi">Semi-dep</span></td><td>All mandatory T-L1.x closed</td></tr>
+  <tr><td class="tid">T-L3</td><td>Legal document review</td><td>Legal Vendor</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-L2</td></tr>
+  <tr><td class="tid">T-L4.x</td><td>Upload additional doc (query)</td><td>Customer + Sales</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Vendor raises query on T-L3</td></tr>
+  <tr><td class="tid">T-L5</td><td>Generate &amp; share TSR</td><td>Legal Vendor</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-L3 complete (Outcome A or C)</td></tr>
+  <tr><td class="tid">T-L6</td><td>Upload TSR to iLens</td><td>Sales</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-L5</td></tr>
+  <tr><td class="tid">T-L7</td><td>System parses TSR</td><td>System</td><td><span class="badge badge-auto">Auto</span></td><td>T-L6 – seeds List A &amp; List C</td></tr>
+</table></div>
+
+<!-- 4.2 TECHNICAL -->
+<div class="subsection"><h3>4.2 Technical Workstream</h3></div>
+<p>Runs in parallel with Legal. Uses a subset of the same uploaded docs (agreement, address proof). No new customer upload tasks.</p>
+
+<div class="flow">
+  <div class="flow-title">Technical Flow</div>
+
+  <!-- Row 1 -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px;">
+    <div class="tech-node" style="border-color:var(--border);background:#f9fafc;">
+      <div class="tech-node-id">INPUT</div>
+      <div class="tech-node-name">T-L1.x subset</div>
+      <div class="tech-node-owner">Already uploaded docs</div>
+    </div>
+    <div class="tech-node highlight">
+      <div class="tech-node-id">T-T1</div>
+      <div class="tech-node-name">Initiate Technical</div>
+      <div class="tech-node-owner"><span class="chip chip-sales" style="font-size:10px;padding:2px 8px;">Sales</span></div>
+    </div>
+    <div class="tech-node highlight">
+      <div class="tech-node-id">T-T2</div>
+      <div class="tech-node-name">Admin verifies docs</div>
+      <div class="tech-node-owner"><span class="chip chip-tadmin" style="font-size:10px;padding:2px 8px;">Tech Admin</span></div>
+      <div class="loop-note" style="margin-top:8px;">Query → T-T2.q<br>Customer/Sales upload → loops back</div>
+    </div>
+    <div class="tech-node highlight">
+      <div class="tech-node-id">T-T3</div>
+      <div class="tech-node-name">Allocate TM</div>
+      <div class="tech-node-owner"><span class="chip chip-tadmin" style="font-size:10px;padding:2px 8px;">Tech Admin</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;">&lt;₹5Cr = 1 TM<br>₹5–50Cr = 2 TM<br>&gt;₹50Cr = 2+1 ICICI</div>
+    </div>
+  </div>
+
+  <!-- Arrow row -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px;">
+    <div style="display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:18px;">→</div>
+    <div style="display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:18px;">→</div>
+    <div style="display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:18px;">→</div>
+    <div style="display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:18px;">↓</div>
+  </div>
+
+  <!-- Row 2 -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+    <div></div>
+    <div class="tech-node end" style="grid-column:2;">
+      <div class="tech-node-id">T-T6</div>
+      <div class="tech-node-name">Publish report to iLens</div>
+      <div class="tech-node-owner"><span class="chip chip-tadmin" style="font-size:10px;padding:2px 8px;">Tech Admin</span></div>
+      <div style="font-size:10px;color:var(--teal);margin-top:6px;font-weight:600;">↳ Unblocks Initiate Disbursement</div>
+    </div>
+    <div class="tech-node highlight" style="grid-column:3;">
+      <div class="tech-node-id">T-T5</div>
+      <div class="tech-node-name">Validate via Rapid</div>
+      <div class="tech-node-owner"><span class="chip chip-tadmin" style="font-size:10px;padding:2px 8px;">Tech Admin</span></div>
+      <div class="loop-note" style="margin-top:8px;">Discrepancy → back to TM → loops to T-T4</div>
+    </div>
+    <div class="tech-node" style="background:#f9fafc;grid-column:4;">
+      <div class="tech-node-id">T-T4</div>
+      <div class="tech-node-name">Site Inspection</div>
+      <div class="tech-node-owner"><span class="chip chip-vendor" style="font-size:10px;padding:2px 8px;">TM Vendor</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;">Physical visit, photos, valuation</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:4px;">
+    <div></div>
+    <div style="display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:18px;">←</div>
+    <div style="display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:18px;">←</div>
+    <div></div>
+  </div>
+</div>
+
+<div class="tbl-wrap"><table>
+  <tr><th>Task</th><th>Name</th><th>Tray</th><th>Type</th><th>Predecessor</th></tr>
+  <tr><td class="tid">T-T1</td><td>Initiate Technical</td><td>Sales</td><td><span class="badge badge-semi">Semi-dep</span></td><td>BRE subset of T-L1.x uploaded</td></tr>
+  <tr><td class="tid">T-T2</td><td>Admin verifies uploaded docs</td><td>Tech Admin</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-T1</td></tr>
+  <tr><td class="tid">T-T2.q</td><td>Upload queried document</td><td>Customer + Sales</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-T2 query raised</td></tr>
+  <tr><td class="tid">T-T3</td><td>Allocate Technical Manager</td><td>Tech Admin</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-T2 cleared</td></tr>
+  <tr><td class="tid">T-T4</td><td>Site inspection</td><td>TM Vendor</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-T3</td></tr>
+  <tr><td class="tid">T-T5</td><td>Validate report via Rapid</td><td>Tech Admin</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-T4 submitted</td></tr>
+  <tr><td class="tid">T-T6</td><td>Publish technical report to iLens</td><td>Tech Admin</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-T5 validated</td></tr>
+</table></div>
+
+<!-- 4.3 POST INITIATE DISBURSEMENT -->
+<div class="subsection"><h3>4.3 Post Initiate Disbursement – Parallel Task Streams</h3></div>
+
+<p><strong>Three pre-conditions</strong> must all be met before the Initiate Disbursement button is available to Sales. The button shows a checklist so Sales can see exactly which are pending:</p>
+<div class="tbl-wrap"><table>
+  <tr><th>#</th><th>Pre-condition</th><th>How it closes</th></tr>
+  <tr><td>1</td><td>Legal closed</td><td>T-L7 (System parses TSR) complete</td></tr>
+  <tr><td>2</td><td>Technical closed</td><td>T-T6 (Technical report published) complete</td></tr>
+  <tr><td>3</td><td>Pricing Approval confirmed</td><td>T-PRICE task in Sales tray — Sales confirms pricing approval from Credit hierarchy is in place</td></tr>
+</table></div>
+<div class="callout callout-amber"><strong>Property not identified at sanction?</strong> Sales gets a task in their tray — "Initiate Legal / Technical" — once property details are updated on the case. Same initiation flow, delayed trigger. On property change after Legal/Technical are complete, both workstreams fully restart for the new property and all downstream tasks from the old TSR are revised.</div>
+
+<p style="margin-top:12px;">When clicked, LAN is generated and three streams fire simultaneously. The BRE already knows upfront which docs are Mandatory, OTC, and PDD. Sales collects <strong>all mandatory docs first</strong>, then submits as one batch. For any mandatory doc that Sales wants to mark as OTC/PDD, a Credit approval request is raised — <strong>the batch moves to Local Ops only after all mandatory docs are either physically collected or OTC/PDD-approved by Credit.</strong></p>
+
+<div class="flow">
+  <div class="flow-title">What Appears in Each Tray on Initiate Disbursement</div>
+  <div class="tray-view">
+    <div class="tray-row">
+      <div class="tray-label" style="color:var(--c-cust);border-color:var(--c-cust);">CUSTOMER<br>+ SALES</div>
+      <div class="tray-tasks">
+        <span class="chip chip-cust">Stream A: Submit Original [Doc 1]</span>
+        <span class="chip chip-cust">Stream A: Submit Original [Doc 2…n]</span>
+        <span class="chip chip-cust">Stream B: Pay [Bank Fee] (bank integration)</span>
+        <span class="chip chip-cust">Stream B: Upload receipt for [Other Payment]</span>
+        <span class="chip chip-cust">Stream B: Fulfil Sanction Condition [X]</span>
+      </div>
+    </div>
+    <div class="tray-row">
+      <div class="tray-label" style="color:var(--c-sales);border-color:var(--c-sales);">SALES ONLY</div>
+      <div class="tray-tasks">
+        <span class="chip chip-sales">Stream C: Fill Beneficiary Details</span>
+        <span class="chip chip-sales">Stream C: Fill Repayment Details</span>
+        <span class="chip chip-sales">Stream C: Confirm Own Contribution</span>
+        <span class="chip chip-sales">Stream C: Fill EMI Details</span>
+      </div>
+    </div>
+    <div class="tray-row">
+      <div class="tray-label" style="color:var(--c-credit);border-color:var(--c-credit);">CREDIT<br>(on request)</div>
+      <div class="tray-tasks">
+        <span class="chip chip-credit">Approve / Reject OTC/PDD Request: [Doc]</span>
+        <div style="font-size:11px;color:var(--muted);padding:4px 0;width:100%;">Appears when Sales raises a request for a mandatory doc it cannot physically collect. Batch moves to Local Ops only after all mandatory docs are collected OR OTC/PDD approved.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="callout callout-teal"><strong>Stream B — Sanction Condition task types:</strong> Bank payments (e.g. processing fee) → customer pays directly via bank integration, task auto-closes on confirmation. Other payments (e.g. existing loan closure) → upload receipt task for customer + Sales. Document conditions → upload task same as Stream A.</div>
+
+<!-- 4.4 DOC VERIFICATION -->
+<div class="subsection"><h3>4.4 Document Verification Chain</h3></div>
+<p>Triggered once the full mandatory doc batch is cleared (all docs physically collected or OTC/PDD approved by Credit). The entire batch moves to Local Ops together. Local Ops verifies each document <strong>independently</strong> within the batch — a query on one doc never holds others. If a doc fails Credit approval and is resubmitted, it goes back through Local Ops first, then Credit.</p>
+
+<div class="flow">
+  <div class="flow-title">Per-Document Verification (Each Doc Independent Within the Batch)</div>
+  <div class="doc-verify-grid">
+    <div class="dv-header l1">LAYER 1 · Sales submits full batch</div>
+    <div class="dv-header l2">LAYER 2 · Local Ops (per doc)</div>
+    <div class="dv-header l3">LAYER 3 · Credit (per doc)</div>
+
+    <div class="dv-cell">
+      <div class="dv-action">T-DOC1 — Submit mandatory doc batch</div>
+      <div class="dv-how">Sales collects ALL mandatory docs (physically received + OTC/PDD approved) then submits as one batch</div>
+      <div style="font-size:11px;color:var(--teal);margin-top:4px;">→ Each doc in batch enters Layer 2 independently</div>
+    </div>
+    <div class="dv-cell l2">
+      <div class="dv-action">T-DOC2.x — Verify via iLens checklist</div>
+      <div class="dv-how">Task click → redirected to iLens → checklist completion auto-closes task in dashboard</div>
+      <div class="dv-ok">✓ Verified → triggers Layer 3 for this doc</div>
+      <div class="dv-query">✗ Query → this doc back to Sales + Customer. Others continue.<br><br>On resubmission after Credit query → also restarts here first.</div>
+    </div>
+    <div class="dv-cell l3">
+      <div class="dv-action">T-DOC3.x — Credit final approval</div>
+      <div class="dv-how">Triggered per doc as soon as Layer 2 clears. Not batched.</div>
+      <div class="dv-ok">✓ Approved → doc fully cleared ✅</div>
+      <div class="dv-query">✗ Query → this doc back to Sales + Customer. Others continue.<br>On resubmission → goes to Layer 2 first, then back here.</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-top:10px;">All 5 Credit tasks (T-DMA1–5) must close before KFS is auto-triggered. Doc approvals (T-DOC3.x) alone are not sufficient.</div>
+</div>
+
+<div class="tbl-wrap"><table>
+  <tr><th>Task</th><th>Name</th><th>Tray</th><th>Type</th><th>Predecessor</th></tr>
+  <tr><td class="tid">T-DOC1</td><td>Submit mandatory doc batch</td><td>Sales</td><td><span class="badge badge-semi">Semi-dep</span></td><td>All mandatory docs collected or OTC/PDD approved by Credit</td></tr>
+  <tr><td class="tid">T-DOC2.x</td><td>Verify original: [doc] via iLens</td><td>Local Ops → iLens</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-DOC1 batch submitted; also re-triggered on Credit query resubmission</td></tr>
+  <tr><td class="tid">T-DOC2.q.x</td><td>Resolve Local Ops query: [doc]</td><td>Sales + Customer</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Local Ops marks query on T-DOC2.x</td></tr>
+  <tr><td class="tid">T-DOC3.x</td><td>Credit approval: [doc]</td><td>Credit</td><td><span class="badge badge-semi">Semi-dep</span></td><td>T-DOC2.x verified for that doc</td></tr>
+  <tr><td class="tid">T-DOC3.q.x</td><td>Resolve Credit query: [doc]</td><td>Sales + Customer</td><td><span class="badge badge-semi">Semi-dep</span></td><td>Credit marks query on T-DOC3.x → resubmission re-triggers T-DOC2.x</td></tr>
+</table></div>
+
+<!-- 4.5 DM PREP + CREDIT -->
+<div class="subsection"><h3>4.5 DM Preparation → Credit Approval</h3></div>
+<p>DM Preparation unlocks when all mandatory Stream A + B + C tasks are closed. Local Ops runs two checks in parallel, then generates the Disbursement Memo. Credit sees all five review tasks simultaneously — works through them in one sitting.</p>
+
+<div class="flow">
+  <div class="flow-title">DM Prep → Credit Approval</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:10px;">DM PREPARATION · Local Ops</div>
+      <div style="display:flex;gap:10px;margin-bottom:8px;">
+        <div style="flex:1;padding:10px;background:#d1fae5;border-radius:6px;font-size:11px;"><strong>T-DMP1</strong><br>Physical page-by-page completeness check</div>
+        <div style="flex:1;padding:10px;background:#d1fae5;border-radius:6px;font-size:11px;"><strong>T-DMP2</strong><br>Cross-verify system data accuracy</div>
+      </div>
+      <div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:6px;">↓ both complete</div>
+      <div style="padding:10px;background:#d1fae5;border-radius:6px;font-size:11px;margin-bottom:6px;"><strong>T-DMP3</strong> — Own contribution review + flag</div>
+      <div style="text-align:center;color:var(--muted);font-size:12px;margin-bottom:6px;">↓</div>
+      <div style="padding:10px;background:#d1fae5;border-radius:6px;font-size:11px;"><strong>T-DMP5</strong> — Generate DM</div>
+      <div style="margin-top:6px;padding:8px 10px;background:#ccfbf1;border-radius:6px;font-size:11px;border-left:3px solid var(--c-sys);"><strong style="color:var(--c-sys);">T-DMP4 eNACH auto-triggered</strong> after Local Ops verifies repayment details (T-DMP2). Must complete before NDC Check.</div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:10px;">CREDIT APPROVAL · All 5 parallel</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="padding:8px 12px;background:#fee2e2;border-radius:6px;font-size:11px;"><strong>T-DMA1</strong> Revalidate sanction conditions</div>
+        <div style="padding:8px 12px;background:#fee2e2;border-radius:6px;font-size:11px;"><strong>T-DMA2</strong> Verify originals vs TSR</div>
+        <div style="padding:8px 12px;background:#fee2e2;border-radius:6px;font-size:11px;"><strong>T-DMA3.x</strong> Verify TSR-flagged docs (List C)</div>
+        <div style="padding:8px 12px;background:#fee2e2;border-radius:6px;font-size:11px;"><strong>T-DMA4</strong> Validate pricing approval</div>
+        <div style="padding:8px 12px;background:#fee2e2;border-radius:6px;font-size:11px;"><strong>T-DMA5</strong> Review own contribution</div>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--muted);">Each has its own query loop → Sales/Customer. A query on one task does not block others.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4.6 KFS → NDC -->
+<div class="subsection"><h3>4.6 KFS → E-Sign → FCPG → NDC</h3></div>
+<p>Sequential chain. KFS is triggered only after <strong>all 5 Credit tasks (T-DMA1–5) are complete</strong> — not just document approvals alone.</p>
+
+<div class="final-chain">
+  <div class="fc-row" style="background:#eaf6f4;">
+    <div class="fc-tid">AUTO</div>
+    <div class="fc-task">KFS auto-triggered<div class="fc-note">Triggered after all 5 Credit tasks (T-DMA1–5) close. Key Fact Statement sent to customer on app.</div></div>
+    <div class="fc-owner"><span class="chip chip-sys" style="font-size:10px;">System</span></div>
+  </div>
+  <div class="fc-row">
+    <div class="fc-tid">T-KFS2</div>
+    <div class="fc-task">Customer reviews &amp; accepts KFS</div>
+    <div class="fc-owner"><span class="chip chip-cust" style="font-size:10px;">Customer + Sales</span></div>
+  </div>
+  <div class="fc-row">
+    <div class="fc-tid">T-ESIGN1</div>
+    <div class="fc-task">Sales initiates E-Sign<div class="fc-note">Link sent to customer mobile + email</div></div>
+    <div class="fc-owner"><span class="chip chip-sales" style="font-size:10px;">Sales</span></div>
+  </div>
+  <div class="fc-row">
+    <div class="fc-tid">T-ESIGN2</div>
+    <div class="fc-task">Customer completes E-Sign<div class="fc-note">E-signed booklet generated: CFF, Autopay Mandate, KFS, DRF. eNACH mandate included.</div></div>
+    <div class="fc-owner"><span class="chip chip-cust" style="font-size:10px;">Customer + Sales</span></div>
+  </div>
+  <div class="fc-row">
+    <div class="fc-tid">T-ENACH</div>
+    <div class="fc-task">eNACH / Autopay mandate complete<div class="fc-note">Must be completed before NDC Check. Triggered after Local Ops verifies repayment details (T-DMP2).</div></div>
+    <div class="fc-owner"><span class="chip chip-sys" style="font-size:10px;">System + Customer</span></div>
+  </div>
+  <div class="fc-row">
+    <div class="fc-tid">T-FCPG</div>
+    <div class="fc-task">FCPG Physical Verification<div class="fc-note">RCU verifies originals physically + checks property registration on govt sites. Predecessor: T-ESIGN2 complete.</div></div>
+    <div class="fc-owner"><span class="chip chip-rcu" style="font-size:10px;">RCU</span></div>
+  </div>
+  <div class="fc-row">
+    <div class="fc-tid">T-NDC</div>
+    <div class="fc-task">NDC Check via iLens<div class="fc-note">Credit Ops check merged in. Click redirects to iLens NDC checklist; completion auto-closes task. Predecessor: T-FCPG + T-ENACH both complete.</div></div>
+    <div class="fc-owner"><span class="chip chip-ops" style="font-size:10px;">Local Ops</span></div>
+  </div>
+  <div class="fc-row" style="background:#eaf6f4;">
+    <div class="fc-tid">T-SUB</div>
+    <div class="fc-task">Submit to Finone<div class="fc-note">All data pushed. Finone Maker/Checker out of scope.</div></div>
+    <div class="fc-owner"><span class="chip chip-ops" style="font-size:10px;">Local Ops</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- S5: WHAT GATES WHAT -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section-header"><span class="section-num">05</span><h2>What Gates What</h2></div>
+<p>Quick reference — which tasks must close before something else unlocks.</p>
+
+<table class="gates-table">
+  <tr><th>When this completes…</th><th></th><th>…this unlocks</th></tr>
+  <tr>
+    <td><span class="gate-trigger">All mandatory T-L1.x (uploaded scanned docs)</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-L2 Initiate Legal appears for Sales</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">BRE subset of T-L1.x uploaded</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-T1 Initiate Technical appears for Sales (runs in parallel with Legal)</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-L7 (Legal closed) + T-T6 (Technical closed) + T-PRICE (Pricing Approval confirmed)</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">Initiate Disbursement button available — button shows checklist of which pre-conditions are pending</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">Initiate Disbursement clicked</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">Stream A (original doc tasks) + Stream B (sanction conditions) + Stream C (loan details) all fire simultaneously. LAN generated.</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">All mandatory Stream A docs physically collected OR OTC/PDD approved by Credit</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-DOC1 (full batch submission) available for Sales → batch pushed to Local Ops</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-DOC1 batch submitted</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-DOC2.x (Local Ops verify) appears per document independently</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-DOC2.x verified (per doc)</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-DOC3.x (Credit approval) for that specific doc</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-DOC3.q.x — doc resubmitted after Credit query</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-DOC2.x re-triggered for that doc (Local Ops verifies again first, then Credit)</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">All mandatory Stream A + B + C tasks closed</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">DM Preparation tasks unlock for Local Ops (T-DMP1 + T-DMP2 in parallel)</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-DMP2 repayment details verified by Local Ops</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-ENACH eNACH auto-triggered by system</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-DMP5 (DM Generated)</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">All 5 Credit Approval tasks fire simultaneously (T-DMA1–5)</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">All 5 Credit tasks (T-DMA1–5) closed</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">KFS auto-triggered by system</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-KFS2 (Customer accepts KFS)</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-ESIGN1 (Sales initiates E-Sign)</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-ESIGN2 (E-Sign complete, booklet generated)</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-FCPG (RCU FCPG verification)</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-FCPG complete + T-ENACH complete</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-NDC (Local Ops NDC check — Credit Ops check merged in)</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">T-NDC complete</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">T-SUB (Submit to Finone)</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">OTC doc — Credit approved</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">Gates cheque handover to customer</span></td>
+  </tr>
+  <tr>
+    <td><span class="gate-trigger">PDD doc — Credit approved</span></td>
+    <td class="gate-arrow">→</td>
+    <td><span class="gate-unlocks">Gates release of each subsequent tranche</span></td>
+  </tr>
+</table>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- S6: MASTER SWIMLANE -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section-header"><span class="section-num">06</span><h2>Master Swimlane – Full Journey</h2></div>
+<p>Columns = stakeholders. Rows = phases. Scan horizontally to see parallel work at any phase. Scan vertically to follow one stakeholder's full journey.</p>
+
+<div class="swimlane-wrap">
+<div class="swimlane">
+  <!-- Header -->
+  <div class="sl-header-row">
+    <div class="sl-header-cell">PHASE</div>
+    <div class="sl-header-cell" style="color:#93c5fd;">CUSTOMER</div>
+    <div class="sl-header-cell" style="color:#fcd34d;">SALES RM</div>
+    <div class="sl-header-cell" style="color:#86efac;">LOCAL OPS</div>
+    <div class="sl-header-cell" style="color:#fca5a5;">CREDIT</div>
+    <div class="sl-header-cell" style="color:#d8b4fe;">RCU</div>
+    <div class="sl-header-cell" style="color:#5eead4;">SYSTEM / VENDOR</div>
+  </div>
+
+  <!-- Phase 1: Sourcing (includes scanned doc upload which enables Legal/Technical) -->
+  <div class="sl-phase-row">
+    <div class="sl-phase-label p1">SOURCING<br><span style="font-size:9px;opacity:.7;">(incl. Legal &amp; Technical)</span></div>
+    <div class="sl-cell">
+      <div class="sl-task cust">Upload scanned docs (T-L1.x) — during Underwriting</div>
+      <div class="sl-task cust">Upload queried docs if Legal/Tech Admin raises query (T-L4.x, T-T2.q)</div>
+      <div class="sl-handoff">↳ These uploads are what enable Legal + Technical to be initiated</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task sales">Data entry</div>
+      <div class="sl-task sales">Mirror scanned doc uploads (DITM)</div>
+      <div class="sl-task sales">Initiate Legal (T-L2) — after mandatory T-L1.x close</div>
+      <div class="sl-task sales">Initiate Technical (T-T1) — after BRE subset uploaded</div>
+      <div class="sl-task sales">Upload TSR to iLens (T-L6)</div>
+      <div class="sl-task sales">T-PRICE: Confirm Pricing Approval</div>
+    </div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task credit">Underwriting</div>
+      <div class="sl-task credit">Sanction</div>
+    </div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task sys">BRE generates scanned doc list (T-L1.x)</div>
+      <div class="sl-task sys">System parses TSR → seeds List A + C (T-L7)</div>
+      <div class="sl-task vendor">Legal: review docs (T-L3)</div>
+      <div class="sl-task vendor">Legal: generate TSR (T-L5)</div>
+      <div class="sl-task vendor">Tech Admin: verify + allocate TM (T-T2, T-T3)</div>
+      <div class="sl-task vendor">TM: site inspection (T-T4)</div>
+      <div class="sl-task vendor">Tech Admin: Rapid validate + publish (T-T5, T-T6)</div>
+    </div>
+  </div>
+
+  <!-- Phase 3: Initiate Disbursement -->
+  <div class="sl-phase-row">
+    <div class="sl-phase-label p3">INITIATE<br>DISBURSE</div>
+    <div class="sl-cell">
+      <div class="sl-task cust">Submit original docs — ALL mandatory at once (Stream A)</div>
+      <div class="sl-task cust">Pay bank fee / upload receipt (Stream B)</div>
+      <div class="sl-task cust">Fulfil other sanction conditions (Stream B)</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task sales">T-PRICE: Confirm Pricing Approval (pre-condition)</div>
+      <div class="sl-task sales">Click Initiate Disbursement (after Legal + Technical + Pricing done)</div>
+      <div class="sl-task sales">Mirror Stream A + B (DITM)</div>
+      <div class="sl-task sales">Fill beneficiary, repayment, own contribution, EMI (Stream C)</div>
+      <div class="sl-task sales">Raise OTC/PDD requests for docs that can't be collected</div>
+    </div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task credit">Approve / reject OTC/PDD requests</div>
+      <div class="sl-handoff">↳ Batch moves to Local Ops only after all mandatory docs collected or OTC/PDD approved</div>
+    </div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task sys">LAN generated</div>
+      <div class="sl-task sys">BRE seeds original doc task list</div>
+    </div>
+  </div>
+
+  <!-- Phase 4: Doc Verification (continuous) -->
+  <div class="sl-phase-row">
+    <div class="sl-phase-label p4">DOC<br>VERIFY</div>
+    <div class="sl-cell">
+      <div class="sl-task cust">Resolve Local Ops queries (T-DOC2.q)</div>
+      <div class="sl-task cust">Resolve Credit queries (T-DOC3.q)</div>
+      <div class="sl-handoff">↳ On resubmit: goes to Local Ops first, then Credit</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task sales">T-DOC1: Submit full mandatory batch (once all docs collected or OTC/PDD approved)</div>
+      <div class="sl-task sales">Mirror query resolution (DITM)</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task ops">T-DOC2.x: Verify each doc via iLens (per doc, independent)</div>
+      <div class="sl-handoff">↳ Re-triggered if doc resubmitted after Credit query</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task credit">T-DOC3.x: Final approval per doc (as Local Ops clears each)</div>
+      <div class="sl-handoff">↳ Query → doc back to Local Ops first, then here again</div>
+    </div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+  </div>
+
+  <!-- Phase 5: DM Prep + Credit Approval -->
+  <div class="sl-phase-row">
+    <div class="sl-phase-label p5">DM PREP<br>+<br>CREDIT<br>APPROVAL</div>
+    <div class="sl-cell">
+      <div class="sl-task cust">Resolve any queries from Credit</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task sales">Resolve Credit queries to customer</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task ops">Physical doc completeness check (T-DMP1)</div>
+      <div class="sl-task ops">System data verification (T-DMP2)</div>
+      <div class="sl-task ops" style="margin-top:4px;">Own contribution review (T-DMP3)</div>
+      <div class="sl-task ops">Generate DM (T-DMP5)</div>
+      <div class="sl-handoff">↳ T-DMP1 + T-DMP2 run in parallel</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task credit">Revalidate sanction conditions (T-DMA1)</div>
+      <div class="sl-task credit">Verify originals vs TSR (T-DMA2)</div>
+      <div class="sl-task credit">Verify TSR-flagged docs (T-DMA3)</div>
+      <div class="sl-task credit">Validate pricing approval (T-DMA4)</div>
+      <div class="sl-task credit">Review own contribution (T-DMA5)</div>
+      <div class="sl-handoff">↳ all 5 run in parallel</div>
+    </div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task sys">eNACH auto-triggered after Local Ops verifies repayment details (T-DMP2)</div>
+    </div>
+  </div>
+
+  <!-- Phase 6: KFS + E-Sign -->
+  <div class="sl-phase-row">
+    <div class="sl-phase-label p6">KFS &amp;<br>E-SIGN</div>
+    <div class="sl-cell">
+      <div class="sl-task cust">Review &amp; accept KFS (T-KFS2)</div>
+      <div class="sl-task cust">Complete E-Sign (T-ESIGN2)</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task sales">Mirror KFS (DITM)</div>
+      <div class="sl-task sales">Initiate E-Sign (T-ESIGN1)</div>
+    </div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task sys">KFS auto-triggered after all 5 Credit tasks close</div>
+      <div class="sl-task sys">E-signed booklet generated (CFF, Autopay Mandate, KFS, DRF)</div>
+    </div>
+  </div>
+
+  <!-- Phase 7: FCPG + NDC + Submit -->
+  <div class="sl-phase-row">
+    <div class="sl-phase-label p7">FCPG<br>eNACH<br>NDC<br>SUBMIT</div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task ops">NDC check via iLens (T-NDC) — after T-FCPG + T-ENACH both complete</div>
+      <div class="sl-task ops">Submit to Finone (T-SUB)</div>
+      <div class="sl-handoff">↳ Credit Ops check merged into NDC</div>
+    </div>
+    <div class="sl-cell"><span class="sl-waiting">–</span></div>
+    <div class="sl-cell">
+      <div class="sl-task rcu">FCPG physical verification (T-FCPG)</div>
+      <div class="sl-task rcu">Govt site property registration check</div>
+    </div>
+    <div class="sl-cell">
+      <div class="sl-task sys">eNACH mandate completion (T-ENACH) — must complete before NDC</div>
+    </div>
+  </div>
+
+</div><!-- /swimlane -->
+</div><!-- /swimlane-wrap -->
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- S7: STAKEHOLDER SUMMARY -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section-header"><span class="section-num">07</span><h2>Stakeholder Task Summary</h2></div>
+<div class="sk-grid">
+  <div class="sk-card sk-cust"><div class="sk-hdr">CUSTOMER</div><ul>
+    <li>Upload scanned property docs (BRE list) for Legal</li>
+    <li>Upload additional docs if vendor queries</li>
+    <li>Submit original documents post Initiate Disbursement</li>
+    <li>Fulfil sanction conditions (payment, closure NOC, etc.)</li>
+    <li>Review and accept KFS</li>
+    <li>Complete E-Sign</li>
+  </ul></div>
+  <div class="sk-card sk-sales"><div class="sk-hdr">SALES RM</div><ul>
+    <li>Mirror of all customer tasks (DITM — Completed by RM)</li>
+    <li>T-PRICE: Confirm Pricing Approval (pre-condition for Initiate Disbursement)</li>
+    <li>Initiate Legal + Initiate Technical</li>
+    <li>Upload TSR to iLens</li>
+    <li>Click Initiate Disbursement (after Legal + Technical + Pricing all done)</li>
+    <li>Fill beneficiary, repayment, own contribution, EMI details (Stream C)</li>
+    <li>Collect ALL mandatory original docs then submit as one batch (T-DOC1)</li>
+    <li>Raise OTC/PDD request if a mandatory doc cannot be physically collected</li>
+    <li>Initiate E-Sign</li>
+    <li>Resolve all queries back to customer</li>
+  </ul></div>
+  <div class="sk-card sk-ops"><div class="sk-hdr">LOCAL OPS</div><ul>
+    <li>Verify each original doc via iLens (per doc, continuous)</li>
+    <li>DM Prep: physical page-by-page completeness check (parallel)</li>
+    <li>DM Prep: cross-verify system data accuracy (parallel)</li>
+    <li>DM Prep: flag own contribution discrepancies</li>
+    <li>Generate Disbursement Memo</li>
+    <li>NDC Check via iLens (Credit Ops check merged in)</li>
+    <li>Submit case to Finone</li>
+  </ul></div>
+  <div class="sk-card sk-credit"><div class="sk-hdr">CREDIT</div><ul>
+    <li>Approve / reject OTC/PDD requests</li>
+    <li>Final doc approval per document (continuous, as Local Ops clears)</li>
+    <li>Revalidate sanction conditions</li>
+    <li>Verify originals vs TSR</li>
+    <li>Verify TSR-flagged docs (List C from Legal)</li>
+    <li>Validate pricing approval</li>
+    <li>Review and correct own contribution</li>
+  </ul></div>
+  <div class="sk-card sk-rcu"><div class="sk-hdr">RCU</div><ul>
+    <li>FCPG: physically verify all original documents</li>
+    <li>Cross-check property registration on govt websites</li>
+    <li>Prerequisite: E-Sign complete before FCPG begins</li>
+  </ul></div>
+  <div class="sk-card sk-tadmin"><div class="sk-hdr">TECH ADMIN + TM</div><ul>
+    <li>Verify uploaded docs for technical initiation</li>
+    <li>Raise query if docs insufficient</li>
+    <li>Allocate Technical Manager (based on loan value)</li>
+    <li>TM: conduct site inspection, submit report</li>
+    <li>Validate report against Rapid system</li>
+    <li>Publish technical report to iLens</li>
+  </ul></div>
+  <div class="sk-card sk-legal"><div class="sk-hdr">LEGAL VENDOR</div><ul>
+    <li>Review uploaded property docs</li>
+    <li>Raise queries for missing documents</li>
+    <li>Generate TSR (original doc requirements + flags)</li>
+    <li>Share TSR with Sales (Sales uploads to iLens)</li>
+  </ul></div>
+  <div class="sk-card sk-sys"><div class="sk-hdr">SYSTEM (AUTO)</div><ul>
+    <li>Generate BRE-driven doc task lists (Legal, Technical, Disbursement)</li>
+    <li>Parse TSR → seed List A (original doc tasks) + List C (Credit flags)</li>
+    <li>Generate LAN on Initiate Disbursement</li>
+    <li>Auto-trigger eNACH after Local Ops verifies repayment details (T-DMP2)</li>
+    <li>Auto-trigger KFS after all 5 Credit tasks (T-DMA1–5) close</li>
+    <li>Generate e-signed booklet on E-Sign completion</li>
+    <li>Auto-close dashboard tasks on iLens checklist completion</li>
+  </ul></div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- S8: GLOSSARY -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="section-header"><span class="section-num">08</span><h2>Glossary</h2></div>
+<div class="glossary-grid">
+  <div class="gl-item"><span class="gl-term">BRE</span><span class="gl-def">Business Rule Engine — determines doc lists, checks, and classifications from product + variant + state.</span></div>
+  <div class="gl-item"><span class="gl-term">CFF</span><span class="gl-def">Customer Finance Form — part of the e-signed disbursement booklet.</span></div>
+  <div class="gl-item"><span class="gl-term">DITM</span><span class="gl-def">Do It For Me — Sales can complete any customer task on their behalf; recorded as "Completed by RM".</span></div>
+  <div class="gl-item"><span class="gl-term">DM</span><span class="gl-def">Disbursement Memo — official memo with all loan + property details required for disbursal approval.</span></div>
+  <div class="gl-item"><span class="gl-term">DRF</span><span class="gl-def">Disbursement Request Form — part of the e-signed booklet.</span></div>
+  <div class="gl-item"><span class="gl-term">FCBG</span><span class="gl-def">Fraud Control &amp; Business Governance check by RCU. Verifies originals + govt property records.</span></div>
+  <div class="gl-item"><span class="gl-term">IGF</span><span class="gl-def">Initiate Go-Forward — first disbursement step in current model. Replaced by Initiate Disbursement in new model.</span></div>
+  <div class="gl-item"><span class="gl-term">iLens</span><span class="gl-def">ICICI Bank's internal mortgage platform — data entry, doc upload, verification, and task management.</span></div>
+  <div class="gl-item"><span class="gl-term">KFS</span><span class="gl-def">Key Fact Statement — regulatory doc summarising loan terms; customer acknowledges before disbursal.</span></div>
+  <div class="gl-item"><span class="gl-term">LAN</span><span class="gl-def">Loan Application Number — unique loan ID generated at Initiate Disbursement.</span></div>
+  <div class="gl-item"><span class="gl-term">NDC</span><span class="gl-def">No Due Certificate check — final Local Ops verification via iLens checklist before Finone submission.</span></div>
+  <div class="gl-item"><span class="gl-term">OTC</span><span class="gl-def">Over the Counter — original doc collected just before cheque is handed to customer. Gates cheque handover.</span></div>
+  <div class="gl-item"><span class="gl-term">PDD</span><span class="gl-def">Post Disbursement Deposit — original doc collected before next tranche is released.</span></div>
+  <div class="gl-item"><span class="gl-term">POP Sheet</span><span class="gl-def">Lists all original docs required per TSR with collection status. Auto-populated from Stream A in new model.</span></div>
+  <div class="gl-item"><span class="gl-term">Rapid</span><span class="gl-def">ICICI's internal property rate &amp; valuation dashboard used by Technical Admin.</span></div>
+  <div class="gl-item"><span class="gl-term">RCU</span><span class="gl-def">Risk Containment Unit — responsible for FCBG verification.</span></div>
+  <div class="gl-item"><span class="gl-term">TSR</span><span class="gl-def">Title Search Report — by Legal vendor; specifies original doc requirements and verification flags.</span></div>
+  <div class="gl-item"><span class="gl-term">Tray</span><span class="gl-def">Stakeholder's personalised dashboard — only shows currently actionable tasks.</span></div>
+</div>
+
+<div class="footer">Mortgage Disbursement Process Redesign · ICICI Bank iLens · Confidential · Internal Use Only</div>
+
+</div><!-- /container -->
+</body>
+</html>

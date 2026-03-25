@@ -1,0 +1,41 @@
+{
+  "projectName": "New dashboard",
+  "slug": "new-dashboard",
+  "fileType": "html",
+  "currentFile": "new-dashboard.html",
+  "ownerId": "110922760772516553877",
+  "ownerName": "Maharshi Divekar",
+  "lastUpdatedByName": "Maharshi Divekar",
+  "visibility": "public",
+  "editCode": "R7Z7Z6BQ",
+  "createdAt": "2026-03-24T19:53:55.759Z",
+  "updatedAt": "2026-03-24T20:03:54.410Z",
+  "versions": [
+    {
+      "version": 1,
+      "filename": "new-dashboard.html",
+      "fileURL": "https://vekar12.github.io/linkit-storage/projects/110922760772516553877/new-dashboard/new-dashboard.html",
+      "uploadedAt": "2026-03-24T19:53:55.759Z",
+      "updatedBy": "Maharshi Divekar",
+      "updatedById": "110922760772516553877"
+    },
+    {
+      "version": 2,
+      "filename": "new-dashboard.html",
+      "fileURL": "https://vekar12.github.io/linkit-storage/projects/110922760772516553877/new-dashboard/new-dashboard.html",
+      "uploadedAt": "2026-03-24T19:56:43.386Z",
+      "updatedBy": "Maharshi Divekar",
+      "updatedById": "110922760772516553877",
+      "remarks": "Apple design tma"
+    },
+    {
+      "version": 3,
+      "filename": "new-dashboard.html",
+      "fileURL": "https://vekar12.github.io/linkit-storage/projects/110922760772516553877/new-dashboard/new-dashboard.html",
+      "uploadedAt": "2026-03-24T20:03:52.528Z",
+      "updatedBy": "Maharshi Divekar",
+      "updatedById": "110922760772516553877",
+      "remarks": "with phone responsiveness"
+    }
+  ]
+}
