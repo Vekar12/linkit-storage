@@ -125,7 +125,7 @@ export async function updateProject(
         res.status(403).json({ error: 'Project is not open for collaboration' });
         return;
       }
-      const { editCode } = req.body;
+      const editCode = typeof req.body.editCode === 'string' ? req.body.editCode.trim() : '';
       if (!editCode || editCode !== metadata.editCode) {
         res.status(403).json({ error: 'Invalid or missing edit code' });
         return;
@@ -218,7 +218,7 @@ export async function collaboratorUpdateProject(
         res.status(403).json({ error: 'Project is not open for collaboration' });
         return;
       }
-      const { editCode } = req.body;
+      const editCode = typeof req.body.editCode === 'string' ? req.body.editCode.trim() : '';
       if (!editCode || editCode !== metadata.editCode) {
         res.status(403).json({ error: 'Invalid or missing edit code' });
         return;

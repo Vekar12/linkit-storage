@@ -66,6 +66,25 @@ export async function markNotificationRead(
   return true;
 }
 
+// Mark multiple notifications as read in a single read-write cycle
+export async function markNotificationsRead(
+  userId: string,
+  ids: string[]
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const idSet = new Set(ids);
+  const list = await getNotifications(userId);
+  let changed = 0;
+  const updated = list.map((n) => {
+    if (idSet.has(n.id) && !n.read) { changed++; return { ...n, read: true }; }
+    return n;
+  });
+  if (changed === 0) return 0;
+  await writeJSON(notifPath(userId), updated, `chore: mark ${changed} notifications read`);
+  bust(userId);
+  return changed;
+}
+
 // Internal — append a notification to a user's list
 async function addNotification(userId: string, notification: Notification): Promise<void> {
   try {
