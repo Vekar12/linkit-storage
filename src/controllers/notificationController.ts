@@ -4,16 +4,35 @@ import {
   getUnreadCount,
   markNotificationRead,
   markNotificationsRead,
+  clearNotifications,
 } from '../services/notificationService';
 
-// GET /notifications
+// GET /notifications?limit=N&offset=N
 export async function listNotifications(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    const notifications = await getNotifications(req.user!.id);
+    let limit: number | undefined;
+    let offset = 0;
+
+    if (req.query.limit !== undefined) {
+      limit = parseInt(String(req.query.limit), 10);
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+        res.status(400).json({ error: 'limit must be an integer between 1 and 100' });
+        return;
+      }
+    }
+    if (req.query.offset !== undefined) {
+      offset = parseInt(String(req.query.offset), 10);
+      if (isNaN(offset) || offset < 0) {
+        res.status(400).json({ error: 'offset must be a non-negative integer' });
+        return;
+      }
+    }
+
+    const notifications = await getNotifications(req.user!.id, limit, offset);
     res.status(200).json(notifications);
   } catch (err) {
     next(err);
@@ -54,6 +73,20 @@ export async function markManyRead(
     }
     const count = await markNotificationsRead(req.user!.id, ids);
     res.status(200).json({ marked: count });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// DELETE /notifications — clear all notifications for the authenticated user
+export async function deleteAllNotifications(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    await clearNotifications(req.user!.id);
+    res.status(200).json({ message: 'Notifications cleared' });
   } catch (err) {
     next(err);
   }

@@ -37,15 +37,17 @@ function notifPath(userId: string): string {
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
-export async function getNotifications(userId: string): Promise<Notification[]> {
-  const cached = getCached(userId);
-  if (cached) return cached;
-  const list = await readJSON<Notification[]>(notifPath(userId)) ?? [];
-  const sorted = [...list].sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  );
-  setCached(userId, sorted);
-  return sorted;
+export async function getNotifications(userId: string, limit?: number, offset = 0): Promise<Notification[]> {
+  let sorted = getCached(userId);
+  if (!sorted) {
+    const list = await readJSON<Notification[]>(notifPath(userId)) ?? [];
+    sorted = [...list].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+    setCached(userId, sorted);
+  }
+  if (offset === 0 && limit === undefined) return sorted;
+  return sorted.slice(offset, limit !== undefined ? offset + limit : undefined);
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
@@ -83,6 +85,11 @@ export async function markNotificationsRead(
   await writeJSON(notifPath(userId), updated, `chore: mark ${changed} notifications read`);
   bust(userId);
   return changed;
+}
+
+export async function clearNotifications(userId: string): Promise<void> {
+  await writeJSON(notifPath(userId), [], `chore: clear notifications for ${userId}`);
+  bust(userId);
 }
 
 // Internal — append a notification to a user's list

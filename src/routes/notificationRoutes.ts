@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { listNotifications, unreadCount, markRead, markManyRead } from '../controllers/notificationController';
+import { listNotifications, unreadCount, markRead, markManyRead, deleteAllNotifications } from '../controllers/notificationController';
 import { requireAuth } from '../middleware/auth';
 import { notificationsLimiter } from '../middleware/rateLimiter';
 
@@ -18,7 +18,8 @@ const router = Router();
 // Must be declared before /:id routes
 router.get('/unread-count', requireAuth, notificationsLimiter, unreadCount);
 router.get('/', requireAuth, notificationsLimiter, listNotifications);
-router.patch('/read', requireAuth, markManyRead);           // batch — must be before /:id/read
+router.delete('/', requireAuth, notificationsLimiter, deleteAllNotifications);
+router.patch('/read', requireAuth, notificationsLimiter, markManyRead); // batch — must be before /:id/read
 router.patch('/:id/read', requireAuth, validateNotifId, markRead);
 
 export default router;

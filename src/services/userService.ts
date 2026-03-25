@@ -1,6 +1,10 @@
 import { getFileWithSHA, uploadFile } from './githubService';
 
 const CSV_PATH = 'users/users.csv';
+
+// ─── Name-map cache ───────────────────────────────────────────────────────────
+const NAME_MAP_TTL = 5 * 60_000; // 5 minutes
+let nameMapCache: { data: Map<string, string>; expiresAt: number } | null = null;
 const CSV_HEADER = 'sub,provider,name,email,avatar,firstLoginAt,lastLoginAt,loginCount';
 
 export interface UserRecord {
@@ -62,13 +66,17 @@ function parseCSV(raw: string): UserRecord[] {
     });
 }
 
-// Returns a map of sub → name for all known users (used to backfill attribution)
+// Returns a map of sub → name for all known users (used to backfill attribution).
+// Cached for 5 minutes to avoid a GitHub API call on every public listing request.
 export async function getUserNameMap(): Promise<Map<string, string>> {
+  if (nameMapCache && Date.now() < nameMapCache.expiresAt) return nameMapCache.data;
   try {
     const file = await getFileWithSHA(CSV_PATH);
     if (!file) return new Map();
     const raw = Buffer.from(file.content, 'base64').toString('utf-8');
-    return new Map(parseCSV(raw).map((u) => [u.sub, u.name]));
+    const data = new Map(parseCSV(raw).map((u) => [u.sub, u.name]));
+    nameMapCache = { data, expiresAt: Date.now() + NAME_MAP_TTL };
+    return data;
   } catch {
     return new Map();
   }
@@ -101,6 +109,7 @@ export async function upsertUserRecord(
 
       const updated = [CSV_HEADER, ...users.map(toRow)].join('\n') + '\n';
       await uploadFile(CSV_PATH, Buffer.from(updated, 'utf-8'), `chore: update user ${sub}`, file.sha);
+      nameMapCache = null; // bust so next call re-reads the updated CSV
     } else {
       // Create the CSV for the first time
       const firstRow = toRow({ sub, provider, name, email, avatar, firstLoginAt: now, lastLoginAt: now, loginCount: 1 });

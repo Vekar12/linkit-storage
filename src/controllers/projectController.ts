@@ -21,6 +21,8 @@ import { getUserNameMap } from '../services/userService';
 import { extractUser } from '../middleware/auth';
 import { notifyContributors } from '../services/notificationService';
 
+const MAX_VERSIONS = 50; // keep metadata.json bounded; archived files in storage are unaffected
+
 // 8-char alphanumeric edit code, unambiguous characters
 function generateEditCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -164,7 +166,7 @@ export async function updateProject(
         fileType: ext.replace('.', ''),
         currentFile: newVersionEntry.filename,
         lastUpdatedByName,
-        versions: [...metadata.versions, newVersionEntry],
+        versions: [...metadata.versions, newVersionEntry].slice(-MAX_VERSIONS),
       });
 
       notifyContributors(metadata.versions, ownerId, requesterId, lastUpdatedByName, metadata.projectName, slug);
@@ -179,7 +181,7 @@ export async function updateProject(
       fileType: ext.replace('.', ''),
       currentFile: newVersionEntry.filename,
       lastUpdatedByName,
-      versions: [...metadata.versions, newVersionEntry],
+      versions: [...metadata.versions, newVersionEntry].slice(-MAX_VERSIONS),
     });
 
     notifyContributors(metadata.versions, ownerId, requesterId, lastUpdatedByName, metadata.projectName, slug);
@@ -256,7 +258,7 @@ export async function collaboratorUpdateProject(
         fileType: ext.replace('.', ''),
         currentFile: newVersionEntry.filename,
         lastUpdatedByName,
-        versions: [...metadata.versions, newVersionEntry],
+        versions: [...metadata.versions, newVersionEntry].slice(-MAX_VERSIONS),
       });
 
       notifyContributors(metadata.versions, ownerId, requesterId, lastUpdatedByName, metadata.projectName, slug);
@@ -271,7 +273,7 @@ export async function collaboratorUpdateProject(
       fileType: ext.replace('.', ''),
       currentFile: newVersionEntry.filename,
       lastUpdatedByName,
-      versions: [...metadata.versions, newVersionEntry],
+      versions: [...metadata.versions, newVersionEntry].slice(-MAX_VERSIONS),
     });
 
     notifyContributors(metadata.versions, ownerId, requesterId, lastUpdatedByName, metadata.projectName, slug);
@@ -378,7 +380,9 @@ export async function downloadProject(
 
     // Use octet-stream for all downloads — correct MIME types (text/html etc.) cause
     // browsers to render rather than download, especially for cross-origin <a> links
-    res.setHeader('Content-Disposition', `attachment; filename="${downloadFilename}"`);
+    // Strip characters that would break the header value (RFC 6266 unsafe chars)
+    const safeFilename = downloadFilename.replace(/["\\\r\n]/g, '_');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Length', buffer.length);
     res.send(buffer);
