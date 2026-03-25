@@ -25,6 +25,7 @@ export default function TopNav() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notifLoading, setNotifLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +39,9 @@ export default function TopNav() {
     try {
       const count = await getUnreadCount();
       setUnreadCount(count);
-    } catch { /* silent — non-critical */ }
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[TopNav] unread count fetch failed', err);
+    }
   }, []);
 
   useEffect(() => {
@@ -78,7 +81,9 @@ export default function TopNav() {
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
         setUnreadCount(0);
       }
-    } catch { /* silent */ } finally {
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production') console.warn('[TopNav] notifications fetch failed', err);
+    } finally {
       setNotifLoading(false);
     }
   };
@@ -135,6 +140,7 @@ export default function TopNav() {
               onClick={handleOpenNotif}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors relative"
               title="Notifications"
+              aria-label="Notifications"
             >
               <Bell size={17} />
               {unreadCount > 0 && (
@@ -197,9 +203,14 @@ export default function TopNav() {
               onClick={() => setMenuOpen((o) => !o)}
               className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full hover:bg-gray-100 transition-colors"
             >
-              {avatarUrl ? (
+              {avatarUrl && !avatarError ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt={displayName} className="w-7 h-7 rounded-full object-cover" />
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-7 h-7 rounded-full object-cover"
+                  onError={() => setAvatarError(true)}
+                />
               ) : (
                 <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
                   {initials}

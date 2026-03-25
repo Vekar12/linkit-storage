@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowLeft, Download, Clock, Link2, ExternalLink, RefreshCw, Lock, Globe, KeyRound, Copy, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Download, Clock, Link2, ExternalLink, RefreshCw, Lock, Globe, KeyRound, Copy, CheckCircle, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getProjectMetadata, setProjectVisibility } from '@/services/api';
 import type { ProjectMetadata } from '@/types';
@@ -237,25 +237,24 @@ export default function VersionHistoryPage() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {isHtml ? (
+                    <a
+                      href={versionDownloadUrl(v.version)}
+                      download
+                      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
+                      title={`Download v${v.version}`}
+                    >
+                      <Download size={12} />
+                      Download
+                    </a>
+                    {isHtml && (
                       <button
                         onClick={() => handleDownloadHtmlAsPdf(v.version)}
                         className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
                         title="Save as PDF"
                       >
-                        <Download size={12} />
+                        <FileText size={12} />
                         Save as PDF
                       </button>
-                    ) : (
-                      <a
-                        href={versionDownloadUrl(v.version)}
-                        download
-                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
-                        title={`Download v${v.version}`}
-                      >
-                        <Download size={12} />
-                        Download
-                      </a>
                     )}
                   </div>
                 </li>

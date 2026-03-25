@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, Upload, Code2, KeyRound } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { marked } from 'marked';
 import DashboardLayout from '@/components/DashboardLayout';
 import FileDropzone from '@/components/FileDropzone';
 import { updateProject } from '@/services/api';
@@ -71,6 +70,7 @@ export default function UpdatePage() {
     } else if (uploadFile!.name.endsWith('.md')) {
       try {
         const text = await uploadFile!.text();
+        const { marked } = await import('marked');
         const html = await marked(text);
         const blob = new Blob([html], { type: 'text/html' });
         uploadFile = new File([blob], uploadFile!.name.replace('.md', '.html'), { type: 'text/html' });

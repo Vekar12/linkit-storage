@@ -5,7 +5,6 @@ import {
   LayoutGrid, RefreshCw, Plus, Trash2, Clock, ExternalLink,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { marked } from 'marked';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProjectCard from '@/components/ProjectCard';
 import FileDropzone from '@/components/FileDropzone';
@@ -198,6 +197,7 @@ export default function Dashboard() {
     } else if (uploadFile!.name.endsWith('.md')) {
       try {
         const text = await uploadFile!.text();
+        const { marked } = await import('marked');
         const html = await marked(text);
         const blob = new Blob([html], { type: 'text/html' });
         uploadFile = new File([blob], uploadFile!.name.replace('.md', '.html'), { type: 'text/html' });

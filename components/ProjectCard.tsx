@@ -4,6 +4,7 @@ import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2,
 import toast from 'react-hot-toast';
 import { deleteProject, setProjectVisibility, renameProject, rotateEditCode } from '@/services/api';
 import { addHistory } from '@/lib/history';
+import { getApiError } from '@/lib/errors';
 import type { Project } from '@/types';
 
 const typeColors: Record<string, { bg: string; text: string }> = {
@@ -53,10 +54,8 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
       toast.success(confirmed === 'public' ? 'Set to Public' : 'Set to Personal');
     } catch (err: unknown) {
       setVisibilityState(prev);
-      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
-      const status = axiosErr?.response?.status;
-      const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
-      toast.error(msg ?? `Could not update visibility (${status ?? 'no response'}).`);
+      const { status, message } = getApiError(err);
+      toast.error(message ?? `Could not update visibility (${status ?? 'no response'}).`);
     }
   };
 
@@ -80,9 +79,8 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
       toast.success('Project renamed!');
     } catch (err: unknown) {
       setDisplayName(prev);
-      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
-      const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
-      toast.error(msg ?? 'Could not rename project.');
+      const { message } = getApiError(err);
+      toast.error(message ?? 'Could not rename project.');
     }
   };
 
@@ -134,9 +132,8 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
       onEditCodeChanged?.(project.slug, newCode);
       toast.success('Edit code rotated — old code is now invalid.');
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
-      const msg = axiosErr?.response?.data?.error ?? axiosErr?.response?.data?.message;
-      toast.error(msg ?? 'Could not rotate edit code.');
+      const { message } = getApiError(err);
+      toast.error(message ?? 'Could not rotate edit code.');
     } finally {
       setRotating(false);
     }
@@ -179,11 +176,8 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
       toast.success('Project deleted.');
       onDeleted(project.slug);
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { status?: number; data?: { error?: string; message?: string } } };
-      const msg = axiosErr?.response?.data?.error
-        ?? axiosErr?.response?.data?.message
-        ?? `Delete failed (${axiosErr?.response?.status ?? 'no response'})`;
-      toast.error(msg);
+      const { status, message } = getApiError(err);
+      toast.error(message ?? `Delete failed (${status ?? 'no response'})`);
     } finally {
       setDeleting(false);
       setConfirmDelete(false);
@@ -202,21 +196,8 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
         const nameParam = `&name=${encodeURIComponent(project.projectName)}`;
         router.push(`/projects/${project.slug}?owner=${project.ownerId}${nameParam}${editParam}`);
       }}
-      className="rounded-2xl flex flex-col justify-between aspect-square cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
-      style={{
-        backgroundColor: isOwnProject ? '#faf5ff' : '#ffffff',
-        boxShadow: isOwnProject
-          ? '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1.5px rgba(124,58,237,0.3)'
-          : '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.15)';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = isOwnProject
-          ? '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1.5px rgba(124,58,237,0.3)'
-          : '0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)';
-      }}
+      className={`rounded-2xl flex flex-col justify-between aspect-square cursor-pointer overflow-hidden li-project-card ${isOwnProject ? 'li-project-card-own' : ''}`}
+      style={{ backgroundColor: isOwnProject ? '#faf5ff' : '#ffffff' }}
     >
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 pt-3">
@@ -224,6 +205,7 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
           onClick={handleDelete}
           disabled={deleting}
           title={confirmDelete ? 'Click again to confirm' : 'Delete project'}
+          aria-label={confirmDelete ? 'Confirm delete' : 'Delete project'}
           className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
             confirmDelete
               ? 'bg-red-500 text-white'
@@ -266,6 +248,7 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
               <button
                 onClick={handleStartRename}
                 title="Rename project"
+                aria-label="Rename project"
                 className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 p-0.5 text-gray-300 hover:text-primary mt-0.5"
               >
                 <Pencil size={10} />
@@ -306,10 +289,10 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
                 <span className="text-[10px] font-mono tracking-widest text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
                   {editCodeDisplay}
                 </span>
-                <button onClick={handleCopyCode} title="Copy edit code" className="text-gray-300 hover:text-primary transition-colors flex-shrink-0">
+                <button onClick={handleCopyCode} title="Copy edit code" aria-label="Copy edit code" className="text-gray-300 hover:text-primary transition-colors flex-shrink-0">
                   {codeCopied ? <CheckCircle size={9} className="text-primary" /> : <Copy size={9} />}
                 </button>
-                <button onClick={handleRotateCode} title="Rotate code (invalidates old)" className="text-gray-300 hover:text-amber-500 transition-colors flex-shrink-0">
+                <button onClick={handleRotateCode} title="Rotate code (invalidates old)" aria-label="Rotate edit code" className="text-gray-300 hover:text-amber-500 transition-colors flex-shrink-0">
                   <RefreshCw size={9} className={rotating ? 'animate-spin' : ''} />
                 </button>
               </>
@@ -326,6 +309,7 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
             <button
               onClick={handleCopy}
               title={copied ? 'Copied!' : 'Copy link'}
+              aria-label={copied ? 'Copied!' : 'Copy link'}
               className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
             >
               {copied
@@ -338,6 +322,7 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
+              aria-label="Open link in new tab"
               className="flex items-center justify-center gap-1.5 flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
             >
               <ExternalLink size={13} className="text-gray-400" />
@@ -361,6 +346,7 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
               <button
                 onClick={handleCopy}
                 title={copied ? 'Copied!' : 'Copy link'}
+                aria-label={copied ? 'Copied!' : 'Copy link'}
                 className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
               >
                 {copied
@@ -369,29 +355,31 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
                 }
               </button>
 
-              {isHtml ? (
+              <a
+                href={downloadUrl}
+                download
+                onClick={(e) => e.stopPropagation()}
+                title={`Download ${project.fileType?.toUpperCase() ?? 'file'}`}
+                aria-label={`Download ${project.fileType?.toUpperCase() ?? 'file'}`}
+                className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
+              >
+                <Download size={13} className="text-gray-400" />
+              </a>
+              {isHtml && (
                 <button
                   onClick={handleDownloadHtmlAsPdf}
                   title="Save as PDF"
+                  aria-label="Save as PDF"
                   className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
                 >
                   <FileText size={13} className="text-gray-400" />
                 </button>
-              ) : (
-                <a
-                  href={downloadUrl}
-                  download
-                  onClick={(e) => e.stopPropagation()}
-                  title="Download"
-                  className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
-                >
-                  <Download size={13} className="text-gray-400" />
-                </a>
               )}
 
               <button
                 onClick={(e) => { e.stopPropagation(); router.push(`/update?slug=${project.slug}&owner=${project.ownerId}`); }}
                 title="Upload update"
+                aria-label="Upload new version"
                 className="flex items-center justify-center flex-1 py-1.5 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-gray-100 transition-colors"
               >
                 <RefreshCw size={13} className="text-gray-400" />

@@ -68,6 +68,9 @@ export default function FileDropzone({ file, onFileSelect }: FileDropzoneProps) 
   return (
     <div
       {...getRootProps()}
+      role="button"
+      tabIndex={0}
+      aria-label={file ? `Selected file: ${file.name}. Click or press Enter to replace.` : 'Upload area. Click or press Enter to browse files, or drag and drop.'}
       className={`
         border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200
         ${isDragActive
