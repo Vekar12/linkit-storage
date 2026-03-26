@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>iLens – Disbursement Prototype</title>
+<title>iLens – Disbursement Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -16,69 +16,56 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;}
 
-/* ══ USER SWITCHER ══ */
-.user-bar{position:fixed;top:0;left:0;right:0;z-index:300;background:#1a1a2e;display:flex;align-items:center;gap:0;padding:0 0 0 14px;overflow-x:auto;height:40px;border-bottom:1px solid rgba(255,255,255,.1);}
-.ub-label{color:rgba(255,255,255,.35);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;margin-right:10px;}
+/* USER SWITCHER */
+.user-bar{position:fixed;top:0;left:0;right:0;z-index:300;background:#1a1a2e;display:flex;align-items:center;padding:0 0 0 14px;height:40px;border-bottom:1px solid rgba(255,255,255,.08);overflow-x:auto;}
+.ub-label{color:rgba(255,255,255,.3);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;margin-right:10px;}
 .u-tab{padding:0 14px;height:40px;color:rgba(255,255,255,.45);font-size:11.5px;font-weight:500;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;font-family:var(--f);display:flex;align-items:center;gap:5px;}
 .u-tab.on{color:#fff;border-bottom-color:var(--org);}
-.u-tab:hover:not(.on){color:rgba(255,255,255,.8);}
 .u-ct{background:var(--org);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;font-family:var(--mono);}
 .u-ct.zero{background:rgba(255,255,255,.12);color:rgba(255,255,255,.4);}
 
-/* ══ iLENS WRAPPER ══ */
+/* iLENS CHROME */
 #view-ilens{margin-top:40px;display:flex;flex-direction:column;height:calc(100vh - 40px);}
-
-/* iLens top navbar */
 .il-nb{background:var(--r);height:46px;display:flex;align-items:center;padding:0 18px;gap:14px;flex-shrink:0;}
 .il-logo{color:#fff;font-weight:700;font-size:17px;font-style:italic;letter-spacing:-.4px;line-height:1.1;}
 .il-logo small{display:block;font-size:8.5px;font-weight:400;font-style:normal;opacity:.55;margin-top:-2px;}
 .il-search{flex:1;max-width:360px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);border-radius:5px;padding:5px 11px;color:#fff;font-family:var(--f);font-size:11.5px;outline:none;}
 .il-search::placeholder{color:rgba(255,255,255,.4);}
-.il-nb-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.il-nbr{margin-left:auto;display:flex;align-items:center;gap:12px;}
 .il-dt{color:rgba(255,255,255,.55);font-size:10px;font-family:var(--mono);}
-.il-notif{color:rgba(255,255,255,.6);font-size:16px;cursor:pointer;position:relative;}
-.il-notif-dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--org);border-radius:50%;border:1.5px solid var(--r);}
 .il-av{width:28px;height:28px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px;}
 .il-user{color:#fff;font-size:10.5px;text-align:right;line-height:1.25;}
 .il-user strong{display:block;font-size:11px;}
-
-/* iLens top nav links */
 .il-tn{background:var(--rd);display:flex;align-items:center;padding:0 18px;flex-shrink:0;overflow-x:auto;}
-.il-tn a{color:rgba(255,255,255,.55);text-decoration:none;font-size:11px;font-weight:500;padding:9px 11px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .12s;display:flex;flex-direction:column;align-items:center;gap:2px;}
-.il-tn a span.ico{font-size:14px;}
+.il-tn a{color:rgba(255,255,255,.55);text-decoration:none;font-size:11px;font-weight:500;padding:9px 11px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .12s;}
 .il-tn a:hover,.il-tn a.on{color:#fff;border-bottom-color:var(--org);}
-
-/* Application header bar */
-.il-ab{background:#fff;border-bottom:1px solid var(--bd);padding:8px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;}
+.il-ab{background:#fff;border-bottom:1px solid var(--bd);padding:8px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;}
 .il-aname{color:var(--bl);font-weight:700;font-size:13.5px;}
 .il-ameta{color:var(--mu);font-size:11px;padding:1px 7px;background:#f3f4f6;border-radius:3px;}
 .il-ar{margin-left:auto;display:flex;gap:18px;align-items:center;}
 .il-ari label{color:var(--mu);font-size:9.5px;display:block;margin-bottom:1px;}
 .il-ari strong{font-size:12.5px;}
 .b-ip{background:#fef3c7;color:#78350f;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;}
+.b-uw{background:#ede9fe;color:#4c1d95;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;}
 .b-tat{color:var(--gn);font-weight:700;font-size:13px;}
-
-/* iLens body layout */
 .il-body{display:flex;flex:1;overflow:hidden;}
-
-/* Sidebar */
-.il-side{width:210px;flex-shrink:0;background:#fff;border-right:1px solid var(--bd);overflow-y:auto;display:flex;flex-direction:column;}
+.il-side{width:200px;flex-shrink:0;background:#fff;border-right:1px solid var(--bd);overflow-y:auto;}
 .il-side-prod{margin:14px 12px;background:var(--nv);border-radius:8px;padding:12px 13px;color:#fff;}
 .il-side-prod .tr{font-size:9.5px;opacity:.45;margin-bottom:2px;}
 .il-side-prod .pn{font-weight:600;font-size:13px;}
 .il-side-prod .am{font-size:18px;font-weight:700;color:#fbbf24;margin-top:3px;}
-.il-side-section{padding:4px 0 8px;}
-.il-side-section-label{padding:6px 14px 3px;font-size:9.5px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.5px;}
-.il-side a{display:flex;align-items:center;gap:8px;padding:8px 14px;color:var(--mu);font-size:12px;font-weight:500;text-decoration:none;border-left:2.5px solid transparent;transition:all .12s;cursor:pointer;}
-.il-side a:hover{color:var(--tx);background:#f9fafb;}
-.il-side a.on{color:var(--r);background:#fef2f2;border-left-color:var(--r);font-weight:600;}
-.il-side a .si{font-size:13px;opacity:.7;}
-.il-side a.sub{padding-left:28px;font-size:11.5px;}
-
-/* Main content */
+.il-side-lbl{padding:8px 14px 3px;font-size:9.5px;font-weight:700;color:var(--mu2);text-transform:uppercase;letter-spacing:.5px;}
+.il-side a{display:flex;align-items:center;gap:8px;padding:8px 14px;color:var(--r);font-size:12px;font-weight:600;text-decoration:none;border-left:2.5px solid var(--r);background:#fef2f2;}
 .il-main{flex:1;overflow-y:auto;padding:16px 18px 80px;background:var(--bg);}
 
-/* ══ PROGRESS CARD ══ */
+/* FILTER */
+.ft-row{display:flex;align-items:center;justify-content:flex-end;margin-bottom:12px;gap:8px;}
+.ft-lbl{font-size:11px;color:var(--mu);font-weight:500;}
+.ft{display:flex;background:#f3f4f6;border-radius:7px;padding:2px;gap:2px;}
+.ft-b{padding:5px 14px;border-radius:5px;border:none;cursor:pointer;font-family:var(--f);font-size:11.5px;font-weight:600;background:transparent;color:var(--mu);transition:all .15s;}
+.ft-b.on{background:#fff;color:var(--nv);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+
+/* PROGRESS */
 .top-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 .prog-card{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:14px 16px;}
 .pc-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
@@ -89,63 +76,80 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .pc-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--tl),#34d399);transition:width .6s ease;}
 .sk-rows{display:flex;flex-direction:column;gap:5px;}
 .sk-row{display:flex;align-items:center;gap:7px;}
-.sk-lbl{font-size:10.5px;font-weight:500;min-width:95px;color:var(--tx);}
+.sk-lbl{font-size:10.5px;font-weight:500;min-width:90px;color:var(--tx);}
 .sk-lbl.me{color:var(--org);font-weight:700;}
 .sk-mbar{flex:1;background:#f3f4f6;border-radius:10px;height:4px;overflow:hidden;}
 .sk-mfill{height:100%;border-radius:10px;transition:width .4s ease;}
 .sk-fr{font-size:10px;font-family:var(--mono);font-weight:600;min-width:26px;text-align:right;}
 .sk-st{font-size:9.5px;font-weight:600;min-width:65px;text-align:right;}
-
-/* My tasks card */
 .mt-card{background:linear-gradient(135deg,#fff7ed,#fef3c7);border:1.5px solid #fed7aa;border-radius:10px;padding:14px 16px;}
 .mt-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .mt-title{font-weight:700;font-size:12.5px;color:var(--nv);}
 .mt-ct{background:var(--org);color:#fff;padding:2px 7px;border-radius:10px;font-size:10.5px;font-weight:700;font-family:var(--mono);}
 .mt-list{display:flex;flex-direction:column;gap:0;}
-.mt-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(254,215,170,.5);}
+.mt-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(254,215,170,.5);}
 .mt-item:last-child{border-bottom:none;}
 .mt-dot{width:5px;height:5px;border-radius:50%;background:var(--org);flex-shrink:0;}
 .mt-text{font-size:11.5px;font-weight:500;color:#92400e;flex:1;}
-.mt-badge{font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:3px;}
-.mt-urg{background:#fef2f2;color:var(--re);}
-.mt-pnd{background:#fefce8;color:var(--am);}
-.mt-wt{background:#f3f4f6;color:var(--mu2);}
 
-/* ══ TASK SECTIONS ══ */
-.ts{background:#fff;border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;overflow:hidden;}
-.ts-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--bd);}
+/* PHASE BANNER */
+.phase-banner{border-radius:10px;padding:14px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.pb-lt{background:linear-gradient(135deg,#ede9fe,#ddd6fe);border:1.5px solid #a78bfa;}
+.pb-done{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;}
+.pb-left{display:flex;align-items:center;gap:12px;}
+.pb-icon{font-size:24px;}
+.pb-title{font-size:13px;font-weight:700;color:var(--nv);}
+.pb-sub{font-size:11.5px;color:var(--mu);margin-top:2px;}
+.pb-right{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+.b-lt{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;padding:9px 18px;font-size:12px;border-radius:8px;border:none;cursor:pointer;font-family:var(--f);font-weight:600;box-shadow:0 2px 8px rgba(124,58,237,.3);}
+.b-lt:hover{background:linear-gradient(135deg,#6d28d9,#4c1d95);}
+.b-dis{background:linear-gradient(135deg,var(--org),#c2500a);color:#fff;padding:9px 18px;font-size:12px;border-radius:8px;border:none;cursor:pointer;font-family:var(--f);font-weight:600;box-shadow:0 2px 8px rgba(232,96,10,.3);}
+.b-dis:hover{background:linear-gradient(135deg,#c2500a,#9a3412);}
+.b-dis-off{background:#f3f4f6;color:var(--mu2);padding:9px 18px;font-size:12px;border-radius:8px;border:1px solid var(--bd);cursor:not-allowed;font-family:var(--f);font-weight:600;}
+
+/* TASK SECTIONS */
+.ts{background:#fff;border:1px solid var(--bd);border-radius:10px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.ts-lt  {border-top:3px solid #7c3aed;}
+.ts-tech{border-top:3px solid #0891b2;}
+.ts-doc {border-top:3px solid #1e40af;}
+.ts-sc  {border-top:3px solid #b45309;}
+.ts-ld  {border-top:3px solid #0f766e;}
+.ts-vf  {border-top:3px solid #6d28d9;}
+.ts-fc  {border-top:3px solid #9b1c1c;}
+.ts-hdr{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:2px solid var(--bd2);}
 .ts-hdr:hover{background:#fafafa;}
-.ts-hl{display:flex;align-items:center;gap:8px;}
-.ts-title{font-size:12.5px;font-weight:600;color:var(--tx);}
-.ts-bk{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono);}
+.ts-hl{display:flex;align-items:center;gap:10px;}
+.ts-icon{font-size:14px;}
+.ts-title{font-size:13px;font-weight:700;color:var(--nv);}
+.ts-bk{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono);}
 .ts-tog{color:var(--mu2);font-size:10px;transition:transform .18s;}
 .ts-tog.op{transform:rotate(180deg);}
-.sh{padding:5px 14px;background:#f8f9fa;border-bottom:1px solid var(--bd2);font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;}
+.sh{padding:5px 16px;background:#f1f5fb;border-bottom:1px solid #dde8f7;font-size:10px;font-weight:700;color:#3b5ea6;text-transform:uppercase;letter-spacing:.5px;}
 
-/* ══ TABLE ══ */
+/* TABLE */
 .t-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .t{width:100%;border-collapse:collapse;font-size:12px;}
-.t th{background:#f8f9fa;color:var(--mu);font-weight:600;font-size:10px;padding:6px 12px;text-align:left;border-bottom:1px solid var(--bd);text-transform:uppercase;letter-spacing:.2px;white-space:nowrap;}
-.t td{padding:9px 12px;border-bottom:1px solid var(--bd2);vertical-align:middle;}
+.t th{background:#eef2fb;color:#374151;font-weight:700;font-size:10.5px;padding:7px 12px;text-align:left;border-bottom:2px solid #c7d7f0;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+.t td{padding:7px 12px;border-bottom:1px solid var(--bd2);vertical-align:middle;}
 .t tbody tr:last-child td{border-bottom:none;}
-.t tbody tr:hover td{background:#fafbfc;}
-.t tbody tr.mine td{background:#fffbf5;}
-.t tbody tr.mine:hover td{background:#fff3e0;}
-.t tbody tr.arch td{opacity:.55;}
+.t tbody tr:hover td{background:#f8faff;}
+.t tbody tr.mine td{background:#fffcf5;}
+.t tbody tr.mine:hover td{background:#fff7e6;}
+.t tbody tr.arch td{opacity:.5;}
 
-/* ══ STATUS ══ */
+/* STATUS */
 .st{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;white-space:nowrap;}
 .sd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .s-done{color:#15803d;} .s-done .sd{background:#16a34a;}
-.s-opnd{color:#c2410c;} .s-opnd .sd{background:#ea580c;}
 .s-pend{color:#92400e;} .s-pend .sd{background:#d97706;}
 .s-prog{color:#1d4ed8;} .s-prog .sd{background:#2563eb;}
 .s-qry {color:#b91c1c;} .s-qry  .sd{background:#dc2626;}
 .s-wait{color:#6b7280;} .s-wait .sd{background:#9ca3af;}
-.s-mty {color:#9ca3af;} .s-mty  .sd{background:#d1d5db;}
+.s-otc {color:#0f766e;} .s-otc  .sd{background:#0f766e;}
 
-/* ══ PENDING-WITH ══ */
-.pw{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10.5px;font-weight:600;}
+/* PENDING-WITH — always inline */
+.pw-wrap{display:flex;flex-wrap:nowrap;gap:3px;}
+.pw{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;white-space:nowrap;}
 .p-cu{background:#dbeafe;color:#1e3a8a;}
 .p-sa{background:#fff3e0;color:#9a3412;}
 .p-op{background:#dcfce7;color:#14532d;}
@@ -154,7 +158,7 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .p-sy{background:#f0fdfa;color:#134e4a;}
 .p-no{color:var(--mu2);font-size:11px;}
 
-/* ══ BUTTONS ══ */
+/* BUTTONS */
 .btn{padding:4px 11px;border-radius:5px;border:none;cursor:pointer;font-family:var(--f);font-size:11px;font-weight:600;transition:all .12s;white-space:nowrap;}
 .b-nv{background:var(--nv);color:#fff;} .b-nv:hover{background:#1a3a70;}
 .b-tl{background:var(--tl);color:#fff;} .b-tl:hover{background:#0a6058;}
@@ -164,96 +168,89 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .b-rm{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;} .b-rm:hover{background:#fef3c7;}
 .b-fi{background:var(--org);color:#fff;} .b-fi:hover{background:#c2500a;}
 .b-re{background:#fef2f2;color:var(--re);border:1px solid #fecaca;} .b-re:hover{background:#fee2e2;}
-.b-pu{background:#5b21b6;color:#fff;}
-.b-of{background:#f3f4f6;color:var(--mu2);cursor:not-allowed;}
+.b-pu{background:#5b21b6;color:#fff;} .b-pu:hover{background:#4c1d95;}
 .acts{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;}
-.tn-wrap .name{font-size:12px;font-weight:500;color:var(--tx);}
+.name{font-size:12px;font-weight:500;color:var(--tx);}
 .mine-tag{font-size:9.5px;font-weight:700;color:var(--org);margin-left:4px;font-family:var(--mono);}
 .finn{font-family:var(--mono);font-size:9.5px;background:var(--nv);color:#fbbf24;padding:1px 5px;border-radius:3px;margin-left:3px;}
 
-/* Query expand */
+/* QUERY ROW */
 .qr{display:none;background:#fff8f8;}
 .qr td{padding:8px 14px 10px 44px !important;}
 .qd{border-left:3px solid #fca5a5;background:#fff1f2;padding:8px 12px;border-radius:0 5px 5px 0;font-size:11px;line-height:1.5;}
 .qd strong{color:var(--re);display:block;margin-bottom:3px;font-size:10.5px;}
 
-/* ══ TOAST ══ */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--nv);color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--nv);color:#fff;padding:9px 18px;border-radius:20px;font-size:12px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2);}
 .toast.show{opacity:1;}
 
-/* ══ MODAL ══ */
+/* MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-bg.open{display:flex;}
-.modal{background:#fff;border-radius:14px;padding:22px;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;}
+.modal{background:#fff;border-radius:14px;padding:22px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto;}
 .modal h3{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--nv);}
 .modal p{font-size:12.5px;color:var(--mu);margin-bottom:14px;line-height:1.5;}
-.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}
 .modal textarea{width:100%;border:1px solid var(--bd);border-radius:6px;padding:8px 10px;font-family:var(--f);font-size:12px;margin-bottom:4px;resize:none;outline:none;}
 .modal textarea:focus{border-color:var(--bl);}
 
-/* ══ NDC CHECKLIST ══ */
-.ndc-modal{max-width:500px;}
-.ndc-header{background:var(--nv);color:#fff;margin:-22px -22px 16px;padding:16px 20px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;}
-.ndc-header h3{color:#fff;font-size:14px;margin:0;}
-.ndc-header .finn-badge{font-family:var(--mono);font-size:10px;background:#fbbf24;color:#000;padding:2px 8px;border-radius:3px;font-weight:700;}
-.ndc-section{margin-bottom:16px;}
-.ndc-section-title{font-size:10.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--bd);}
-.ndc-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd2);}
+/* NDC */
+.ndc-hdr{background:var(--nv);color:#fff;margin:-22px -22px 16px;padding:16px 20px;border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.ndc-hdr h3{color:#fff;font-size:14px;margin:0;}
+.finn-badge{font-family:var(--mono);font-size:10px;background:#fbbf24;color:#000;padding:2px 8px;border-radius:3px;font-weight:700;}
+.ndc-sec-title{font-size:10.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--bd);}
+.ndc-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd2);}
 .ndc-item:last-child{border-bottom:none;}
 .ndc-cb{width:17px;height:17px;border:1.5px solid var(--bd);border-radius:4px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-top:1px;}
-.ndc-cb.checked{background:var(--gn);border-color:var(--gn);}
-.ndc-cb.checked::after{content:'✓';color:#fff;font-size:11px;font-weight:700;}
-.ndc-item-text{flex:1;}
-.ndc-item-label{font-size:12px;font-weight:500;color:var(--tx);}
+.ndc-cb.chk{background:var(--gn);border-color:var(--gn);}
+.ndc-cb.chk::after{content:'✓';color:#fff;font-size:11px;font-weight:700;}
+.ndc-item-lbl{font-size:12px;font-weight:500;color:var(--tx);}
 .ndc-item-hint{font-size:10.5px;color:var(--mu);margin-top:1px;}
-.ndc-progress-bar{background:#f3f4f6;border-radius:20px;height:5px;overflow:hidden;margin:12px 0;}
-.ndc-progress-fill{height:100%;background:var(--gn);border-radius:20px;transition:width .3s;}
-.ndc-progress-text{font-size:11px;color:var(--mu);text-align:right;margin-top:3px;}
-.ndc-save-btn{width:100%;padding:11px;background:var(--gn);color:#fff;border:none;border-radius:8px;font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;transition:all .15s;}
-.ndc-save-btn:disabled{background:#d1d5db;color:var(--mu2);cursor:not-allowed;}
-.ndc-save-btn:not(:disabled):hover{background:#14532d;}
+.ndc-pbar-wrap{background:#f3f4f6;border-radius:20px;height:5px;overflow:hidden;margin:10px 0 3px;}
+.ndc-pbar{height:100%;background:var(--gn);border-radius:20px;transition:width .3s;}
+.ndc-ptext{font-size:11px;color:var(--mu);text-align:right;margin-bottom:12px;}
+.ndc-save{width:100%;padding:11px;background:var(--gn);color:#fff;border:none;border-radius:8px;font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.ndc-save:disabled{background:#d1d5db;color:var(--mu2);cursor:not-allowed;}
 
-/* ══ CUSTOMER PHONE ══ */
+/* TMA PHONE */
 #view-tma{margin-top:40px;display:none;align-items:center;justify-content:center;min-height:calc(100vh - 40px);padding:20px;background:#e8eaed;}
-.phone-wrap{position:relative;width:375px;max-width:100%;}
-.phone-shell{background:#1a1a1e;border-radius:48px;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08);position:relative;}
-.phone-notch{width:126px;height:36px;background:#1a1a1e;border-radius:0 0 22px 22px;position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;justify-content:center;gap:8px;}
+.phone-wrap{width:375px;max-width:100%;position:relative;}
+.phone-shell{background:#1a1a1e;border-radius:48px;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.08);}
+.phone-notch{width:126px;height:34px;background:#1a1a1e;border-radius:0 0 22px 22px;position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;justify-content:center;gap:8px;}
 .phone-camera{width:12px;height:12px;background:#0d0d0d;border-radius:50%;border:1px solid #333;}
-.phone-mic{width:50px;height:7px;background:#0d0d0d;border-radius:4px;}
-.phone-screen{background:#f2f2f7;border-radius:38px;overflow:hidden;height:780px;overflow-y:auto;position:relative;-webkit-overflow-scrolling:touch;}
+.phone-mic{width:48px;height:6px;background:#0d0d0d;border-radius:4px;}
+.phone-screen{background:#f2f2f7;border-radius:38px;overflow:hidden;height:760px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .phone-screen::-webkit-scrollbar{display:none;}
-.phone-btn-r{position:absolute;right:-3px;top:130px;width:3px;height:32px;background:#2a2a2e;border-radius:0 2px 2px 0;}
-.phone-btn-l1{position:absolute;left:-3px;top:110px;width:3px;height:28px;background:#2a2a2e;border-radius:2px 0 0 2px;}
-.phone-btn-l2{position:absolute;left:-3px;top:150px;width:3px;height:56px;background:#2a2a2e;border-radius:2px 0 0 2px;}
-.phone-btn-l3{position:absolute;left:-3px;top:218px;width:3px;height:56px;background:#2a2a2e;border-radius:2px 0 0 2px;}
+.phone-br{position:absolute;right:-3px;top:130px;width:3px;height:32px;background:#2a2a2e;border-radius:0 2px 2px 0;}
+.phone-bl1{position:absolute;left:-3px;top:110px;width:3px;height:28px;background:#2a2a2e;border-radius:2px 0 0 2px;}
+.phone-bl2{position:absolute;left:-3px;top:150px;width:3px;height:56px;background:#2a2a2e;border-radius:2px 0 0 2px;}
+.phone-bl3{position:absolute;left:-3px;top:218px;width:3px;height:56px;background:#2a2a2e;border-radius:2px 0 0 2px;}
 .phone-home{width:134px;height:4px;background:#1a1a1e;border-radius:3px;margin:8px auto 4px;}
 
-/* TMA content */
-.tma-inner{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;-webkit-font-smoothing:antialiased;min-height:100%;}
-.t-statusbar{background:#fff;height:44px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid rgba(0,0,0,.08);position:sticky;top:0;z-index:20;}
-.t-back{color:#007aff;font-size:15px;font-weight:400;}
+/* TMA INNER */
+.tma{font-family:-apple-system,BlinkMacSystemFont,SF Pro Text,sans-serif;-webkit-font-smoothing:antialiased;min-height:100%;padding-bottom:20px;}
+.t-nb{background:#fff;height:44px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid rgba(0,0,0,.08);position:sticky;top:0;z-index:20;}
+.t-back{color:#007aff;font-size:16px;}
 .t-title{flex:1;text-align:center;font-size:16px;font-weight:600;letter-spacing:-.3px;color:#000;}
 .t-av{width:28px;height:28px;background:#ff6b35;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px;}
 .t-hero{margin:12px;background:linear-gradient(145deg,#1c1c1e,#2c2c2e);border-radius:18px;padding:18px 18px 14px;color:#fff;position:relative;overflow:hidden;}
 .t-hero::before{content:'';position:absolute;top:-25px;right:-25px;width:130px;height:130px;background:rgba(255,107,53,.12);border-radius:50%;}
-.t-hero-lbl{font-size:10px;font-weight:500;opacity:.4;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;}
+.t-hero-lbl{font-size:10px;opacity:.4;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;}
 .t-hero-name{font-size:13px;font-weight:600;opacity:.8;margin-bottom:1px;}
 .t-hero-amt{font-size:26px;font-weight:700;letter-spacing:-1px;margin-bottom:10px;}
-.t-hero-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.25);padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:600;color:#34d399;margin-bottom:10px;}
-.t-pulse{width:5px;height:5px;border-radius:50%;background:#34d399;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.t-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.25);padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:600;color:#34d399;margin-bottom:10px;}
+.t-pulse{width:5px;height:5px;border-radius:50%;background:#34d399;animation:tpulse 2s infinite;}
+@keyframes tpulse{0%,100%{opacity:1}50%{opacity:.3}}
 .t-meta{display:flex;border-top:1px solid rgba(255,255,255,.07);padding-top:10px;}
 .t-mi{flex:1;border-right:1px solid rgba(255,255,255,.07);padding-right:8px;margin-right:8px;}
 .t-mi:last-child{border:none;padding:0;margin:0;}
 .t-mi label{font-size:8.5px;opacity:.35;display:block;text-transform:uppercase;letter-spacing:.3px;margin-bottom:1px;}
 .t-mi span{font-size:11px;font-weight:500;opacity:.8;}
-
-/* Steps */
 .t-steps-card{margin:0 12px 10px;background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.05);}
 .t-steps-title{font-size:11.5px;font-weight:600;margin-bottom:10px;color:#000;}
 .t-steps{display:flex;align-items:center;}
 .t-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
-.t-step:not(:last-child)::after{content:'';position:absolute;top:9px;left:calc(50% + 9px);width:calc(100% - 18px);height:2px;background:#e5e5ea;z-index:0;}
+.t-step:not(:last-child)::after{content:'';position:absolute;top:9px;left:calc(50% + 9px);width:calc(100% - 18px);height:2px;background:#e5e5ea;}
 .t-step:not(:last-child).done::after{background:#34c759;}
 .t-sc{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;z-index:1;position:relative;}
 .t-step.done .t-sc{background:#34c759;color:#fff;}
@@ -263,8 +260,6 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .t-step.done .t-sl{color:#34c759;}
 .t-step.active .t-sl{color:#007aff;font-weight:600;}
 .t-step.wait .t-sl{color:#8e8e93;}
-
-/* Progress */
 .t-prog{margin:0 12px 10px;background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:grid;grid-template-columns:60px 1fr;gap:12px;align-items:center;}
 .t-ring{position:relative;width:60px;height:60px;}
 .t-ring svg{transform:rotate(-90deg);}
@@ -278,8 +273,6 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .t-pb{flex:1;background:#e5e5ea;border-radius:10px;height:3.5px;overflow:hidden;}
 .t-pbf{height:100%;border-radius:10px;transition:width .4s;}
 .t-pf{font-size:10px;font-weight:600;min-width:22px;text-align:right;}
-
-/* TMA section */
 .t-sec{padding:0 12px;margin:8px 0 5px;display:flex;justify-content:space-between;align-items:baseline;}
 .t-sec-lbl{font-size:17px;font-weight:700;letter-spacing:-.3px;color:#000;}
 .t-sec-ct{font-size:11.5px;color:#8e8e93;}
@@ -296,7 +289,6 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .t-amber{background:#ff9500;color:#fff;}
 .t-green{background:#34c759;color:#fff;}
 .t-grey{background:#e5e5ea;color:#8e8e93;}
-.t-blue{background:#007aff;color:#fff;}
 .t-chev{color:#c7c7cc;font-size:13px;}
 .t-exp{display:none;padding:0 13px 12px 53px;}
 .t-exp.open{display:block;}
@@ -312,81 +304,50 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .t-fi-time{font-size:10px;color:#8e8e93;min-width:32px;}
 .t-fi-text{font-size:12px;color:#3c3c43;}
 
-/* Empty state */
-.t-empty{padding:20px;text-align:center;font-size:12px;color:#8e8e93;}
-
-/* ══ RESPONSIVE ══ */
-@media(max-width:900px){
-  .il-side{display:none;}
-  .top-row{grid-template-columns:1fr;}
-}
+/* RESPONSIVE */
+@media(max-width:900px){.il-side{display:none;}.top-row{grid-template-columns:1fr;}}
 @media(max-width:600px){
-  .il-nb{padding:0 12px;gap:8px;}
-  .il-search{display:none;}
-  .il-dt{display:none;}
-  .il-ab{padding:8px 12px;gap:6px;}
-  .il-aname{font-size:12px;}
-  .il-ar{margin-left:0;width:100%;margin-top:4px;gap:10px;}
-  .il-main{padding:12px 12px 80px;}
-  .t{min-width:520px;}
-  #view-tma{padding:0;}
-  .phone-wrap{width:100%;}
-  .phone-shell{border-radius:0;padding:0;}
-  .phone-screen{border-radius:0;height:calc(100vh - 40px);}
-  .phone-notch,.phone-btn-r,.phone-btn-l1,.phone-btn-l2,.phone-btn-l3,.phone-home{display:none;}
+  .il-search{display:none;}.il-dt{display:none;}
+  .il-ab{padding:8px 12px;}.il-ar{margin-left:0;width:100%;margin-top:4px;}
+  .il-main{padding:12px 12px 80px;}.t{min-width:520px;}
+  #view-tma{padding:0;}.phone-wrap{width:100%;}
+  .phone-shell{border-radius:0;padding:0;}.phone-screen{border-radius:0;height:calc(100vh - 40px);}
+  .phone-notch,.phone-br,.phone-bl1,.phone-bl2,.phone-bl3,.phone-home{display:none;}
 }
 </style>
 </head>
 <body>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal-cnt"></div></div>
 
-<!-- MODAL -->
-<div class="modal-bg" id="modal-bg">
-  <div class="modal" id="modal-content"></div>
-</div>
-
-<!-- ══ USER SWITCHER ══ -->
+<!-- USER SWITCHER -->
 <div class="user-bar">
   <span class="ub-label">View as:</span>
-  <button class="u-tab on" onclick="switchUser('sales',this)">Sales RM <span class="u-ct" id="ct-sales">5</span></button>
-  <button class="u-tab" onclick="switchUser('credit',this)">Credit <span class="u-ct zero" id="ct-credit">0</span></button>
-  <button class="u-tab" onclick="switchUser('ops',this)">Local Ops <span class="u-ct zero" id="ct-ops">0</span></button>
-  <button class="u-tab" onclick="switchUser('rcu',this)">RCU <span class="u-ct zero" id="ct-rcu">0</span></button>
-  <button class="u-tab" onclick="switchUser('customer',this)">Customer <span class="u-ct" id="ct-customer">3</span></button>
+  <button class="u-tab on"  onclick="switchUser('sales',this)">Sales RM   <span class="u-ct"    id="ct-sales">3</span></button>
+  <button class="u-tab"     onclick="switchUser('credit',this)">Credit     <span class="u-ct zero" id="ct-credit">0</span></button>
+  <button class="u-tab"     onclick="switchUser('ops',this)">Local Ops    <span class="u-ct zero" id="ct-ops">0</span></button>
+  <button class="u-tab"     onclick="switchUser('rcu',this)">RCU          <span class="u-ct zero" id="ct-rcu">0</span></button>
+  <button class="u-tab"     onclick="switchUser('customer',this)">Customer <span class="u-ct"    id="ct-customer">2</span></button>
 </div>
 
-<!-- ══ iLENS SCREEN ══ -->
+<!-- iLENS VIEW -->
 <div id="view-ilens">
-
-  <!-- Top navbar -->
   <div class="il-nb">
     <div class="il-logo">iLens<small>Mortgage Loan</small></div>
     <input class="il-search" placeholder="Search — Application No., Name, PAN…">
-    <div class="il-nb-right">
+    <div class="il-nbr">
       <span class="il-dt" id="il-dt"></span>
-      <div class="il-notif">🔔<div class="il-notif-dot"></div></div>
       <div class="il-av" id="il-av">MD</div>
-      <div class="il-user"><strong id="il-uname">MAHARSHI DIVEKAR</strong><span id="il-urole">Sales RM</span></div>
+      <div class="il-user"><strong id="il-uname">MAHARSHI DIVEKAR (90106339)</strong><span id="il-urole">Sales RM</span></div>
     </div>
   </div>
-
-  <!-- Top nav links -->
   <div class="il-tn">
-    <a href="#"><span class="ico">🏠</span>Home</a>
-    <a href="#" class="on"><span class="ico">📋</span>Loan Application</a>
-    <a href="#"><span class="ico">🔍</span>Prospects</a>
-    <a href="#"><span class="ico">📊</span>CPC</a>
-    <a href="#"><span class="ico">🧾</span>Invoice</a>
-    <a href="#"><span class="ico">🏦</span>APF</a>
-    <a href="#"><span class="ico">📈</span>PAS Reports</a>
-    <a href="#"><span class="ico">🏢</span>Agencies</a>
-    <a href="#"><span class="ico">👁</span>Bio KYC</a>
-    <a href="#" style="margin-left:auto;"><span class="ico">🔗</span>Quick Links</a>
+    <a href="#">Home</a><a href="#" class="on">Loan Application</a>
+    <a href="#">Prospects</a><a href="#">CPC</a><a href="#">Invoice</a>
+    <a href="#">APF</a><a href="#">PAS Reports</a><a href="#">Agencies</a><a href="#">Bio KYC</a>
+    <a href="#" style="margin-left:auto;">Quick Links</a>
   </div>
-
-  <!-- Application header bar -->
   <div class="il-ab">
     <span class="il-aname">RAJESH CHHAGANBHAI GODHANIYA</span>
     <span class="il-ameta">77212387114</span>
@@ -395,698 +356,1201 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
     <span class="il-ameta">Non BT</span>
     <div class="il-ar">
       <div class="il-ari"><label>Application Date</label><strong>08 Jan 2026</strong></div>
-      <div class="il-ari"><label>Status</label><span class="b-ip">Disbursement – In Progress</span></div>
+      <div class="il-ari"><label>Status</label><span class="b-uw" id="case-badge">Underwriting – In Progress</span></div>
       <div class="il-ari"><label>TAT</label><span class="b-tat">2 hrs 45 mins</span></div>
     </div>
   </div>
-
-  <!-- Body: sidebar + main -->
   <div class="il-body">
-
-    <!-- Sidebar -->
     <div class="il-side">
       <div class="il-side-prod">
         <div class="tr">Product 1 · Tranche 1</div>
         <div class="pn">Home Loan</div>
-        <div class="am">₹ 69,40,109</div>
+        <div class="am">&#8377; 69,40,109</div>
       </div>
-      <div class="il-side-section">
-        <div class="il-side-section-label">Disbursement</div>
-        <a class="on"><span class="si">📊</span>Disbursement Dashboard</a>
-        <a><span class="si">📄</span>Information Gathering</a>
-        <a><span class="si">✅</span>Verifications</a>
-        <a class="sub"><span class="si">🔍</span>Seller Verification</a>
-        <a class="sub"><span class="si">📑</span>Original Doc Verification</a>
-        <a class="sub"><span class="si">📜</span>NOC Verification</a>
-        <a><span class="si">👥</span>Customer Worklist</a>
-        <a><span class="si">🕐</span>Disbursement History</a>
-      </div>
-      <div class="il-side-section">
-        <div class="il-side-section-label">Application</div>
-        <a><span class="si">👤</span>Applicant Details</a>
-        <a><span class="si">💰</span>Loan Summary</a>
-        <a><span class="si">🏠</span>Property Details</a>
-      </div>
+      <div class="il-side-lbl">Disbursement</div>
+      <a>&#128202; Disbursement Dashboard</a>
     </div>
+    <div class="il-main" id="il-main"></div>
+  </div>
+</div>
 
-    <!-- Main dashboard -->
-    <div class="il-main" id="ilens-main"></div>
-
-  </div><!-- /il-body -->
-</div><!-- /view-ilens -->
-
-<!-- ══ CUSTOMER / TMA SCREEN ══ -->
+<!-- TMA VIEW -->
 <div id="view-tma">
   <div class="phone-wrap">
     <div class="phone-shell">
       <div class="phone-notch"><div class="phone-mic"></div><div class="phone-camera"></div></div>
-      <div class="phone-btn-r"></div>
-      <div class="phone-btn-l1"></div>
-      <div class="phone-btn-l2"></div>
-      <div class="phone-btn-l3"></div>
-      <div class="phone-screen" id="tma-main"></div>
+      <div class="phone-br"></div><div class="phone-bl1"></div><div class="phone-bl2"></div><div class="phone-bl3"></div>
+      <div class="phone-screen" id="tma-screen"></div>
       <div class="phone-home"></div>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════
 // STATE
-// ═══════════════════════════════════════════════════════
-const STATE = {
-  currentUser:'sales',
-  tasks:{
-    'doc-patta':  {cat:'doc',name:'Patta / Khata — Original',      status:'pending',        owner:['customer','sales'],completedBy:null,queryText:null},
-    'doc-sale':   {cat:'doc',name:'Sale Agreement — Original',      status:'queried',        owner:['customer','sales'],completedBy:null,queryText:'Page 3 missing — cover shows 8 pages but only 7 present. Please resubmit complete original.'},
-    'doc-title':  {cat:'doc',name:'Title Deed — Original',          status:'credit-pending', owner:['credit'],          completedBy:null,queryText:null},
-    'doc-ec':     {cat:'doc',name:'Encumbrance Certificate',         status:'done',           owner:[],                  completedBy:'Sales RM',queryText:null},
-    'sc-noc':     {cat:'sc', name:'Existing Loan Closure NOC',       status:'pending',        owner:['customer','sales'],completedBy:null,queryText:null},
-    'sc-income':  {cat:'sc', name:'Income Proof Attestation',        status:'pending',        owner:['customer','sales'],completedBy:null,queryText:null},
-    'sc-fee':     {cat:'sc', name:'Processing Fee — ₹ 17,350',      status:'done',           owner:[],                  completedBy:'System',queryText:null},
-    'ld-pricing': {cat:'ld', name:'Pricing Approval Confirmation',   status:'pending',        owner:['sales'],           completedBy:null,queryText:null},
-    'ld-bene':    {cat:'ld', name:'Beneficiary Account',             status:'done',           owner:[],                  completedBy:'Sales RM',queryText:null},
-    'ld-repay':   {cat:'ld', name:'Repayment Details',               status:'done',           owner:[],                  completedBy:'Sales RM',queryText:null},
-    'ld-emi':     {cat:'ld', name:'EMI Start & Tenure',              status:'done',           owner:[],                  completedBy:'Sales RM',queryText:null},
-    'ld-contrib': {cat:'ld', name:'Own Contribution',                status:'done',           owner:[],                  completedBy:'Sales RM',queryText:null},
-    'vf-physical':{cat:'vf', name:'Physical Completeness Check',     status:'locked',         owner:['ops'],             completedBy:null,queryText:null},
-    'vf-data':    {cat:'vf', name:'System Data Accuracy Check',      status:'locked',         owner:['ops'],             completedBy:null,queryText:null},
-    'ca-sc':      {cat:'ca', name:'Sanction Condition Revalidation', status:'locked',         owner:['credit'],          completedBy:null,queryText:null},
-    'ca-docs':    {cat:'ca', name:'Original Documents vs TSR Review',status:'locked',         owner:['credit'],          completedBy:null,queryText:null},
-    'ca-pricing': {cat:'ca', name:'Pricing & Own Contribution Review',status:'locked',        owner:['credit'],          completedBy:null,queryText:null},
-    'ca-patta':   {cat:'ca', name:'Credit Approval — Patta / Khata',status:'locked',         owner:['credit'],          completedBy:null,queryText:null},
-    'ca-title':   {cat:'ca', name:'Credit Approval — Title Deed',    status:'credit-pending', owner:['credit'],          completedBy:null,queryText:null},
-    'fc-kfs':     {cat:'fc', name:'KFS — Customer Review & Acceptance',status:'locked',      owner:['customer','sales'],completedBy:null,queryText:null},
-    'fc-esign':   {cat:'fc', name:'E-Sign — Initiate & Customer Signs',status:'locked',      owner:['sales'],           completedBy:null,queryText:null},
-    'fc-enach':   {cat:'fc', name:'eNACH / Autopay Mandate',         status:'locked',         owner:['system'],          completedBy:null,queryText:null},
-    'fc-fcpg':    {cat:'fc', name:'FCPG — RCU Physical Verification',status:'locked',        owner:['rcu'],             completedBy:null,queryText:null},
-    'fc-ndc':     {cat:'fc', name:'NDC Check — FinnOne Checklist',   status:'locked',         owner:['ops'],             completedBy:null,queryText:null},
-    'fc-submit':  {cat:'fc', name:'Submit to FinnOne',               status:'locked',         owner:['ops'],             completedBy:null,queryText:null},
+// ═══════════════════════════════
+var S = {
+  user: 'sales',
+  filter: 'all',
+  phase: 'lt',
+
+  lt: {
+    'lu-agree': {name:'Upload Sale Agreement (Scanned)',      status:'done',   owner:['customer','sales'], by:'Customer'},
+    'lu-title': {name:'Upload Title Deed (Scanned)',          status:'done',   owner:['customer','sales'], by:'Customer'},
+    'lu-tax':   {name:'Upload Property Tax Receipt',          status:'done',   owner:['customer','sales'], by:'Sales RM'},
+    'lu-addr':  {name:'Upload Address Proof',                 status:'done',   owner:['customer','sales'], by:'Customer'},
+    'lu-sketch':{name:'Upload Property Sketch / Survey Map',  status:'pending',owner:['customer','sales'], by:null},
+    'li-legal': {name:'Initiate Legal',                       status:'locked', owner:['sales'],            by:null},
+    'lv-review':{name:'Legal Vendor: Review & TSR Generation',status:'locked', owner:['sales'],            by:null},
+    'lt-tsrup': {name:'Upload TSR to iLens',                  status:'locked', owner:['sales'],            by:null},
+    'ti-tech':  {name:'Initiate Technical',                   status:'locked', owner:['sales'],            by:null},
+    'ta-alloc': {name:'Tech Admin: Verify Docs & Allocate TM',status:'locked', owner:['sales'],            by:null},
+    'ts-insp':  {name:'Technical Manager: Site Inspection',   status:'locked', owner:['sales'],            by:null},
+    'tr-rapid': {name:'Tech Admin: Rapid Validation & Publish',status:'locked',owner:['sales'],            by:null}
   },
-  flags:{
-    'batch-submitted':false,'dm-generated':false,'ops-verified-patta':false,
-    'all-credit-done':false,'kfs-done':false,'data-verified':false,
-    'esign-done':false,'fcpg-done':false,'ndc-done':false,
+
+  dis: {
+    'dp-patta': {cat:'doc',name:'Patta / Khata — Original',        status:'locked',owner:['customer','sales'],by:null,qry:null,otc:null},
+    'dp-sale':  {cat:'doc',name:'Sale Agreement — Original',       status:'locked',owner:['customer','sales'],by:null,qry:null,otc:null},
+    'dp-title': {cat:'doc',name:'Title Deed — Original',           status:'locked',owner:['customer','sales'],by:null,qry:null,otc:null},
+    'dp-ec':    {cat:'doc',name:'Encumbrance Certificate',         status:'locked',owner:['customer','sales'],by:null,qry:null,otc:null},
+    'sc-noc':   {cat:'sc', name:'Existing Loan Closure NOC',       status:'locked',owner:['customer','sales'],by:null,qry:null},
+    'sc-inc':   {cat:'sc', name:'Income Proof Attestation',        status:'locked',owner:['customer','sales'],by:null,qry:null},
+    'sc-fee':   {cat:'sc', name:'Processing Fee — Rs 17,350',     status:'locked',owner:['system'],           by:null,qry:null},
+    'ld-price': {cat:'ld', name:'Pricing Approval Confirmation',   status:'pending',owner:['sales'],          by:null,qry:null},
+    'ld-bene':  {cat:'ld', name:'Beneficiary Account',             status:'locked',owner:['sales'],           by:null,qry:null},
+    'ld-repay': {cat:'ld', name:'Repayment Details',               status:'locked',owner:['sales'],           by:null,qry:null},
+    'ld-emi':   {cat:'ld', name:'EMI Start & Tenure',              status:'locked',owner:['sales'],           by:null,qry:null},
+    'ld-own':   {cat:'ld', name:'Own Contribution',                status:'locked',owner:['sales'],           by:null,qry:null},
+    'vp-phys':  {cat:'vf', name:'Physical Completeness Check',     status:'locked',owner:['ops'],             by:null,qry:null},
+    'vp-data':  {cat:'vf', name:'System Data Accuracy Check',      status:'locked',owner:['ops'],             by:null,qry:null},
+    'ca-sc':    {cat:'ca', name:'Sanction Condition Revalidation', status:'locked',owner:['credit'],          by:null,qry:null},
+    'ca-docs':  {cat:'ca', name:'Original Documents vs TSR Review',status:'locked',owner:['credit'],          by:null,qry:null},
+    'ca-price': {cat:'ca', name:'Pricing & Own Contribution Review',status:'locked',owner:['credit'],         by:null,qry:null},
+    'fc-kfs':        {cat:'fc', name:'KFS — Customer Review & Acceptance',      status:'locked',owner:['customer','sales'],by:null,qry:null,sub:null},
+    'fc-esign':      {cat:'fc', name:'E-Sign — Booklet Signing',                status:'locked',owner:['sales'],           by:null,qry:null,sub:null},
+    'fc-enach': {cat:'fc', name:'eNACH / Autopay Mandate (Auto)',   status:'locked',owner:['system'],         by:null,qry:null},
+    'fc-fcpg':  {cat:'fc', name:'FCPG — RCU Physical Verification', status:'locked',owner:['rcu'],            by:null,qry:null},
+    'fc-ndc':   {cat:'fc', name:'NDC Check — FinnOne Checklist',    status:'locked',owner:['ops'],            by:null,qry:null},
+    'fc-sub':   {cat:'fc', name:'Submit to FinnOne',                status:'locked',owner:['ops'],            by:null,qry:null}
   },
-  ndcChecks:{
-    c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false,
-  },
-  activityLog:[
-    {time:'13:30',text:'RCU verification initiated for property documents',color:'#ff3b30'},
-    {time:'12:15',text:'Sale Agreement verified by bank team',color:'#34c759'},
-    {time:'11:00',text:'Income proof submitted via portal',color:'#007aff'},
-    {time:'09:45',text:'Credit assessment completed — CIBIL check passed',color:'#34c759'},
-    {time:'08:30',text:'Application moved to disbursement stage',color:'#ff9500'},
-  ],
+
+  F: {ltDone:false,disStart:false,batchDone:false,dmDone:false,opsDone:false,dataOK:false,creditDone:false,kfsDone:false,esignDone:false,fcpgDone:false,ndcDone:false},
+
+  ndc: {c1:false,c2:false,c3:false,c4:false,c5:false,c6:false,c7:false,c8:false},
+
+  log: [
+    {time:'09:45',text:'Application sanctioned — property identified',color:'#34c759'},
+    {time:'08:30',text:'Case created in iLens',color:'#007aff'}
+  ]
 };
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════
 // HELPERS
-// ═══════════════════════════════════════════════════════
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2800);
+// ═══════════════════════════════
+function rnm(u) {
+  var m = {sales:'Sales RM',credit:'Credit',ops:'Local Ops',rcu:'RCU',customer:'Customer',system:'System'};
+  return m[u] || u;
 }
-function logActivity(text,color='#007aff'){
-  const now=new Date();
-  const h=now.getHours().toString().padStart(2,'0');
-  const m=now.getMinutes().toString().padStart(2,'0');
-  STATE.activityLog.unshift({time:`${h}:${m}`,text,color});
+function rav(u) {
+  var m = {sales:'MD',credit:'CR',ops:'OP',rcu:'RC',customer:'RJ'};
+  return m[u] || '?';
 }
-function roleName(u){return {sales:'Sales RM',credit:'Credit',ops:'Local Ops',rcu:'RCU',customer:'Customer'}[u]||u;}
-function roleAv(u){  return {sales:'MD',credit:'CR',ops:'OP',rcu:'RC',customer:'RJ'}[u]||'?';}
-function roleFull(u){
-  return {
-    sales:{name:'MAHARSHI DIVEKAR (90106339)',role:'Sales RM'},
-    credit:{name:'PRIYA SHARMA (80234521)',role:'Credit Manager'},
-    ops:{name:'RAHUL VERMA (70345612)',role:'Local Ops'},
-    rcu:{name:'SURESH KUMAR (60456703)',role:'RCU'},
-    customer:{name:'RAJESH GODHANIYA',role:'Customer'},
-  }[u]||{name:'User',role:''};
+function toastMsg(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
 }
-
-function reeval(){
-  const T=STATE.tasks;const F=STATE.flags;
-  const mandDone=['doc-patta','doc-sale','doc-title','doc-ec'].every(d=>['done','otcpdd-approved'].includes(T[d].status));
-  const scDone=['sc-noc','sc-income','sc-fee'].every(d=>T[d].status==='done');
-  const ldDone=['ld-pricing','ld-bene','ld-repay','ld-emi','ld-contrib'].every(d=>T[d].status==='done');
-  if(mandDone&&scDone&&ldDone&&!F['batch-submitted']){
-    F['batch-submitted']=true;
-    if(T['vf-physical'].status==='locked'){T['vf-physical'].status='pending';T['vf-data'].status='pending';}
-    logActivity('Document batch submitted to Local Ops for verification','#0f766e');
-  }
-  if(T['vf-data'].status==='done')F['data-verified']=true;
-  if(T['vf-physical'].status==='done'&&T['vf-data'].status==='done'&&!F['dm-generated']){
-    F['dm-generated']=true;
-    ['ca-sc','ca-docs','ca-pricing'].forEach(k=>{if(T[k].status==='locked')T[k].status='pending';});
-    logActivity('Disbursement Memo generated — Credit review unlocked','#1e40af');
-  }
-  if(T['vf-physical'].status==='done')F['ops-verified-patta']=true;
-  if(F['data-verified']&&T['fc-enach'].status==='locked')T['fc-enach'].status='done';
-  const creditAll=['ca-sc','ca-docs','ca-pricing','ca-patta','ca-title'];
-  if(creditAll.every(k=>T[k].status==='done')&&!F['all-credit-done']){
-    F['all-credit-done']=true;
-    if(T['fc-kfs'].status==='locked')T['fc-kfs'].status='pending';
-    logActivity('All Credit approvals complete — KFS auto-triggered','#34c759');
-  }
-  if(T['fc-kfs'].status==='done'){F['kfs-done']=true;if(T['fc-esign'].status==='locked')T['fc-esign'].status='pending';}
-  if(T['fc-esign'].status==='done'){F['esign-done']=true;if(T['fc-fcpg'].status==='locked')T['fc-fcpg'].status='pending';logActivity('E-Sign complete — FCPG unlocked','#6d28d9');}
-  if(T['fc-fcpg'].status==='done'){F['fcpg-done']=true;if(T['fc-ndc'].status==='locked')T['fc-ndc'].status='pending';}
-  if(T['fc-ndc'].status==='done'){F['ndc-done']=true;if(T['fc-submit'].status==='locked')T['fc-submit'].status='pending';}
-  if(F['ops-verified-patta']&&T['ca-patta'].status==='locked')T['ca-patta'].status='pending';
+function logIt(text, color) {
+  var now = new Date();
+  var h = ('0'+now.getHours()).slice(-2);
+  var m = ('0'+now.getMinutes()).slice(-2);
+  S.log.unshift({time: h+':'+m, text: text, color: color || '#007aff'});
 }
-
-function countPending(user){
-  return Object.values(STATE.tasks).filter(t=>t.owner.includes(user)&&['pending','queried','credit-pending'].includes(t.status)).length;
-}
-function updateCounts(){
-  ['sales','credit','ops','rcu','customer'].forEach(u=>{
-    const ct=document.getElementById('ct-'+u);if(!ct)return;
-    const n=countPending(u);ct.textContent=n;ct.className=n>0?'u-ct':'u-ct zero';
-  });
-}
-function progress(){
-  const all=Object.values(STATE.tasks);
-  const done=all.filter(t=>t.status==='done').length;
-  return{done,total:all.length,pct:Math.round(done/all.length*100)};
-}
-
-// ═══════════════════════════════════════════════════════
-// ACTIONS
-// ═══════════════════════════════════════════════════════
-function doAction(taskId,action){
-  const T=STATE.tasks;const t=T[taskId];if(!t)return;
-  const rn=roleName(STATE.currentUser);
-  if(action==='complete'||action==='upload'||action==='receive'||action==='confirm'){
-    t.status='done';t.completedBy=rn;
-    logActivity(`✓ ${t.name} — completed by ${rn}`,'#34c759');
-    toast(`✓ ${t.name.length>35?t.name.slice(0,35)+'…':t.name} — done`);
-  }
-  else if(action==='resolve-query'){
-    t.status='done';t.completedBy=rn;t.queryText=null;
-    logActivity(`✓ ${t.name} — query resolved, document re-uploaded`,'#34c759');
-    toast(`✓ Query resolved & document resubmitted`);
-  }
-  else if(action==='verify'){
-    t.status='done';t.completedBy=rn;
-    logActivity(`✓ ${t.name} — verified by Local Ops`,'#0f766e');
-    toast(`✓ Verification complete`);
-  }
-  else if(action==='approve'){
-    t.status='done';t.completedBy=rn;
-    logActivity(`✓ ${t.name} — approved by Credit`,'#1e40af');
-    toast(`✓ Approved`);
-  }
-  else if(action==='raise-query'){showQueryModal(taskId);return;}
-  else if(action==='remind'){toast(`📨 Reminder sent`);return;}
-  else if(action==='otcpdd'){showOTCModal(taskId);return;}
-  else if(action==='rcu-verify'){
-    t.status='done';t.completedBy='RCU';
-    logActivity(`✓ FCPG Physical Verification complete`,'#6d28d9');
-    toast(`✓ FCPG complete`);
-  }
-  else if(action==='ndc'){showNDCModal();return;}
-  else if(action==='finnone'){
-    t.status='done';t.completedBy='Local Ops';
-    logActivity(`🎉 Case submitted to FinnOne — disbursement complete!`,'#34c759');
-    showSuccessModal();return;
-  }
-  reeval();updateCounts();renderCurrent();
-}
-
-function showQueryModal(taskId){
-  const t=STATE.tasks[taskId];
-  setModal(`<h3>Raise Query</h3>
-    <p>"${t.name}"<br>Describe the issue. The relevant stakeholder will be notified.</p>
-    <textarea id="q-text" rows="3" placeholder="Enter query details…"></textarea>
-    <div class="modal-btns">
-      <button class="btn b-gh" onclick="closeModal()">Cancel</button>
-      <button class="btn b-re" onclick="submitQuery('${taskId}')">Raise Query</button>
-    </div>`);
-}
-function submitQuery(taskId){
-  const text=document.getElementById('q-text').value.trim()||'Additional clarification required.';
-  STATE.tasks[taskId].status='queried';STATE.tasks[taskId].queryText=text;
-  logActivity(`⚠ Query raised on ${STATE.tasks[taskId].name}`,'#dc2626');
-  toast(`Query raised`);closeModal();reeval();updateCounts();renderCurrent();
-}
-function showOTCModal(taskId){
-  const t=STATE.tasks[taskId];
-  setModal(`<h3>Request OTC / PDD</h3>
-    <p>Request to mark "<strong>${t.name}</strong>" as Over-the-Counter or Post-Disbursement Deposit. Goes to Credit for approval.</p>
-    <div class="modal-btns">
-      <button class="btn b-gh" onclick="closeModal()">Cancel</button>
-      <button class="btn b-fi" onclick="approveOTC('${taskId}','OTC')">Mark as OTC</button>
-      <button class="btn b-nv" onclick="approveOTC('${taskId}','PDD')">Mark as PDD</button>
-    </div>`);
-}
-function approveOTC(taskId,type){
-  STATE.tasks[taskId].status='done';STATE.tasks[taskId].completedBy=`${type} approved`;
-  logActivity(`✓ ${STATE.tasks[taskId].name} — marked ${type}`,'#34c759');
-  toast(`✓ ${type} approved`);closeModal();reeval();updateCounts();renderCurrent();
-}
-
-// NDC CHECKLIST
-const NDC_ITEMS=[
-  {id:'c1',label:'E-Signed booklet received and complete',hint:'CFF, Autopay Mandate, KFS, DRF all present'},
-  {id:'c2',label:'Customer signature matches application',hint:'Verify signature on all pages'},
-  {id:'c3',label:'Property address matches TSR report',hint:'Cross-check address on original documents'},
-  {id:'c4',label:'Loan amount matches sanction letter',hint:'Verify final disbursement amount'},
-  {id:'c5',label:'Beneficiary account details verified',hint:'Bank name, account number, IFSC correct'},
-  {id:'c6',label:'OTC documents collected at counter',hint:'Mark as received before cheque handover'},
-  {id:'c7',label:'eNACH mandate activated',hint:'Confirm autopay setup in system'},
-  {id:'c8',label:'DM details match original documents',hint:'All entries in Disbursement Memo verified'},
-];
-function showNDCModal(){
-  const checks=STATE.ndcChecks;
-  const done=Object.values(checks).filter(Boolean).length;
-  const pct=Math.round(done/NDC_ITEMS.length*100);
-  const allDone=done===NDC_ITEMS.length;
-  setModal(`
-    <div class="ndc-modal">
-      <div class="ndc-header">
-        <h3>NDC Checklist</h3>
-        <span class="finn-badge">FinnOne</span>
-      </div>
-      <p style="margin-bottom:12px;">Complete all checks before submission. ${done}/${NDC_ITEMS.length} items verified.</p>
-      <div class="ndc-progress-bar"><div class="ndc-progress-fill" id="ndc-pbar" style="width:${pct}%;"></div></div>
-      <div class="ndc-progress-text" id="ndc-ptext">${pct}% complete</div>
-
-      ${['Documents & Signatures','Loan Details & Amounts','Post-Disbursement'].map((sec,si)=>{
-        const items=NDC_ITEMS.slice(si*3,Math.min((si+1)*3,NDC_ITEMS.length));
-        if(!items.length)return'';
-        return`<div class="ndc-section">
-          <div class="ndc-section-title">${sec}</div>
-          ${items.map(item=>`
-            <div class="ndc-item">
-              <div class="ndc-cb ${checks[item.id]?'checked':''}" id="ncb-${item.id}" onclick="toggleNDC('${item.id}')"></div>
-              <div class="ndc-item-text">
-                <div class="ndc-item-label">${item.label}</div>
-                <div class="ndc-item-hint">${item.hint}</div>
-              </div>
-            </div>`).join('')}
-        </div>`;
-      }).join('')}
-
-      <button class="ndc-save-btn" id="ndc-save" ${allDone?'':'disabled'} onclick="saveNDC()">
-        ${allDone?'✓ Save & Complete NDC Check':'Complete all checks to save'}
-      </button>
-      <div style="margin-top:8px;text-align:center;">
-        <button class="btn b-gh" onclick="closeModal()">Close</button>
-      </div>
-    </div>`);
-}
-function toggleNDC(id){
-  STATE.ndcChecks[id]=!STATE.ndcChecks[id];
-  const cb=document.getElementById('ncb-'+id);
-  if(cb)cb.className='ndc-cb'+(STATE.ndcChecks[id]?' checked':'');
-  const done=Object.values(STATE.ndcChecks).filter(Boolean).length;
-  const pct=Math.round(done/NDC_ITEMS.length*100);
-  const allDone=done===NDC_ITEMS.length;
-  const pb=document.getElementById('ndc-pbar');if(pb)pb.style.width=pct+'%';
-  const pt=document.getElementById('ndc-ptext');if(pt)pt.textContent=pct+'% complete';
-  const sv=document.getElementById('ndc-save');
-  if(sv){sv.disabled=!allDone;sv.textContent=allDone?'✓ Save & Complete NDC Check':'Complete all checks to save';}
-}
-function saveNDC(){
-  const t=STATE.tasks['fc-ndc'];
-  t.status='done';t.completedBy='Local Ops';
-  logActivity(`✓ NDC Check complete — all ${NDC_ITEMS.length} items verified`,'#0f766e');
-  toast(`✓ NDC Check complete`);
-  closeModal();reeval();updateCounts();renderCurrent();
-}
-
-function showSuccessModal(){
-  setModal(`
-    <div style="text-align:center;padding:10px 0;">
-      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-      <h3 style="font-size:18px;margin-bottom:8px;color:var(--gn);">Disbursement Complete!</h3>
-      <p style="font-size:13px;color:var(--mu);margin-bottom:16px;">Case successfully submitted to FinnOne. All tasks are complete.</p>
-      <div style="background:#f0fdf4;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--gn);font-weight:600;">Loan Amount: ₹ 69,40,109 · Home Loan · Tranche 1</div>
-      <button class="btn b-gn" style="width:100%;padding:10px;" onclick="closeModal()">Close</button>
-    </div>`);
-  reeval();updateCounts();renderCurrent();
-}
-
-function setModal(html){
-  document.getElementById('modal-content').innerHTML=html;
+function openModal(html) {
+  document.getElementById('modal-cnt').innerHTML = html;
   document.getElementById('modal-bg').classList.add('open');
 }
-function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+}
 
-// ═══════════════════════════════════════════════════════
-// SWITCH USER
-// ═══════════════════════════════════════════════════════
-function switchUser(u,btn){
-  STATE.currentUser=u;
-  document.querySelectorAll('.u-tab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  const ilens=document.getElementById('view-ilens');
-  const tma=document.getElementById('view-tma');
-  if(u==='customer'){
-    ilens.style.display='none';tma.style.display='flex';renderTMA();
+function ltPend(u) {
+  return Object.values(S.lt).filter(function(t){ return t.owner.indexOf(u)>=0 && t.status==='pending'; }).length;
+}
+function disPend(u) {
+  return Object.values(S.dis).filter(function(t){
+    return t.owner.indexOf(u)>=0 && ['pending','queried','credit-pending','otcpdd-pending','orig-required'].indexOf(t.status)>=0;
+  }).length;
+}
+function cntPend(u) { return S.phase==='lt' ? ltPend(u) : disPend(u); }
+
+function updateCounts() {
+  ['sales','credit','ops','rcu','customer'].forEach(function(u){
+    var ct = document.getElementById('ct-'+u);
+    if (!ct) return;
+    var n = cntPend(u);
+    ct.textContent = n;
+    ct.className = n > 0 ? 'u-ct' : 'u-ct zero';
+  });
+}
+
+function disProgress() {
+  var all = Object.values(S.dis);
+  var done = all.filter(function(t){ return t.status==='done' || t.status==='otcpdd'; }).length;
+  return {done:done, total:all.length, pct:Math.round(done/all.length*100)};
+}
+
+// ═══════════════════════════════
+// REEVAL
+// ═══════════════════════════════
+function reeval() {
+  var L = S.lt; var D = S.dis; var F = S.F;
+
+  // Sketch upload gates BOTH Legal and Technical initiation simultaneously
+  if (L['lu-sketch'].status==='done' && L['li-legal'].status==='locked') {
+    L['li-legal'].status='pending';
+    L['ti-tech'].status='pending';
+  }
+  if (L['li-legal'].status==='done' && L['lv-review'].status==='locked') L['lv-review'].status='pending';
+  if (L['lv-review'].status==='done' && L['lt-tsrup'].status==='locked') L['lt-tsrup'].status='pending';
+  if (L['ti-tech'].status==='done'  && L['ta-alloc'].status==='locked')  L['ta-alloc'].status='pending';
+  if (L['ta-alloc'].status==='done' && L['ts-insp'].status==='locked')   L['ts-insp'].status='pending';
+  if (L['ts-insp'].status==='done'  && L['tr-rapid'].status==='locked')  L['tr-rapid'].status='pending';
+
+  if (!F.disStart) return;
+
+  // auto-complete fee
+  if (D['sc-fee'].status==='locked' || D['sc-fee'].status==='pending') {
+    D['sc-fee'].status='done'; D['sc-fee'].by='System';
+  }
+
+  // batch to ops
+  var mand = ['dp-patta','dp-sale','dp-title','dp-ec'].every(function(k){ return D[k].status==='done'||D[k].status==='otcpdd'; });
+  var sc   = ['sc-noc','sc-inc','sc-fee'].every(function(k){ return D[k].status==='done'; });
+  var ld   = ['ld-bene','ld-repay','ld-emi','ld-own'].every(function(k){ return D[k].status==='done'; });
+  if (mand && sc && ld && !F.batchDone) {
+    F.batchDone = true;
+    D['vp-phys'].status='pending'; D['vp-data'].status='pending';
+    logIt('Document batch submitted to Local Ops', '#0f766e');
+  }
+  if (D['vp-data'].status==='done') F.dataOK = true;
+  if (D['vp-phys'].status==='done' && D['vp-data'].status==='done' && !F.dmDone) {
+    F.dmDone = true; F.opsDone = true;
+    ['ca-sc','ca-docs','ca-price'].forEach(function(k){
+      if (D[k].status==='locked') D[k].status='pending';
+    });
+    logIt('Disbursement Memo generated — Credit approvals unlocked', '#1e40af');
+  }
+  if (F.dataOK && D['fc-enach'].status==='locked') { D['fc-enach'].status='done'; D['fc-enach'].by='System'; }
+
+  // All-credit-done: 3 static tasks only (OTC/PDD handled inline on doc rows)
+  var allCK = ['ca-sc','ca-docs','ca-price'];
+  if (allCK.every(function(k){ return D[k] && D[k].status==='done'; }) && !F.creditDone) {
+    F.creditDone = true;
+    D['fc-kfs'].status='pending';
+    logIt('All Credit approvals done — KFS triggered', '#34c759');
+  }
+  if (D['fc-kfs'].status==='done' && !F.kfsDone) {
+    F.kfsDone=true;
+    D['fc-esign'].status='pending';
+    D['fc-esign'].sub='initiate'; // Sales must initiate first
+  }
+  // esign sub-states: initiate → customer-pending → sales-confirm → done
+  if (D['fc-esign'].status==='done' && !F.esignDone) {
+    F.esignDone=true; D['fc-fcpg'].status='pending';
+    logIt('E-Sign complete — FCPG unlocked','#6d28d9');
+  }
+  if (D['fc-fcpg'].status==='done' && !F.fcpgDone) { F.fcpgDone=true;  D['fc-ndc'].status='pending'; }
+  if (D['fc-ndc'].status==='done' && !F.ndcDone)   { F.ndcDone=true;   D['fc-sub'].status='pending'; }
+}
+
+// ═══════════════════════════════
+// ACTIONS
+// ═══════════════════════════════
+function doLT(id, action) {
+  var t = S.lt[id];
+  if (!t) return;
+  t.status='done'; t.by=rnm(S.user);
+  logIt('Done: '+t.name, '#34c759');
+  toastMsg('Done: '+t.name);
+  reeval(); updateCounts(); render();
+}
+
+function doDis(id, action) {
+  var t = S.dis[id];
+  if (!t) return;
+  var u = S.user;
+  if (action==='complete'||action==='upload'||action==='receive'||action==='confirm') {
+    t.status='done'; t.by=rnm(u);
+    logIt('Done: '+t.name, '#34c759');
+    toastMsg('Done: '+t.name.substring(0,40));
+  } else if (action==='resolve') {
+    t.status='done'; t.by=rnm(u); t.qry=null;
+    logIt('Query resolved: '+t.name, '#34c759');
+    toastMsg('Query resolved');
+  } else if (action==='verify') {
+    t.status='done'; t.by=rnm(u);
+    logIt('Verified: '+t.name, '#0f766e');
+    toastMsg('Verified');
+  } else if (action==='approve') {
+    t.status='done'; t.by=rnm(u);
+    logIt('Approved: '+t.name, '#1e40af');
+    toastMsg('Approved');
+    closeModal();
+  } else if (action==='query')  { showQueryModal(id); return; }
+  else if  (action==='remind')  { toastMsg('Reminder sent'); return; }
+  else if  (action==='otcpdd')  { showOTCModal(id); return; }
+  else if  (action==='rcu')     { t.status='done'; t.by='RCU'; logIt('FCPG complete','#6d28d9'); toastMsg('FCPG complete'); }
+  else if  (action==='ndc')     { showNDCModal(); return; }
+  else if  (action==='finnone') { t.status='done'; t.by='Local Ops'; logIt('Submitted to FinnOne!','#34c759'); showSuccessModal(); return; }
+  reeval(); updateCounts(); render();
+}
+
+function completeLT() {
+  Object.keys(S.lt).forEach(function(k){ var t=S.lt[k]; t.status='done'; if(!t.by) t.by='Demo'; });
+  S.F.ltDone = true;
+  logIt('Legal & Technical complete', '#7c3aed');
+  toastMsg('Legal & Technical marked complete');
+  reeval(); updateCounts(); render();
+}
+
+function initDis() {
+  if (S.dis['ld-price'].status !== 'done') { toastMsg('Please confirm Pricing Approval first'); return; }
+  S.F.disStart = true; S.phase = 'dis';
+  ['dp-patta','dp-sale','dp-title','dp-ec','sc-noc','sc-inc','ld-bene','ld-repay','ld-emi','ld-own'].forEach(function(k){ S.dis[k].status='pending'; });
+  var b = document.getElementById('case-badge');
+  if (b) { b.className='b-ip'; b.textContent='Disbursement – In Progress'; }
+  logIt('Disbursement initiated', '#e8600a');
+  toastMsg('Disbursement initiated — tasks unlocked');
+  reeval(); updateCounts(); render();
+}
+
+function showQueryModal(id) {
+  var t = S.dis[id];
+  openModal(
+    '<h3>Raise Query</h3><p>' + t.name + '</p>' +
+    '<textarea id="q-inp" rows="3" placeholder="Enter query details..."></textarea>' +
+    '<div class="modal-btns">' +
+    '<button class="btn b-gh" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn b-re" onclick="submitQuery(\'' + id + '\')">Raise Query</button>' +
+    '</div>'
+  );
+}
+function submitQuery(id) {
+  var txt = document.getElementById('q-inp').value.trim() || 'Clarification required.';
+  S.dis[id].status='queried'; S.dis[id].qry=txt;
+  logIt('Query on: '+S.dis[id].name, '#dc2626');
+  toastMsg('Query raised'); closeModal(); reeval(); updateCounts(); render();
+}
+
+function showOTCModal(id) {
+  var t = S.dis[id];
+  openModal(
+    '<h3>Request OTC / PDD</h3>' +
+    '<p style="margin-bottom:10px;">Select a reason for requesting OTC or PDD for <strong>' + t.name + '</strong>. This will go to Credit for approval.</p>' +
+    '<div style="margin-bottom:12px;">' +
+    '<label style="font-size:11.5px;font-weight:600;color:var(--nv);display:block;margin-bottom:6px;">Reason</label>' +
+    '<textarea id="otc-reason" rows="2" placeholder="e.g. Document held by registrar, will be available post-registration..." style="width:100%;border:1px solid var(--bd);border-radius:6px;padding:8px 10px;font-family:var(--f);font-size:12px;resize:none;outline:none;"></textarea>' +
+    '</div>' +
+    '<div class="modal-btns">' +
+    '<button class="btn b-gh" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn b-rm" onclick="requestOTC(\'' + id + '\',\'OTC\')">Request OTC</button>' +
+    '<button class="btn b-nv" onclick="requestOTC(\'' + id + '\',\'PDD\')">Request PDD</button>' +
+    '</div>'
+  );
+}
+function requestOTC(id, type) {
+  var reason = (document.getElementById('otc-reason').value.trim()) || 'No reason provided.';
+  var t = S.dis[id];
+  t.status = 'otcpdd-pending';
+  t.otc = type;
+  t.otcReason = reason;
+  // No separate ca-otc task — Credit acts directly on the document row
+  logIt(type + ' requested for ' + t.name + ' — pending Credit review', '#d97706');
+  toastMsg(type + ' request sent to Credit');
+  closeModal(); reeval(); updateCounts(); render();
+}
+function approveOTCCredit(docId) {
+  var doc = S.dis[docId];
+  if (!doc) return;
+  doc.status = 'otcpdd';
+  doc.by = (doc.otc||'OTC/PDD') + ' approved by Credit';
+  logIt((doc.otc||'OTC/PDD') + ' approved by Credit: ' + doc.name, '#0f766e');
+  toastMsg((doc.otc||'OTC/PDD') + ' approved — document complete');
+  closeModal(); reeval(); updateCounts(); render();
+}
+function rejectOTCCredit(docId) {
+  var doc = S.dis[docId];
+  if (!doc) return;
+  doc.status = 'orig-required';
+  doc.owner = ['customer','sales'];
+  doc.otc = null;
+  doc.qry = 'Credit rejected OTC/PDD request. Original document must be physically submitted.';
+  logIt('OTC/PDD rejected — Original Required: ' + doc.name, '#dc2626');
+  toastMsg('Original required — notified to Sales & Customer');
+  closeModal(); reeval(); updateCounts(); render();
+}
+
+// ── Loan Details data entry modals ──
+var LD_FORMS = {
+  'ld-price': {
+    title: 'Confirm Pricing Approval',
+    fields: [
+      {id:'roi',   label:'Rate of Interest (%)',    type:'text',  ph:'e.g. 8.75'},
+      {id:'scheme',label:'Scheme / Product Variant',type:'text',  ph:'e.g. Home Loan - Floating'},
+      {id:'aprby', label:'Approved By (Credit Hierarchy)', type:'text', ph:'e.g. Credit Manager - Zone'}
+    ]
+  },
+  'ld-bene': {
+    title: 'Enter Beneficiary Account Details',
+    fields: [
+      {id:'bname', label:'Account Holder Name', type:'text', ph:'As per bank records'},
+      {id:'bank',  label:'Bank Name',           type:'text', ph:'e.g. HDFC Bank'},
+      {id:'acc',   label:'Account Number',      type:'text', ph:'Enter account number'},
+      {id:'ifsc',  label:'IFSC Code',           type:'text', ph:'e.g. HDFC0001234'},
+      {id:'btype', label:'Account Type',        type:'text', ph:'Savings / Current'}
+    ]
+  },
+  'ld-repay': {
+    title: 'Enter Repayment Details',
+    fields: [
+      {id:'mode',  label:'Repayment Mode',      type:'text', ph:'ECS / NACH / PDC'},
+      {id:'rbank', label:'Bank Name',           type:'text', ph:'Bank from which EMI will be debited'},
+      {id:'racc',  label:'Account Number',      type:'text', ph:'Debit account number'},
+      {id:'rifsc', label:'IFSC Code',           type:'text', ph:'e.g. SBIN0001234'}
+    ]
+  },
+  'ld-emi': {
+    title: 'Enter EMI & Tenure Details',
+    fields: [
+      {id:'estart',label:'EMI Start Date',      type:'text', ph:'e.g. 01 May 2026'},
+      {id:'tenure',label:'Tenure (months)',     type:'text', ph:'e.g. 240'},
+      {id:'emiamt',label:'EMI Amount (Rs)',     type:'text', ph:'e.g. 58240'}
+    ]
+  },
+  'ld-own': {
+    title: 'Enter Own Contribution Details',
+    fields: [
+      {id:'ocamt', label:'Amount (Rs)',         type:'text', ph:'e.g. 1735000'},
+      {id:'ocmode',label:'Mode of Payment',     type:'text', ph:'Cheque / NEFT / Cash'},
+      {id:'ocdate',label:'Date of Payment',     type:'text', ph:'e.g. 15 Jan 2026'},
+      {id:'ocref', label:'Reference / Cheque No.', type:'text', ph:'Transaction reference'}
+    ]
+  }
+};
+var LD_DEMO = {
+  'ld-price': {roi:'8.75', scheme:'Home Loan — Floating Rate', aprby:'Credit Manager — West Zone'},
+  'ld-bene':  {bname:'Rajesh C. Godhaniya', bank:'HDFC Bank', acc:'50100234567890', ifsc:'HDFC0001234', btype:'Savings'},
+  'ld-repay': {mode:'NACH', rbank:'HDFC Bank', racc:'50100234567890', rifsc:'HDFC0001234'},
+  'ld-emi':   {estart:'01 May 2026', tenure:'240', emiamt:'58240'},
+  'ld-own':   {ocamt:'1735000', ocmode:'NEFT', ocdate:'15 Jan 2026', ocref:'NEFT2026011512345'}
+};
+function fillDemoData(id) {
+  var demo = LD_DEMO[id];
+  var form = LD_FORMS[id];
+  if (!demo || !form) return;
+  form.fields.forEach(function(f) {
+    var el = document.getElementById('ldf-'+f.id);
+    if (el && demo[f.id]) el.value = demo[f.id];
+  });
+}
+
+function showLDModal(id) {
+  var form = LD_FORMS[id];
+  if (!form) { toastMsg('Opening data entry form...'); return; }
+  var fieldsHtml = form.fields.map(function(f) {
+    return '<div style="margin-bottom:10px;">' +
+      '<label style="font-size:11px;font-weight:600;color:var(--nv);display:block;margin-bottom:4px;">' + f.label + '</label>' +
+      '<input id="ldf-'+f.id+'" type="'+f.type+'" placeholder="'+f.ph+'" style="width:100%;border:1px solid var(--bd);border-radius:5px;padding:7px 10px;font-family:var(--f);font-size:12px;outline:none;"/>' +
+      '</div>';
+  }).join('');
+  openModal(
+    '<h3>' + form.title + '</h3>' +
+    '<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--bd);">' +
+    '<button class="btn b-rm" onclick="fillDemoData(\''+id+'\')">&#9654; Fill with Demo Data</button>' +
+    '<span style="font-size:11px;color:var(--mu);margin-left:8px;">Click to auto-fill for demo</span>' +
+    '</div>' +
+    '<div style="margin:0 0 14px;">' + fieldsHtml + '</div>' +
+    '<div class="modal-btns">' +
+    '<button class="btn b-gh" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn b-fi" onclick="saveLDForm(\'' + id + '\')">Save &amp; Submit</button>' +
+    '</div>'
+  );
+}
+function saveLDForm(id) {
+  var form = LD_FORMS[id];
+  var allFilled = form.fields.every(function(f) {
+    var el = document.getElementById('ldf-'+f.id);
+    return el && el.value.trim().length > 0;
+  });
+  if (!allFilled) { toastMsg('Please fill all fields'); return; }
+  S.dis[id].status = 'done';
+  S.dis[id].by = rnm(S.user);
+  logIt('Done: ' + S.dis[id].name, '#34c759');
+  toastMsg('Details saved');
+  closeModal(); reeval(); updateCounts(); render();
+}
+
+// ── Credit checklist modals ──
+var SC_CONDITIONS = [
+  {id:'sc1', label:'Existing Loan Closure NOC', sub:'NOC from previous lender received and verified'},
+  {id:'sc2', label:'Income Proof Attestation',  sub:'Salary slip attested by employer — verified'},
+  {id:'sc3', label:'Processing Fee Payment',    sub:'Rs 17,350 confirmed as paid'},
+];
+function showSCRevalModal() {
+  var html = '<div class="ndc-hdr" style="background:var(--bl);"><h3>Sanction Condition Revalidation</h3></div>';
+  html += '<p style="margin-bottom:12px;">Verify each sanction condition is fulfilled before approving.</p>';
+  SC_CONDITIONS.forEach(function(c) {
+    html += '<div class="ndc-item">' +
+      '<div class="ndc-cb chk" style="background:var(--gn);border-color:var(--gn);" id="sc-cb-'+c.id+'"></div>' +
+      '<div><div class="ndc-item-lbl">'+c.label+'</div><div class="ndc-item-hint">'+c.sub+'</div></div>' +
+      '</div>';
+  });
+  html += '<div class="modal-btns" style="margin-top:16px;">' +
+    '<button class="btn b-gh" onclick="closeModal()">Close</button>' +
+    '<button class="btn b-gn" onclick="doDis(\'ca-sc\',\'approve\');closeModal()">Approve All Conditions</button>' +
+    '</div>';
+  openModal(html);
+}
+
+var DOC_TSR_ROWS = [
+  {doc:'Patta / Khata',       id:'dp-patta', recvId:'ca-patta'},
+  {doc:'Sale Agreement',      id:'dp-sale',  recvId:'ca-sale'},
+  {doc:'Title Deed',          id:'dp-title', recvId:'ca-title'},
+  {doc:'Encumbrance Cert.',   id:'dp-ec',    recvId:'ca-ec'},
+];
+function showDocTSRModal() {
+  var html = '<div class="ndc-hdr" style="background:#0f766e;"><h3>Original Documents vs TSR Review</h3></div>';
+  html += '<p style="margin-bottom:10px;">Verify each original document matches TSR report and is in acceptable condition.</p>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<thead><tr style="background:#eef2fb;">' +
+    '<th style="padding:7px 10px;text-align:left;border-bottom:2px solid #c7d7f0;font-size:10.5px;">Document</th>' +
+    '<th style="padding:7px 10px;text-align:center;border-bottom:2px solid #c7d7f0;font-size:10.5px;">Received</th>' +
+    '<th style="padding:7px 10px;text-align:center;border-bottom:2px solid #c7d7f0;font-size:10.5px;">Matches TSR</th>' +
+    '<th style="padding:7px 10px;text-align:center;border-bottom:2px solid #c7d7f0;font-size:10.5px;">Status</th>' +
+    '</tr></thead><tbody>';
+  DOC_TSR_ROWS.forEach(function(r) {
+    var d = S.dis[r.id];
+    var recv = d && (d.status==='done'||d.status==='otcpdd') ? '&#9989;' : '<span style="color:#dc2626;">&#10007;</span>';
+    var status = d && d.status==='otcpdd' ? '<span style="color:#0f766e;font-size:10px;font-weight:600;">'+(d.otc||'OTC/PDD')+'</span>' : (d&&d.status==='done'?'<span style="color:#15803d;font-size:10px;font-weight:600;">Original</span>':'<span style="color:#6b7280;font-size:10px;">Pending</span>');
+    html += '<tr style="border-bottom:1px solid #f4f5f7;">' +
+      '<td style="padding:8px 10px;font-weight:500;">'+r.doc+'</td>' +
+      '<td style="padding:8px 10px;text-align:center;">'+recv+'</td>' +
+      '<td style="padding:8px 10px;text-align:center;">&#9989;</td>' +
+      '<td style="padding:8px 10px;text-align:center;">'+status+'</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  html += '<div class="modal-btns" style="margin-top:14px;">' +
+    '<button class="btn b-gh" onclick="closeModal()">Close</button>' +
+    '<button class="btn b-gn" onclick="doDis(\'ca-docs\',\'approve\');closeModal()">Approve Review</button>' +
+    '</div>';
+  openModal(html);
+}
+
+function showPricingReviewModal() {
+  var html = '<div class="ndc-hdr" style="background:#92400e;"><h3>Pricing &amp; Own Contribution Review</h3></div>';
+  html += '<div style="margin:12px 0;">';
+  // Loan details summary
+  var bene = S.dis['ld-bene']; var repay = S.dis['ld-repay']; var own = S.dis['ld-own'];
+  html += '<div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px;">' +
+    '<div style="font-size:10.5px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Loan Details</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">' +
+    '<div><span style="color:var(--mu);">Loan Amount</span><br><strong>Rs 69,40,109</strong></div>' +
+    '<div><span style="color:var(--mu);">ROI</span><br><strong>'+(bene&&bene.status==='done'?'8.75% p.a.':'Not confirmed')+'</strong></div>' +
+    '<div><span style="color:var(--mu);">Own Contribution</span><br><strong>'+(own&&own.status==='done'?'Rs 17,35,000':'Not confirmed')+'</strong></div>' +
+    '<div><span style="color:var(--mu);">LTV Ratio</span><br><strong>80%</strong></div>' +
+    '</div></div>';
+  // BRE response panel
+  html += '<div style="background:#fef9ec;border:1.5px solid #fbbf24;border-radius:8px;padding:12px;">' +
+    '<div style="font-size:10.5px;font-weight:700;color:#78350f;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">&#128204; BRE Response — Indicative</div>' +
+    '<div style="font-size:11.5px;display:flex;flex-direction:column;gap:5px;">' +
+    '<div>&#9989; <strong>ROI:</strong> 8.75% is within approved range for this product</div>' +
+    '<div>&#9989; <strong>LTV:</strong> 80% — within permissible limit (max 80%)</div>' +
+    '<div>&#9989; <strong>Own Contribution:</strong> Rs 17,35,000 (20%) — meets minimum requirement</div>' +
+    '<div style="color:#15803d;font-weight:600;margin-top:4px;">&#10003; All pricing parameters cleared by BRE</div>' +
+    '</div></div>';
+  html += '</div>';
+  html += '<div class="modal-btns">' +
+    '<button class="btn b-gh" onclick="closeModal()">Close</button>' +
+    '<button class="btn b-gn" onclick="doDis(\'ca-price\',\'approve\');closeModal()">Approve</button>' +
+    '</div>';
+  openModal(html);
+}
+
+function showDocCreditModal(docId) {
+  var doc = S.dis[docId];
+  if (!doc) return;
+  var docName = doc.name;
+  var isOTC = doc.status === 'otcpdd-pending';
+
+  var html = '<div class="ndc-hdr" style="background:var(--nv);"><h3>OTC / PDD Review — '+docName+'</h3></div>';
+  html += '<div style="margin:12px 0;">';
+  html += '<div style="background:#f8f9fa;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;">' +
+    '<div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Request Details</div>' +
+    '<div><strong>Document:</strong> '+docName+'</div>' +
+    '<div style="margin-top:3px;"><strong>Request Type:</strong> <span style="font-weight:700;color:var(--am);">'+(doc.otc||'OTC/PDD')+'</span></div>' +
+    '<div style="margin-top:3px;"><strong>Reason from Sales:</strong> '+(doc.otcReason||'Not provided')+'</div>' +
+    '</div>';
+  html += '<div style="background:#fef9ec;border:1.5px solid #fbbf24;border-radius:8px;padding:10px 12px;margin-bottom:14px;">' +
+    '<div style="font-size:10px;font-weight:700;color:#78350f;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">&#128204; BRE — Permissibility Check</div>' +
+    '<div style="font-size:11.5px;display:flex;flex-direction:column;gap:4px;">' +
+    '<div>&#9989; <strong>OTC Allowed:</strong> Yes — for this product &amp; state (Gujarat)</div>' +
+    '<div>&#9989; <strong>PDD Allowed:</strong> Yes — max 90 days post disbursement</div>' +
+    '<div>&#9888; <strong>Mandatory Original:</strong> Only if encumbrance is at risk</div>' +
+    '</div></div>';
+  html += '<div class="modal-btns">' +
+    '<button class="btn b-gh" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn b-re" onclick="rejectOTCCredit(\''+docId+'\')">Reject — Require Original</button>' +
+    '<button class="btn b-gn" onclick="approveOTCCredit(\''+docId+'\')">Approve '+(doc.otc||'OTC/PDD')+'</button>' +
+    '</div>';
+  html += '</div>';
+  openModal(html);
+}
+
+function showQR_OR(id) {
+  var t = S.dis[id];
+  if (!t) return;
+  openModal(
+    '<h3 style="color:var(--re);">&#9888; Original Required</h3>' +
+    '<p>' + t.name + '</p>' +
+    '<div style="background:#fff1f2;border-left:3px solid #fca5a5;padding:10px 12px;border-radius:0 6px 6px 0;font-size:12px;margin:12px 0;color:#7f1d1d;">' +
+    '<strong>Credit Decision:</strong> OTC/PDD request was rejected.<br>' +
+    (t.qry || 'Original document must be physically submitted.') +
+    '</div>' +
+    '<div class="modal-btns">' +
+    '<button class="btn b-gh" onclick="closeModal()">Close</button>' +
+    '<button class="btn b-nv" onclick="doDis(\''+id+'\',\'receive\');closeModal()">Mark Original Received</button>' +
+    '</div>'
+  );
+}
+
+var NDCI = [
+  {id:'c1',l:'Check 1 — E-Signed booklet complete',h:'CFF, Autopay Mandate, KFS, DRF'},
+  {id:'c2',l:'Check 2 — Customer signature verified',h:'Matches signature on application'},
+  {id:'c3',l:'Check 3 — Property address matches TSR',h:'Cross-check on original documents'},
+  {id:'c4',l:'Check 4 — Loan amount matches sanction',h:'Final disbursement amount confirmed'},
+  {id:'c5',l:'Check 5 — Beneficiary account verified',h:'Bank, account number, IFSC correct'},
+  {id:'c6',l:'Check 6 — OTC documents collected',h:'All OTC docs received before cheque'},
+  {id:'c7',l:'Check 7 — eNACH mandate activated',h:'Autopay setup confirmed in system'},
+  {id:'c8',l:'Check 8 — DM matches original docs',h:'Disbursement Memo entries verified'}
+];
+
+function showTMAQuery(id) {
+  var t = S.dis[id] || S.lt[id];
+  if (!t) return;
+  openModal(
+    '<h3>Raise a Query</h3><p>Your query about "' + t.name + '" will be sent to your RM.</p>' +
+    '<textarea id="q-inp" rows="3" placeholder="Describe your question or concern..."></textarea>' +
+    '<div class="modal-btns">' +
+    '<button class="btn b-gh" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn b-re" onclick="submitTMAQuery(\'' + id + '\')">Send Query</button>' +
+    '</div>'
+  );
+}
+function submitTMAQuery(id) {
+  var txt = document.getElementById('q-inp').value.trim() || 'Customer raised a query.';
+  var t = S.dis[id] || S.lt[id];
+  if (t) { t.status='queried'; t.qry=txt; }
+  logIt('Customer query on: '+(t?t.name:'item'), '#dc2626');
+  toastMsg('Query sent to RM'); closeModal(); reeval(); updateCounts(); renderTMA();
+}
+
+function showNDCModal() {
+  var done = Object.values(S.ndc).filter(Boolean).length;
+  var pct  = Math.round(done/NDCI.length*100);
+  var all  = done===NDCI.length;
+  var secNames = ['Documents & Signatures','Loan & Payment Details','Final Checks'];
+  var html = '<div class="ndc-hdr"><h3>NDC Checklist</h3><span class="finn-badge">FinnOne</span></div>';
+  html += '<p>'+done+'/'+NDCI.length+' items verified.</p>';
+  html += '<div class="ndc-pbar-wrap"><div class="ndc-pbar" id="ndc-pb" style="width:'+pct+'%"></div></div>';
+  html += '<div class="ndc-ptext" id="ndc-pt">'+pct+'% complete</div>';
+  secNames.forEach(function(sn, si) {
+    html += '<div class="ndc-sec-title">'+sn+'</div>';
+    var slice = NDCI.slice(si===0?0:si===1?3:6, si===0?3:si===1?6:8);
+    slice.forEach(function(item) {
+      html += '<div class="ndc-item"><div class="ndc-cb'+(S.ndc[item.id]?' chk':'')+'" id="nc-'+item.id+'" onclick="tNDC(\''+item.id+'\')"></div>';
+      html += '<div><div class="ndc-item-lbl">'+item.l+'</div><div class="ndc-item-hint">'+item.h+'</div></div></div>';
+    });
+  });
+  html += '<button class="ndc-save" id="ndc-sv"'+(all?'':' disabled')+' onclick="saveNDC()">'+(all?'Save & Complete NDC Check':'Complete all checks to save')+'</button>';
+  html += '<div style="text-align:center;margin-top:8px;"><button class="btn b-gh" onclick="closeModal()">Close</button></div>';
+  openModal(html);
+}
+function tNDC(id) {
+  S.ndc[id] = !S.ndc[id];
+  var cb = document.getElementById('nc-'+id);
+  if (cb) cb.className = 'ndc-cb'+(S.ndc[id]?' chk':'');
+  var done = Object.values(S.ndc).filter(Boolean).length;
+  var pct  = Math.round(done/NDCI.length*100);
+  var all  = done===NDCI.length;
+  var pb=document.getElementById('ndc-pb'); if(pb) pb.style.width=pct+'%';
+  var pt=document.getElementById('ndc-pt'); if(pt) pt.textContent=pct+'% complete';
+  var sv=document.getElementById('ndc-sv'); if(sv){ sv.disabled=!all; sv.textContent=all?'Save & Complete NDC Check':'Complete all checks to save'; }
+}
+function saveNDC() {
+  S.dis['fc-ndc'].status='done'; S.dis['fc-ndc'].by='Local Ops';
+  logIt('NDC Check complete', '#0f766e'); toastMsg('NDC complete');
+  closeModal(); reeval(); updateCounts(); render();
+}
+function showSuccessModal() {
+  openModal(
+    '<div style="text-align:center;padding:10px 0;">' +
+    '<div style="font-size:48px;margin-bottom:12px;">&#127881;</div>' +
+    '<h3 style="font-size:18px;color:var(--gn);margin-bottom:8px;">Disbursement Complete!</h3>' +
+    '<p>Case submitted to FinnOne successfully.</p>' +
+    '<div style="background:#f0fdf4;border-radius:8px;padding:12px;margin:14px 0;font-size:12px;color:var(--gn);font-weight:600;">Rs 69,40,109 · Home Loan · Rajesh C. Godhaniya</div>' +
+    '<button class="btn b-gn" style="width:100%;padding:10px;font-size:13px;" onclick="closeModal()">Done</button>' +
+    '</div>'
+  );
+  reeval(); updateCounts(); render();
+}
+
+// ═══════════════════════════════
+// RENDER HELPERS
+// ═══════════════════════════════
+function stB(s, o, sub) {
+  if (s==='done')           return '<span class="st s-done"><span class="sd"></span>Done</span>';
+  if (s==='otcpdd')         return '<span class="st s-otc"><span class="sd"></span>'+(o||'OTC/PDD')+' Approved</span>';
+  if (s==='otcpdd-pending') return '<span class="st s-prog"><span class="sd"></span>'+(o||'OTC/PDD')+' — Awaiting Credit</span>';
+  if (s==='orig-required')  return '<span class="st s-qry"><span class="sd"></span>Original Required</span>';
+  if (s==='pending' && sub==='customer-pending') return '<span class="st s-prog"><span class="sd"></span>Pending — Customer Signing</span>';
+  if (s==='pending' && sub==='sales-confirm')    return '<span class="st s-pend"><span class="sd"></span>Signed by Customer — Pending Sales</span>';
+  if (s==='pending')        return '<span class="st s-pend"><span class="sd"></span>Pending</span>';
+  if (s==='queried')        return '<span class="st s-qry"><span class="sd"></span>Queried</span>';
+  if (s==='locked')         return '<span class="st s-wait"><span class="sd"></span>Waiting</span>';
+  return '<span class="st s-wait"><span class="sd"></span>'+s+'</span>';
+}
+function pwB(owners) {
+  if (!owners || !owners.length) return '<span class="p-no">—</span>';
+  var mp = {customer:'p-cu',sales:'p-sa',ops:'p-op',credit:'p-cr',rcu:'p-rc',system:'p-sy'};
+  return '<div class="pw-wrap">'+owners.map(function(o){ return '<span class="pw '+(mp[o]||'')+'">'+rnm(o)+'</span>'; }).join('')+'</div>';
+}
+
+function ltBtn(id) {
+  var t=S.lt[id]; var u=S.user; var s=t.status;
+  if (s==='done')   return '<span style="color:var(--mu2);font-style:italic;font-size:11px;">Done &#10003;</span>';
+  if (s==='locked') return '<span style="color:var(--mu2);font-size:10.5px;">Waiting</span>';
+  if (t.owner.indexOf(u)<0) return '<button class="btn b-rm" onclick="doLT(\''+id+'\',\'remind\')">Remind</button>';
+  if (id.indexOf('lu-')===0) return '<button class="btn b-up" onclick="doLT(\''+id+'\',\'upload\')">Upload</button>';
+  if (id==='li-legal'||id==='ti-tech') return '<button class="btn b-nv" onclick="doLT(\''+id+'\',\'complete\')">Initiate</button>';
+  return '<button class="btn b-tl" onclick="doLT(\''+id+'\',\'complete\')">Mark Done</button>';
+}
+
+function disBtn(id) {
+  var t=S.dis[id]; var u=S.user; var s=t.status;
+  if (s==='done'||s==='otcpdd') return '<span style="color:var(--mu2);font-style:italic;font-size:11px;">Done &#10003;</span>';
+  if (s==='locked') return '<span style="color:var(--mu2);font-size:10.5px;">Waiting</span>';
+
+  // OTC/PDD pending credit approval — Credit acts on the doc row directly
+  if (s==='otcpdd-pending') {
+    if (u==='credit') return '<button class="btn b-gn" onclick="showDocCreditModal(\''+id+'\')">Review OTC/PDD Request</button>';
+    return '<span style="font-size:10.5px;color:var(--am);">Awaiting Credit approval</span>';
+  }
+  // Original required by credit — back to sales/customer
+  if (s==='orig-required') {
+    if (u==='sales') return '<div class="acts"><button class="btn b-nv" onclick="doDis(\''+id+'\',\'receive\')">Mark Original Received</button><button class="btn b-re" style="font-size:10px;" onclick="showQR_OR(\''+id+'\')">View Reason</button></div>';
+    if (u==='customer') return '<span style="font-size:10.5px;color:var(--re);font-weight:600;">Original Required — see TMA</span>';
+    return '<span style="font-size:10.5px;color:var(--re);">Original required by Credit</span>';
+  }
+
+  var owned = t.owner.indexOf(u)>=0;
+  if (!owned) {
+    if (s==='pending'||s==='credit-pending') return '<button class="btn b-rm" onclick="doDis(\''+id+'\',\'remind\')">Remind</button>';
+    return '—';
+  }
+  if (s==='queried') return '<div class="acts"><button class="btn b-fi" onclick="doDis(\''+id+'\',\'resolve\')">Re-upload &amp; Resolve</button><button class="btn b-gh" onclick="toggleQR(\''+id+'\')">View Query</button></div>';
+  if (t.cat==='doc') return '<div class="acts"><button class="btn b-nv" onclick="doDis(\''+id+'\',\'receive\')">Mark Received</button><button class="btn b-rm" onclick="doDis(\''+id+'\',\'otcpdd\')">OTC/PDD</button></div>';
+  if (t.cat==='sc')  return '<div class="acts"><button class="btn b-up" onclick="doDis(\''+id+'\',\'upload\')">Upload</button><button class="btn b-rm" onclick="doDis(\''+id+'\',\'remind\')">Remind</button></div>';
+  if (t.cat==='ld')  return '<button class="btn b-fi" onclick="showLDModal(\''+id+'\')">Enter Details</button>';
+  if (t.cat==='vf')  return '<div class="acts"><button class="btn b-tl" onclick="doDis(\''+id+'\',\'verify\')">Verify</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'query\')">Raise Query</button></div>';
+  // Credit approval tasks
+  if (t.cat==='ca') {
+    if (id==='ca-sc')    return '<div class="acts"><button class="btn b-gn" onclick="showSCRevalModal()">View &amp; Approve</button></div>';
+    if (id==='ca-docs')  return '<div class="acts"><button class="btn b-gn" onclick="showDocTSRModal()">View &amp; Approve</button></div>';
+    if (id==='ca-price') return '<div class="acts"><button class="btn b-gn" onclick="showPricingReviewModal()">View BRE &amp; Approve</button></div>';
+    return '<div class="acts"><button class="btn b-gn" onclick="doDis(\''+id+'\',\'approve\')">Approve</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'query\')">Query</button></div>';
+  }
+  if (id==='fc-kfs')   return '<button class="btn b-nv" onclick="doDis(\''+id+'\',\'complete\')">Accept KFS</button>';
+  if (id==='fc-esign') {
+    var sub = t.sub || 'initiate';
+    if (sub==='initiate' && u==='sales')
+      return '<button class="btn b-nv" onclick="esignInitiate()">Initiate E-Sign</button>';
+    if (sub==='customer-pending' && u==='sales')
+      return '<span style="font-size:10.5px;color:var(--am);">Waiting for customer to sign</span>';
+    if (sub==='sales-confirm' && u==='sales')
+      return '<button class="btn b-gn" onclick="esignComplete()">Complete E-Sign</button>';
+    if (sub==='customer-pending' && u==='customer')
+      return '<button class="btn b-nv" onclick="esignCustomerSign()">Accept &amp; Sign</button>';
+    return '<span style="color:var(--mu2);font-size:10.5px;">Waiting</span>';
+  }
+  if (id==='fc-fcpg')  return '<button class="btn b-pu" onclick="doDis(\''+id+'\',\'rcu\')">Complete FCPG</button>';
+  if (id==='fc-ndc')   return '<button class="btn b-tl" onclick="doDis(\''+id+'\',\'ndc\')">Open NDC Checklist</button>';
+  if (id==='fc-sub')   return '<button class="btn b-fi" onclick="doDis(\''+id+'\',\'finnone\')">Submit to FinnOne</button>';
+  return '<button class="btn b-nv" onclick="doDis(\''+id+'\',\'complete\')">Complete</button>';
+}
+
+function esignInitiate() {
+  var t = S.dis['fc-esign'];
+  t.sub = 'customer-pending';
+  t.owner = ['customer','sales'];
+  logIt('E-Sign initiated — customer signing link sent', '#1e40af');
+  toastMsg('E-Sign initiated — customer notified to sign');
+  reeval(); updateCounts(); render();
+}
+function esignCustomerSign() {
+  var t = S.dis['fc-esign'];
+  t.sub = 'sales-confirm';
+  t.owner = ['sales'];
+  logIt('Customer signed E-Sign booklet — pending Sales confirmation', '#34c759');
+  toastMsg('Booklet signed — RM notified to confirm');
+  reeval(); updateCounts(); renderTMA();
+}
+function esignComplete() {
+  var t = S.dis['fc-esign'];
+  t.status = 'done';
+  t.sub = 'done';
+  t.by = 'Sales RM';
+  logIt('E-Sign complete — confirmed by Sales RM', '#34c759');
+  toastMsg('E-Sign complete');
+  reeval(); updateCounts(); render();
+}
+
+function toggleQR(id) {
+  var r = document.getElementById('qr-'+id);
+  if (r) r.style.display = r.style.display==='table-row' ? 'none' : 'table-row';
+}
+function togSec(h) {
+  var b=h.nextElementSibling; var t=h.querySelector('.ts-tog');
+  var op=t.classList.contains('op');
+  b.style.display=op?'none':'block'; t.classList.toggle('op',!op);
+}
+function setFilter(m) { S.filter=m; render(); }
+
+function sortDis(es) {
+  var u=S.user;
+  function rank(t) {
+    if (t.status==='queried') return 0;
+    if ((t.status==='pending'||t.status==='credit-pending')&&t.owner.indexOf(u)>=0) return 1;
+    if (t.status==='pending'||t.status==='credit-pending') return 2;
+    if (t.status==='otcpdd') return 3;
+    if (t.status==='locked') return 5;
+    return 4;
+  }
+  return es.sort(function(a,b){ return rank(a[1])-rank(b[1]); });
+}
+function filtDis(es) {
+  if (S.filter==='all') return es;
+  var u=S.user;
+  return es.filter(function(e){ var t=e[1]; return t.owner.indexOf(u)>=0&&['pending','queried','credit-pending'].indexOf(t.status)>=0; });
+}
+function filtLT(es) {
+  if (S.filter==='all') return es;
+  var u=S.user;
+  return es.filter(function(e){ return e[1].owner.indexOf(u)>=0&&e[1].status==='pending'; });
+}
+
+var TH = '<thead><tr><th>Task / Document</th><th style="width:160px;">Status</th><th style="width:130px;">Pending With</th><th style="width:55px;">View</th><th style="width:220px;">Actions</th></tr></thead>';
+
+function ltRow(id) {
+  var t=S.lt[id]; var u=S.user;
+  var mine=t.owner.indexOf(u)>=0&&t.status==='pending';
+  var mt=mine?'<span class="mine-tag">· YOURS</span>':'';
+  return '<tr class="'+(mine?'mine':'')+(t.status==='locked'?' arch':'')+'">' +
+    '<td><span class="name">'+t.name+mt+'</span></td>' +
+    '<td>'+stB(t.status)+'</td>' +
+    '<td>'+(t.status==='locked'?'<span class="p-no">—</span>':pwB(t.owner))+'</td>' +
+    '<td>—</td>' +
+    '<td>'+ltBtn(id)+'</td>' +
+    '</tr>';
+}
+
+function disRow(id, sv) {
+  var t=S.dis[id]; var u=S.user;
+  // For esign, also mark as mine when sub-state matches user role
+  var esignMine = id==='fc-esign' && (
+    (t.sub==='initiate'&&u==='sales') ||
+    (t.sub==='customer-pending'&&(u==='customer'||u==='sales')) ||
+    (t.sub==='sales-confirm'&&u==='sales')
+  );
+  var mine=(t.owner.indexOf(u)>=0&&['pending','queried','credit-pending'].indexOf(t.status)>=0) || esignMine;
+  var mt=mine?'<span class="mine-tag">· YOURS</span>':'';
+  var qrow=t.qry?'<tr class="qr" id="qr-'+id+'"><td colspan="5"><div class="qd"><strong>Query:</strong> '+t.qry+'</div></td></tr>':'';
+  var vdoc=sv&&t.status!=='locked'?'<button class="btn b-gh" style="font-size:10px;" onclick="toastMsg(\'Opening...\')">View</button>':'—';
+  return '<tr class="'+(mine?'mine':'')+(t.status==='locked'?' arch':'')+'">' +
+    '<td><span class="name">'+t.name+mt+'</span></td>' +
+    '<td>'+stB(t.status,t.otc,t.sub)+'</td>' +
+    '<td>'+(t.status==='locked'?'<span class="p-no">—</span>':pwB(t.owner))+'</td>' +
+    '<td>'+vdoc+'</td>' +
+    '<td>'+disBtn(id)+'</td>' +
+    '</tr>'+qrow;
+}
+
+function sbadge(es) {
+  var n=es.filter(function(e){ return ['pending','queried','credit-pending'].indexOf(e[1].status)>=0; }).length;
+  if (n>0) return '<span class="ts-bk" style="background:#fef9ec;color:#92400e;">'+n+' pending</span>';
+  if (es.every(function(e){ return e[1].status==='done'||e[1].status==='otcpdd'; }))
+    return '<span class="ts-bk" style="background:#f0fdf4;color:#15803d;">All done ✓</span>';
+  return '<span class="ts-bk" style="background:#f3f4f6;color:var(--mu);">In progress</span>';
+}
+
+function sec(cls, ico, title, badge, body) {
+  return '<div class="ts '+cls+'">' +
+    '<div class="ts-hdr" onclick="togSec(this)">' +
+    '<div class="ts-hl"><span class="ts-icon">'+ico+'</span><span class="ts-title">'+title+'</span>'+badge+'</div>' +
+    '<span class="ts-tog op">&#9660;</span>' +
+    '</div>' +
+    '<div class="ts-body">'+body+'</div>' +
+    '</div>';
+}
+function emptyRow() {
+  return '<tr><td colspan="5" style="padding:12px 16px;font-size:12px;color:var(--mu);text-align:center;">No pending tasks for you here</td></tr>';
+}
+
+// ═══════════════════════════════
+// MAIN RENDER
+// ═══════════════════════════════
+function render() {
+  var u=S.user;
+  var ltE=Object.entries(S.lt); var disE=Object.entries(S.dis);
+  var ltDn=Object.values(S.lt).filter(function(t){ return t.status==='done'; }).length;
+  var ltTot=ltE.length;
+  var dp=disProgress();
+  var myLT=ltE.filter(function(e){ return e[1].owner.indexOf(u)>=0&&e[1].status==='pending'; });
+  var myDis=disE.filter(function(e){ var t=e[1]; return t.owner.indexOf(u)>=0&&['pending','queried','credit-pending'].indexOf(t.status)>=0; });
+  var myT=S.phase==='lt'?myLT:myDis;
+  var pct=S.phase==='lt'?Math.round(ltDn/ltTot*100):dp.pct;
+  var dc=S.phase==='lt'?ltDn:dp.done;
+  var tc=S.phase==='lt'?ltTot:dp.total;
+
+  // Stakeholder rows
+  var SKS=[{n:'Sales RM',u:'sales',c:'var(--org)'},{n:'Customer',u:'customer',c:'var(--bl)'},{n:'Local Ops',u:'ops',c:'var(--tl)'},{n:'Credit',u:'credit',c:'var(--re)'},{n:'RCU',u:'rcu',c:'#6d28d9'}];
+  var skH=SKS.map(function(s){
+    var src=S.phase==='lt'?S.lt:S.dis;
+    var tot=Object.values(src).filter(function(t){ return t.owner.indexOf(s.u)>=0; }).length;
+    var dn=Object.values(src).filter(function(t){ return t.owner.indexOf(s.u)>=0&&(t.status==='done'||t.status==='otcpdd'); }).length;
+    var pnd=S.phase==='lt'?ltPend(s.u):disPend(s.u);
+    var p2=tot?Math.round(dn/tot*100):0;
+    var me=s.u===u;
+    return '<div class="sk-row"><span class="sk-lbl'+(me?' me':'')+'">'+(me?'':'')+s.n+(me?' (You)':'')+'</span>' +
+      '<div class="sk-mbar"><div class="sk-mfill" style="width:'+p2+'%;background:'+s.c+';"></div></div>' +
+      '<span class="sk-fr" style="color:'+s.c+';">'+dn+'/'+tot+'</span>' +
+      '<span class="sk-st" style="color:'+(pnd>0?s.c:'var(--mu2)')+';">'+(pnd>0?pnd+' pending':'On track')+'</span>' +
+      '</div>';
+  }).join('');
+
+  var chips=myT.length===0
+    ?'<div style="font-size:12px;color:var(--gn);font-weight:500;">&#10003; All caught up</div>'
+    :myT.map(function(e){ return '<div class="mt-item"><span class="mt-dot"></span><span class="mt-text">'+e[1].name+'</span></div>'; }).join('');
+
+  // Phase banner
+  var banner='';
+  if (S.phase==='lt') {
+    var ltAllDone=ltDn===ltTot;
+    var prDone=S.dis['ld-price'].status==='done';
+    var canDis=ltAllDone&&prDone;
+    banner='<div class="phase-banner pb-lt">' +
+      '<div class="pb-left"><span class="pb-icon">&#9878;&#65039;</span>' +
+      '<div><div class="pb-title">Legal &amp; Technical Phase — In Progress</div>' +
+      '<div class="pb-sub">Complete Legal &amp; Technical tasks, then confirm Pricing Approval before initiating disbursement.</div></div></div>' +
+      '<div class="pb-right">' +
+      '<button class="b-lt" onclick="completeLT()">&#10003; Mark Legal &amp; Technical Complete <span style="font-size:10px;opacity:.7;">(demo)</span></button>' +
+      (canDis
+        ?'<button class="b-dis" onclick="initDis()">&#128640; Initiate Disbursement</button>'
+        :'<button class="b-dis-off" disabled>&#128274; Initiate Disbursement</button>')+
+      '</div></div>';
   } else {
-    ilens.style.display='block';tma.style.display='none';
-    const rf=roleFull(u);
-    document.getElementById('il-av').textContent=roleAv(u);
-    document.getElementById('il-uname').textContent=rf.name;
-    document.getElementById('il-urole').textContent=rf.role;
+    banner='<div class="phase-banner pb-done">' +
+      '<div class="pb-left"><span class="pb-icon">&#9989;</span>' +
+      '<div><div class="pb-title" style="color:var(--gn);">Legal &amp; Technical — Completed</div>' +
+      '<div class="pb-sub">TSR uploaded · Technical report published · Disbursement initiated</div></div></div></div>';
+  }
+
+  // Sections
+  var secs='';
+  if (S.phase==='lt') {
+    var ups=ltE.filter(function(e){ return e[0].indexOf('lu-')===0; });
+    var legT=ltE.filter(function(e){ return ['li-legal','lv-review','lt-tsrup'].indexOf(e[0])>=0; });
+    var techT=ltE.filter(function(e){ return ['ti-tech','ta-alloc','ts-insp','tr-rapid'].indexOf(e[0])>=0; });
+    var prE=Object.entries(S.dis).filter(function(e){ return e[0]==='ld-price'; });
+    var fUps=filtLT(ups); var fLeg=filtLT(legT); var fTech=filtLT(techT);
+    secs=
+      sec('ts-lt','&#128206;','Scanned Document Uploads',sbadge(ups),
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fUps.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>') +
+      sec('ts-doc','&#9878;&#65039;','Legal Workstream',sbadge(legT),
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fLeg.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>') +
+      sec('ts-tech','&#127959;&#65039;','Technical Workstream',sbadge(techT),
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fTech.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>') +
+      sec('ts-ld','&#128176;','Pricing Confirmation',sbadge(prE),
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+disRow('ld-price',false)+'</tbody></table></div>' +
+        '<div style="padding:10px 16px;font-size:11.5px;color:var(--mu);">Pricing must be confirmed before Initiate Disbursement button activates.</div>');
+  } else {
+    var docs=sortDis(filtDis(disE.filter(function(e){ return e[0].indexOf('dp-')===0; })));
+    var docsA=disE.filter(function(e){ return e[0].indexOf('dp-')===0; });
+    var scs=sortDis(filtDis(disE.filter(function(e){ return e[0].indexOf('sc-')===0; })));
+    var scsA=disE.filter(function(e){ return e[0].indexOf('sc-')===0; });
+    var lds=sortDis(filtDis(disE.filter(function(e){ return e[0].indexOf('ld-')===0; })));
+    var ldsA=disE.filter(function(e){ return e[0].indexOf('ld-')===0; });
+    var vfs=sortDis(filtDis(disE.filter(function(e){ return e[0].indexOf('vp-')===0; })));
+    var vfsA=disE.filter(function(e){ return e[0].indexOf('vp-')===0; });
+    var cas=sortDis(filtDis(disE.filter(function(e){ return e[0].indexOf('ca-')===0; })));
+    var casA=disE.filter(function(e){ return e[0].indexOf('ca-')===0; });
+    var fcs=filtDis(disE.filter(function(e){ return e[0].indexOf('fc-')===0; }));
+    var fcsA=disE.filter(function(e){ return e[0].indexOf('fc-')===0; });
+    var em=emptyRow();
+    var refRows = S.filter==='all'
+      ?'<div class="sh" style="margin-top:1px;">Scanned Copies — Legal &amp; Technical (Reference)</div>' +
+       '<div class="t-wrap"><table class="t">'+TH+'<tbody>' +
+       '<tr class="arch"><td><span class="name">Sale Agreement (Scanned)</span></td><td>'+stB('done')+'</td><td><span class="p-no">—</span></td><td><button class="btn b-gh" style="font-size:10px;" onclick="toastMsg(\'Opening...\')">View</button></td><td>—</td></tr>' +
+       '<tr class="arch"><td><span class="name">Title Deed (Scanned)</span></td><td>'+stB('done')+'</td><td><span class="p-no">—</span></td><td><button class="btn b-gh" style="font-size:10px;" onclick="toastMsg(\'Opening...\')">View</button></td><td>—</td></tr>' +
+       '</tbody></table></div>' : '';
+    secs=
+      sec('ts-doc','&#128196;','Documents',sbadge(docsA),
+        '<div class="sh">Originals Required for Security Creation</div>' +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(docs.map(function(e){ return disRow(e[0],true); }).join('')||em)+'</tbody></table></div>' +
+        refRows) +
+      sec('ts-sc','&#128203;','Sanction Conditions',sbadge(scsA),
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(scs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>') +
+      sec('ts-ld','&#128176;','Loan Details',sbadge(ldsA),
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(lds.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>') +
+      sec('ts-vf','&#9989;','Verification &amp; Approvals',sbadge(vfsA.concat(casA)),
+        '<div class="sh">Local Ops Check</div>' +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(vfs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>' +
+        '<div class="sh" style="margin-top:1px;">Credit Approval</div>' +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(cas.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>') +
+      sec('ts-fc','&#128272;','KFS &#183; E-Sign &#183; FCPG &#183; <span class="finn">FinnOne</span> NDC',sbadge(fcsA),
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fcs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>');
+  }
+
+  document.getElementById('il-main').innerHTML =
+    '<div class="ft-row"><span class="ft-lbl">Show:</span>' +
+    '<div class="ft">' +
+    '<button class="ft-b '+(S.filter==='all'?'on':'')+'" onclick="setFilter(\'all\')">All Tasks</button>' +
+    '<button class="ft-b '+(S.filter==='mine'?'on':'')+'" onclick="setFilter(\'mine\')">My Tasks</button>' +
+    '</div></div>' +
+    banner +
+    '<div class="top-row">' +
+    '<div class="prog-card">' +
+    '<div class="pc-h"><span class="pc-title">'+(S.phase==='lt'?'Legal &amp; Technical':'Disbursement')+' Progress</span><span class="pc-pct">'+pct+'%</span></div>' +
+    '<div class="pc-sub">'+dc+' of '+tc+' tasks completed</div>' +
+    '<div class="pc-bar"><div class="pc-fill" style="width:'+pct+'%;"></div></div>' +
+    '<div class="sk-rows">'+skH+'</div>' +
+    '</div>' +
+    '<div class="mt-card">' +
+    '<div class="mt-h"><span class="mt-title">Your Pending Tasks</span><span class="mt-ct">'+myT.length+'</span></div>' +
+    '<div class="mt-list">'+chips+'</div>' +
+    '</div></div>' +
+    secs;
+}
+
+// ═══════════════════════════════
+// SWITCH USER
+// ═══════════════════════════════
+function switchUser(u, btn) {
+  S.user=u;
+  document.querySelectorAll('.u-tab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  var il=document.getElementById('view-ilens');
+  var tm=document.getElementById('view-tma');
+  if (u==='customer') {
+    il.style.display='none'; tm.style.display='flex'; renderTMA();
+  } else {
+    il.style.display='block'; tm.style.display='none';
+    var info={
+      sales:{n:'MAHARSHI DIVEKAR (90106339)',r:'Sales RM'},
+      credit:{n:'PRIYA SHARMA (80234521)',r:'Credit Manager'},
+      ops:{n:'RAHUL VERMA (70345612)',r:'Local Ops'},
+      rcu:{n:'SURESH KUMAR (60456703)',r:'RCU'}
+    }[u]||{n:'User',r:''};
+    document.getElementById('il-av').textContent=rav(u);
+    document.getElementById('il-uname').textContent=info.n;
+    document.getElementById('il-urole').textContent=info.r;
     render();
   }
 }
-function renderCurrent(){
-  if(STATE.currentUser==='customer')renderTMA();else render();
-}
 
-// ═══════════════════════════════════════════════════════
-// RENDER iLENS
-// ═══════════════════════════════════════════════════════
-function stBadge(status){
-  const m={
-    'done':`<span class="st s-done"><span class="sd"></span>Done</span>`,
-    'pending':`<span class="st s-pend"><span class="sd"></span>Pending</span>`,
-    'credit-pending':`<span class="st s-prog"><span class="sd"></span>Credit Approval Pending</span>`,
-    'queried':`<span class="st s-qry"><span class="sd"></span>Queried</span>`,
-    'locked':`<span class="st s-wait"><span class="sd"></span>Waiting</span>`,
-    'otcpdd-approved':`<span class="st s-done"><span class="sd"></span>OTC/PDD Approved</span>`,
-  };
-  return m[status]||`<span class="st s-mty"><span class="sd"></span>${status}</span>`;
-}
-function pwBadge(owner){
-  if(!owner||!owner.length)return`<span class="p-no">—</span>`;
-  const mp={customer:'p-cu',sales:'p-sa',ops:'p-op',credit:'p-cr',rcu:'p-rc',system:'p-sy'};
-  return owner.map(o=>`<span class="pw ${mp[o]||'p-no'}">${roleName(o)}</span>`).join(' ');
-}
-function actionBtns(taskId){
-  const t=STATE.tasks[taskId];const u=STATE.currentUser;const s=t.status;
-  if(s==='done'||s==='otcpdd-approved')return`<span style="color:var(--mu2);font-size:11px;font-style:italic;">Complete ✓</span>`;
-  if(s==='locked')return`<span style="color:var(--mu2);font-size:10.5px;">Waiting for gate</span>`;
-  const isOwner=t.owner.includes(u);
-  if(!isOwner){
-    if(['pending','credit-pending'].includes(s))return`<button class="btn b-rm" onclick="doAction('${taskId}','remind')">Remind</button>`;
-    return'—';
-  }
-  if(s==='queried')return`<div class="acts"><button class="btn b-fi" onclick="doAction('${taskId}','resolve-query')">Re-upload & Resolve</button><button class="btn b-gh" onclick="toggleQR('${taskId}')">View Query</button></div>`;
-  if(t.cat==='doc'){
-    if(u==='sales'||u==='customer')return`<div class="acts"><button class="btn b-nv" onclick="doAction('${taskId}','receive')">Mark Received</button><button class="btn b-rm" onclick="doAction('${taskId}','otcpdd')">Request OTC/PDD</button></div>`;
-    if(u==='credit')return`<div class="acts"><button class="btn b-gn" onclick="doAction('${taskId}','approve')">Approve</button><button class="btn b-re" onclick="doAction('${taskId}','raise-query')">Raise Query</button></div>`;
-  }
-  if(t.cat==='sc')return`<div class="acts"><button class="btn b-up" onclick="doAction('${taskId}','upload')">Upload</button><button class="btn b-rm" onclick="doAction('${taskId}','remind')">Remind</button></div>`;
-  if(t.cat==='ld')return`<button class="btn b-fi" onclick="doAction('${taskId}','confirm')">Confirm Now</button>`;
-  if(t.cat==='vf'&&u==='ops')return`<div class="acts"><button class="btn b-tl" onclick="doAction('${taskId}','verify')">Mark Verified</button><button class="btn b-re" onclick="doAction('${taskId}','raise-query')">Raise Query</button></div>`;
-  if(t.cat==='ca'&&u==='credit')return`<div class="acts"><button class="btn b-gn" onclick="doAction('${taskId}','approve')">Approve</button><button class="btn b-re" onclick="doAction('${taskId}','raise-query')">Query</button></div>`;
-  if(t.cat==='fc'){
-    if(taskId==='fc-kfs')return`<button class="btn b-nv" onclick="doAction('${taskId}','complete')">Accept KFS</button>`;
-    if(taskId==='fc-esign')return`<button class="btn b-nv" onclick="doAction('${taskId}','complete')">Complete E-Sign</button>`;
-    if(taskId==='fc-fcpg')return`<button class="btn b-pu" onclick="doAction('${taskId}','rcu-verify')">Complete FCPG</button>`;
-    if(taskId==='fc-ndc')return`<button class="btn b-tl" onclick="doAction('${taskId}','ndc')">Open FinnOne Checklist</button>`;
-    if(taskId==='fc-submit')return`<button class="btn b-fi" onclick="doAction('${taskId}','finnone')">Submit to FinnOne</button>`;
-  }
-  return`<button class="btn b-nv" onclick="doAction('${taskId}','complete')">Complete</button>`;
-}
+// ═══════════════════════════════
+// RENDER TMA
+// ═══════════════════════════════
+function renderTMA() {
+  var p=disProgress();
+  var phase=S.phase;
+  var myAct=phase==='lt'
+    ?Object.entries(S.lt).filter(function(e){ return e[1].owner.indexOf('customer')>=0&&e[1].status==='pending'; })
+    :Object.entries(S.dis).filter(function(e){
+        var t=e[1]; var k=e[0];
+        var owned=t.owner.indexOf('customer')>=0&&(t.status==='pending'||t.status==='queried'||t.status==='orig-required');
+        var esignCust=k==='fc-esign'&&t.sub==='customer-pending';
+        return owned||esignCust;
+      });
+  var bankT=phase==='dis'
+    ?Object.entries(S.dis).filter(function(e){ var t=e[1]; return t.owner.indexOf('customer')<0&&t.status!=='done'&&t.status!=='locked'&&t.status!=='otcpdd'&&t.owner.length>0; })
+    :[];
+  var doneT=phase==='dis'
+    ?Object.entries(S.dis).filter(function(e){ return e[1].status==='done'||e[1].status==='otcpdd'; })
+    :Object.entries(S.lt).filter(function(e){ return e[1].status==='done'; });
+  var totMy=phase==='dis'
+    ?Object.values(S.dis).filter(function(t){ return t.owner.indexOf('customer')>=0; }).length
+    :Object.values(S.lt).filter(function(t){ return t.owner.indexOf('customer')>=0; }).length;
+  var dnMy=phase==='dis'
+    ?Object.values(S.dis).filter(function(t){ return t.owner.indexOf('customer')>=0&&(t.status==='done'||t.status==='otcpdd'); }).length
+    :Object.values(S.lt).filter(function(t){ return t.owner.indexOf('customer')>=0&&t.status==='done'; }).length;
+  var ltDn=Object.values(S.lt).filter(function(t){ return t.status==='done'; }).length;
+  var ltTot=Object.keys(S.lt).length;
+  var pct=phase==='lt'?Math.round(ltDn/ltTot*100):p.pct;
+  var circ=(2*Math.PI*26).toFixed(1);
+  var offset=(2*Math.PI*26*(1-pct/100)).toFixed(1);
 
-function row(taskId,showDoc=true){
-  const t=STATE.tasks[taskId];
-  const isLocked=t.status==='locked';
-  const u=STATE.currentUser;
-  const ismine=t.owner.includes(u)&&['pending','queried','credit-pending'].includes(t.status);
-  const mineTag=ismine?`<span class="mine-tag">· YOURS</span>`:'';
-  const qrow=t.queryText?`<tr class="qr" id="qr-${taskId}"><td colspan="5"><div class="qd"><strong>Query raised:</strong>${t.queryText}</div></td></tr>`:'';
-  const vdoc=showDoc?`<button class="btn b-gh" style="font-size:10px;" onclick="toast('Opening document viewer…')">View ↗</button>`:'—';
-  return`<tr class="${ismine?'mine':''} ${isLocked?'arch':''}">
-    <td><div class="tn-wrap"><span class="name">${t.name}${mineTag}</span></div></td>
-    <td>${stBadge(t.status)}</td>
-    <td>${isLocked?`<span class="p-no">—</span>`:pwBadge(t.owner)}</td>
-    <td>${vdoc}</td>
-    <td>${actionBtns(taskId)}</td>
-  </tr>${qrow}`;
-}
+  function tItem(k, t, mode) {
+    var icon=k.indexOf('lu-')===0||k.indexOf('sc-')===0?'&#128196;':k.indexOf('dp-')===0?'&#128218;':'&#128176;';
+    if (mode==='action') {
+      var isQ=t.status==='queried';
+      var isOrigReq=t.status==='orig-required';
+      var isLT=Object.keys(S.lt).indexOf(k)>=0;
+      var isOrigDoc=k.indexOf('dp-')===0;
+      var isKFS=k==='fc-kfs';
+      var isEsignCust=k==='fc-esign'&&t.sub==='customer-pending';
+      var btns;
 
-function sortTasks(entries){
-  const order={queried:0,'credit-pending':1,pending:2,'in-progress':3,locked:4,done:5,'otcpdd-approved':5};
-  return entries.sort((a,b)=>(order[a[1].status]||9)-(order[b[1].status]||9));
-}
+      if (isOrigReq) {
+        btns='<button class="t-ebtn t-ebtn-blue" onclick="toastMsg(\'Pickup scheduled — RM will collect from you\')">Schedule Pickup</button>' +
+             '<button class="t-ebtn t-ebtn-ghost" onclick="toastMsg(\'Contacting RM...\')" style="margin-top:6px;">Contact RM</button>' +
+             '<button class="t-ebtn t-ebtn-ghost" onclick="showTMAQuery(\''+k+'\')" style="margin-top:6px;">Raise a Query</button>';
+      } else if (isKFS) {
+        btns='<button class="t-ebtn t-ebtn-blue" onclick="doDis(\'fc-kfs\',\'complete\');renderTMA()">Accept KFS</button>' +
+             '<button class="t-ebtn t-ebtn-ghost" onclick="toastMsg(\'Opening KFS document...\')" style="margin-top:6px;">View KFS Document</button>';
+      } else if (isEsignCust) {
+        btns='<button class="t-ebtn t-ebtn-blue" onclick="esignCustomerSign()">Accept &amp; Sign Booklet</button>' +
+             '<button class="t-ebtn t-ebtn-ghost" onclick="toastMsg(\'Opening documents for review...\')" style="margin-top:6px;">Review Documents</button>';
+      } else if (isLT) {
+        btns='<button class="t-ebtn t-ebtn-blue" onclick="doLT(\''+k+'\',\'upload\');renderTMA()">Submit / Upload</button>';
+      } else if (isQ) {
+        btns='<button class="t-ebtn t-ebtn-red" onclick="doDis(\''+k+'\',\'resolve\');renderTMA()">Re-upload &amp; Resolve Query</button>' +
+             '<button class="t-ebtn t-ebtn-ghost" onclick="toastMsg(\'Contacting RM...\')" style="margin-top:6px;">Contact RM</button>';
+      } else if (isOrigDoc) {
+        btns='<button class="t-ebtn t-ebtn-blue" onclick="toastMsg(\'Pickup scheduled — RM will collect from you\')">Schedule Pickup</button>' +
+             '<button class="t-ebtn t-ebtn-ghost" onclick="toastMsg(\'Contacting RM...\')" style="margin-top:6px;">Contact RM</button>' +
+             '<button class="t-ebtn t-ebtn-ghost" onclick="showTMAQuery(\''+k+'\')" style="margin-top:6px;">Raise a Query</button>';
+      } else {
+        btns='<button class="t-ebtn t-ebtn-blue" onclick="doDis(\''+k+'\',\'upload\');renderTMA()">Submit / Upload</button>' +
+             '<button class="t-ebtn t-ebtn-ghost" onclick="toastMsg(\'Contacting RM...\')" style="margin-top:6px;">Contact RM</button>';
+      }
 
-function render(){
-  const T=STATE.tasks;const u=STATE.currentUser;const p=progress();
-  const myPending=Object.entries(T).filter(([k,t])=>t.owner.includes(u)&&['pending','queried','credit-pending'].includes(t.status));
+      var subtext = isOrigReq  ? '&#9888; Credit rejected OTC/PDD — original required'
+                  : isKFS      ? 'Review and accept your Key Fact Statement'
+                  : isEsignCust? 'Sign CFF, Autopay Mandate, KFS & DRF'
+                  : isQ        ? '&#9888; Query raised — action needed'
+                  : isOrigDoc  ? 'Original physical copy required'
+                  : 'Tap to view &amp; submit';
+      var badgeCls = isOrigReq ? 't-red' : isQ ? 't-red' : isKFS||isEsignCust ? 't-blue' : 't-amber';
+      var badgeTxt = isOrigReq ? 'Original Req.' : isQ ? 'Query' : isOrigDoc ? 'Original Req.' : isKFS ? 'Accept' : isEsignCust ? 'Sign' : 'Pending';
+      var iconBg   = isOrigReq ? '#fff0ee' : isQ ? '#fff0ee' : isKFS||isEsignCust ? '#f0f4ff' : isOrigDoc ? '#fef3f2' : '#fff8ee';
 
-  const docs  =sortTasks(Object.entries(T).filter(([k])=>k.startsWith('doc-')));
-  const scs   =sortTasks(Object.entries(T).filter(([k])=>k.startsWith('sc-')));
-  const lds   =sortTasks(Object.entries(T).filter(([k])=>k.startsWith('ld-')));
-  const vfs   =sortTasks(Object.entries(T).filter(([k])=>k.startsWith('vf-')));
-  const cas   =sortTasks(Object.entries(T).filter(([k])=>k.startsWith('ca-')));
-  const fcs   =Object.entries(T).filter(([k])=>k.startsWith('fc-'));
+      var extraNote = isOrigReq
+        ? '<div style="color:#b91c1c;font-size:11px;font-weight:600;margin-bottom:6px;">Credit has rejected the OTC/PDD request. Your original document must be physically handed over.</div>'
+        : (isQ&&t.qry?'<div style="color:#b91c1c;font-size:11px;font-weight:600;margin-bottom:6px;">'+t.qry+'</div>':'');
+      var descNote = isOrigDoc||isOrigReq
+        ? '<div style="font-size:11px;color:#6b7280;margin-bottom:8px;">Your original document is needed for loan security. You can schedule a pickup with your RM, contact them directly, or raise a query.</div>'
+        : '';
 
-  function badge(entries){
-    const n=entries.filter(([k,t])=>['pending','queried','credit-pending'].includes(t.status)).length;
-    if(n>0)return`<span class="ts-bk" style="background:#fefce8;color:#78350f;">${n} pending</span>`;
-    if(entries.every(([k,t])=>['done','otcpdd-approved'].includes(t.status)))return`<span class="ts-bk" style="background:#f0fdf4;color:#15803d;">All done ✓</span>`;
-    return`<span class="ts-bk" style="background:#f3f4f6;color:var(--mu);">In progress</span>`;
-  }
-
-  const sk=[
-    {n:'Sales RM',u:'sales',c:'var(--org)'},
-    {n:'Customer',u:'customer',c:'var(--bl)'},
-    {n:'Local Ops',u:'ops',c:'var(--tl)'},
-    {n:'Credit',u:'credit',c:'var(--re)'},
-    {n:'RCU',u:'rcu',c:'#6d28d9'},
-  ].map(s=>{
-    const tot=Object.values(T).filter(t=>t.owner.includes(s.u)).length;
-    const dn=Object.values(T).filter(t=>t.owner.includes(s.u)&&t.status==='done').length;
-    const pnd=countPending(s.u);
-    const pct=tot?Math.round(dn/tot*100):100;
-    const isme=s.u===u;
-    return`<div class="sk-row">
-      <span class="sk-lbl${isme?' me':''}">${s.n}${isme?' (You)':''}</span>
-      <div class="sk-mbar"><div class="sk-mfill" style="width:${pct}%;background:${s.c};"></div></div>
-      <span class="sk-fr" style="color:${s.c};">${dn}/${tot}</span>
-      <span class="sk-st" style="color:${pnd>0?s.c:'var(--mu2)'};">${pnd>0?pnd+' pending':'On track'}</span>
-    </div>`;
-  }).join('');
-
-  const chips=myPending.length===0
-    ?`<div style="font-size:12px;color:var(--am);">✓ All caught up — no pending tasks</div>`
-    :myPending.map(([k,t])=>`<div class="mt-item"><span class="mt-dot"></span><span class="mt-text">${t.name}</span></div>`).join('');
-
-  const thead=`<thead><tr>
-    <th>Task / Document</th><th style="width:170px;">Status</th>
-    <th style="width:120px;">Pending With</th><th style="width:65px;">View</th>
-    <th style="width:230px;">Actions</th>
-  </tr></thead>`;
-
-  function sec(title,bdg,body){
-    return`<div class="ts">
-      <div class="ts-hdr" onclick="togSec(this)">
-        <div class="ts-hl"><span class="ts-title">${title}</span>${bdg}</div>
-        <span class="ts-tog op">▼</span>
-      </div>
-      <div class="ts-body">${body}</div>
-    </div>`;
-  }
-
-  document.getElementById('ilens-main').innerHTML=`
-    <div class="top-row">
-      <div class="prog-card">
-        <div class="pc-h"><span class="pc-title">Overall Progress</span><span class="pc-pct">${p.pct}%</span></div>
-        <div class="pc-sub">${p.done} of ${p.total} tasks completed</div>
-        <div class="pc-bar"><div class="pc-fill" style="width:${p.pct}%;"></div></div>
-        <div class="sk-rows">${sk}</div>
-      </div>
-      <div class="mt-card">
-        <div class="mt-h"><span class="mt-title">Your Pending Tasks</span><span class="mt-ct">${myPending.length}</span></div>
-        <div class="mt-list">${chips}</div>
-      </div>
-    </div>
-
-    ${sec('Documents',badge(docs),`
-      <div class="sh">Originals Required for Security Creation</div>
-      <div class="t-wrap"><table class="t">${thead}<tbody>${docs.map(([k])=>row(k,true)).join('')}</tbody></table></div>
-      <div class="sh" style="margin-top:1px;">Scanned Copies — Legal & Technical (Reference Only)</div>
-      <div class="t-wrap"><table class="t">${thead}<tbody>
-        <tr class="arch"><td>Property Tax Receipt</td><td>${stBadge('done')}</td><td><span class="pw p-sy">System</span></td><td><button class="btn b-gh" style="font-size:10px;" onclick="toast('Opening…')">View ↗</button></td><td>—</td></tr>
-        <tr class="arch"><td>Address Proof</td><td>${stBadge('done')}</td><td><span class="pw p-sy">System</span></td><td><button class="btn b-gh" style="font-size:10px;" onclick="toast('Opening…')">View ↗</button></td><td>—</td></tr>
-      </tbody></table></div>
-    `)}
-    ${sec('Sanction Conditions',badge(scs),`<div class="t-wrap"><table class="t">${thead}<tbody>${scs.map(([k])=>row(k,false)).join('')}</tbody></table></div>`)}
-    ${sec('Loan Details',badge(lds),`<div class="t-wrap"><table class="t">${thead}<tbody>${lds.map(([k])=>row(k,false)).join('')}</tbody></table></div>`)}
-    ${sec('Verification & Approvals',badge([...vfs,...cas]),`
-      <div class="sh">Local Ops Check</div>
-      <div class="t-wrap"><table class="t">${thead}<tbody>${vfs.map(([k])=>row(k,false)).join('')}</tbody></table></div>
-      <div class="sh" style="margin-top:1px;">Credit Approval</div>
-      <div class="t-wrap"><table class="t">${thead}<tbody>${cas.map(([k])=>row(k,false)).join('')}</tbody></table></div>
-    `)}
-    ${sec(`KFS · E-Sign · FCPG · <span class="finn">FinnOne</span> NDC`,badge(fcs),`
-      <div class="t-wrap"><table class="t">${thead}<tbody>${fcs.map(([k])=>row(k,false)).join('')}</tbody></table></div>
-    `)}
-  `;
-}
-
-function togSec(h){
-  const b=h.nextElementSibling;const t=h.querySelector('.ts-tog');
-  const op=t.classList.contains('op');
-  b.style.display=op?'none':'block';t.classList.toggle('op',!op);
-}
-function toggleQR(id){
-  const r=document.getElementById('qr-'+id);
-  if(r)r.style.display=r.style.display==='table-row'?'none':'table-row';
-}
-
-// ═══════════════════════════════════════════════════════
-// RENDER TMA (Customer phone)
-// ═══════════════════════════════════════════════════════
-function renderTMA(){
-  const T=STATE.tasks;const p=progress();
-  const myAct=Object.entries(T).filter(([k,t])=>t.owner.includes('customer')&&['pending','queried'].includes(t.status));
-  const myWait=Object.entries(T).filter(([k,t])=>t.owner.includes('customer')&&t.status==='locked');
-  const bankInProg=Object.entries(T).filter(([k,t])=>!t.owner.includes('customer')&&!['done','locked'].includes(t.status)&&t.owner.length);
-  const allDone=Object.entries(T).filter(([k,t])=>t.status==='done');
-  const totalMy=Object.values(T).filter(t=>t.owner.includes('customer')).length;
-  const doneMy=Object.values(T).filter(t=>t.owner.includes('customer')&&t.status==='done').length;
-
-  function tItem(taskId,t,mode){
-    const icon=taskId.startsWith('doc-')?'📄':taskId.startsWith('sc-')?'📋':taskId.startsWith('fc-')?'✍️':'💰';
-    if(mode==='action'){
-      const isQ=t.status==='queried';
-      const bg=isQ?'#fff0ee':'#fff8ee';
-      const badge=isQ?`<span class="t-badge t-red">Query</span>`:`<span class="t-badge t-amber">Pending</span>`;
-      return`
-        <div class="t-item" onclick="toggleTExp('texp-${taskId}')">
-          <div class="t-ico" style="background:${bg};">${icon}</div>
-          <div class="t-ibody">
-            <div class="t-ititle">${t.name}</div>
-            <div class="t-isub">${isQ?'⚠ Query raised — action needed':'Tap to view & submit'}</div>
-          </div>
-          <div class="t-iright">${badge}<span class="t-chev">›</span></div>
-        </div>
-        <div class="t-exp" id="texp-${taskId}">
-          <div class="t-exp-card">
-            ${isQ?`<div style="color:#b91c1c;font-size:11px;font-weight:600;margin-bottom:6px;">Query: ${t.queryText}</div>`:''}
-            ${isQ
-              ?`<button class="t-ebtn t-ebtn-red" onclick="doAction('${taskId}','resolve-query');renderTMA()">Re-upload & Resolve</button>`
-              :`<button class="t-ebtn t-ebtn-blue" onclick="doAction('${taskId}','upload');renderTMA()">Submit / Upload Document</button>`}
-            <button class="t-ebtn t-ebtn-ghost" onclick="toast('Contacting RM…')" style="margin-top:6px;">Contact RM</button>
-          </div>
-        </div>`;
+      return '<div class="t-item" onclick="toggleTExp(\'tx-'+k+'\')">' +
+        '<div class="t-ico" style="background:'+iconBg+';">'+icon+'</div>' +
+        '<div class="t-ibody"><div class="t-ititle">'+t.name+'</div>' +
+        '<div class="t-isub">'+subtext+'</div></div>' +
+        '<div class="t-iright"><span class="t-badge '+badgeCls+'">'+badgeTxt+'</span>' +
+        '<span class="t-chev">&#8250;</span></div></div>' +
+        '<div class="t-exp" id="tx-'+k+'">' +
+        '<div class="t-exp-card">' +
+        extraNote + descNote + btns +
+        '</div></div>';
     }
-    if(mode==='done'){
-      return`<div class="t-item">
-        <div class="t-ico" style="background:#f0fdf4;">✅</div>
-        <div class="t-ibody">
-          <div class="t-ititle">${t.name}</div>
-          <div class="t-isub">${t.completedBy?'Completed by '+t.completedBy:''}</div>
-        </div>
-        <div class="t-iright"><span class="t-badge t-green">Done</span></div>
-      </div>`;
-    }
-    if(mode==='bank'){
-      const lbl={sales:'Sales RM',credit:'Credit',ops:'Local Ops',rcu:'RCU',system:'System'}[t.owner[0]]||'Bank';
-      return`<div class="t-item">
-        <div class="t-ico" style="background:#f0f8ff;">⏳</div>
-        <div class="t-ibody">
-          <div class="t-ititle">${t.name}</div>
-          <div class="t-isub">${lbl} · ${t.status==='credit-pending'?'Under review':t.status==='pending'?'In progress':'Processing'}</div>
-        </div>
-        <div class="t-iright"><span class="t-badge t-grey">Bank</span></div>
-      </div>`;
-    }
-    return'';
+    if (mode==='bank') return '<div class="t-item"><div class="t-ico" style="background:#f0f8ff;">&#9203;</div>' +
+      '<div class="t-ibody"><div class="t-ititle">'+t.name+'</div><div class="t-isub">'+t.owner.map(rnm).join(' / ')+' · In progress</div></div>' +
+      '<div class="t-iright"><span class="t-badge t-grey">Bank</span></div></div>';
+    if (mode==='done') return '<div class="t-item"><div class="t-ico" style="background:#f0fdf4;">&#9989;</div>' +
+      '<div class="t-ibody"><div class="t-ititle">'+t.name+'</div><div class="t-isub">'+(t.by?'Completed by '+t.by:'')+'</div></div>' +
+      '<div class="t-iright"><span class="t-badge t-green">Done</span></div></div>';
+    return '';
   }
 
-  const circ=2*Math.PI*26;
-  const offset=circ*(1-p.pct/100);
+  var html = '<div class="tma">' +
+    '<div class="t-nb"><span class="t-back">&#8249;</span><div class="t-title">My Application</div><div class="t-av">RC</div></div>' +
+    '<div class="t-hero">' +
+    '<div class="t-hero-lbl">Home Loan · Non BT</div>' +
+    '<div class="t-hero-name">Rajesh C. Godhaniya</div>' +
+    '<div class="t-hero-amt">&#8377; 69,40,109</div>' +
+    '<div class="t-pill"><span class="t-pulse"></span> '+(phase==='lt'?'Legal &amp; Technical In Progress':'Disbursement In Progress')+'</div>' +
+    '<div class="t-meta">' +
+    '<div class="t-mi"><label>App Date</label><span>08 Jan 2026</span></div>' +
+    '<div class="t-mi"><label>App No.</label><span>77212387114</span></div>' +
+    '<div class="t-mi"><label>Tranche</label><span>1 of 1</span></div>' +
+    '</div></div>' +
+    '<div class="t-steps-card">' +
+    '<div class="t-steps-title">Your Loan Journey</div>' +
+    '<div class="t-steps">' +
+    '<div class="t-step done"><div class="t-sc">&#10003;</div><div class="t-sl">Sanctioned</div></div>' +
+    '<div class="t-step '+(phase==='lt'?'active':'done')+'"><div class="t-sc">'+(phase==='lt'?'2':'&#10003;')+'</div><div class="t-sl">Legal &amp; Tech</div></div>' +
+    '<div class="t-step '+(phase==='dis'?'active':'wait')+'"><div class="t-sc">3</div><div class="t-sl">Disbursement</div></div>' +
+    '<div class="t-step wait"><div class="t-sc">4</div><div class="t-sl">Handover</div></div>' +
+    '</div></div>' +
+    '<div class="t-prog">' +
+    '<div class="t-ring">' +
+    '<svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#e5e5ea" stroke-width="5"/>' +
+    '<circle cx="30" cy="30" r="26" fill="none" stroke="#34c759" stroke-width="5" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offset+'" stroke-linecap="round"/></svg>' +
+    '<div class="t-ring-lbl"><span class="t-rpct">'+pct+'%</span><span class="t-rsub">done</span></div></div>' +
+    '<div class="t-pd">' +
+    '<div class="t-pr"><span class="t-pn you">You</span><div class="t-pb"><div class="t-pbf" style="width:'+(totMy?Math.round(dnMy/totMy*100):0)+'%;background:#ff6b35;"></div></div><span class="t-pf" style="color:#ff6b35;">'+dnMy+'/'+totMy+'</span></div>' +
+    '<div class="t-pr"><span class="t-pn">Bank Team</span><div class="t-pb"><div class="t-pbf" style="width:'+pct+'%;background:#007aff;"></div></div><span class="t-pf" style="color:#007aff;">'+pct+'%</span></div>' +
+    '</div></div>';
 
-  document.getElementById('tma-main').innerHTML=`
-  <div class="tma-inner">
-    <div class="t-statusbar">
-      <span class="t-back">‹</span>
-      <div class="t-title">My Application</div>
-      <div class="t-av">RC</div>
-    </div>
+  if (myAct.length) {
+    html += '<div class="t-sec"><span class="t-sec-lbl">Action Required</span><span class="t-sec-ct">'+myAct.length+'</span></div>';
+    html += '<div class="t-list">'+myAct.map(function(e){ return tItem(e[0],e[1],'action'); }).join('')+'</div>';
+  } else {
+    html += '<div style="margin:8px 12px;background:#f0fdf4;border-radius:12px;padding:12px;text-align:center;font-size:12px;color:#15803d;font-weight:500;">&#10003; Nothing pending from your end</div>';
+  }
 
-    <div class="t-hero">
-      <div class="t-hero-lbl">Home Loan · Non BT</div>
-      <div class="t-hero-name">Rajesh C. Godhaniya</div>
-      <div class="t-hero-amt">₹ 69,40,109</div>
-      <div class="t-hero-pill"><span class="t-pulse"></span> Disbursement In Progress</div>
-      <div class="t-meta">
-        <div class="t-mi"><label>App Date</label><span>08 Jan 2026</span></div>
-        <div class="t-mi"><label>App No.</label><span>77212387114</span></div>
-        <div class="t-mi"><label>Tranche</label><span>1 of 1</span></div>
-      </div>
-    </div>
+  if (bankT.length) {
+    html += '<div class="t-sec" style="margin-top:4px;"><span class="t-sec-lbl">In Progress</span><span class="t-sec-ct">Bank team</span></div>';
+    html += '<div class="t-list">'+bankT.map(function(e){ return tItem(e[0],e[1],'bank'); }).join('')+'</div>';
+  }
 
-    <div class="t-steps-card">
-      <div class="t-steps-title">Your Loan Journey</div>
-      <div class="t-steps">
-        <div class="t-step done"><div class="t-sc">✓</div><div class="t-sl">Sanctioned</div></div>
-        <div class="t-step done"><div class="t-sc">✓</div><div class="t-sl">Legal Done</div></div>
-        <div class="t-step done"><div class="t-sc">✓</div><div class="t-sl">Tech Done</div></div>
-        <div class="t-step ${p.pct>=95?'done':'active'}"><div class="t-sc">4</div><div class="t-sl">Disbursement</div></div>
-        <div class="t-step wait"><div class="t-sc">5</div><div class="t-sl">Handover</div></div>
-      </div>
-    </div>
+  if (doneT.length) {
+    html += '<div class="t-sec" style="margin-top:4px;"><span class="t-sec-lbl">Completed</span><span class="t-sec-ct">'+doneT.length+'</span></div>';
+    html += '<div class="t-list">'+doneT.slice(0,8).map(function(e){ return tItem(e[0],e[1],'done'); }).join('')+'</div>';
+  }
 
-    <div class="t-prog">
-      <div class="t-ring">
-        <svg width="60" height="60" viewBox="0 0 60 60">
-          <circle cx="30" cy="30" r="26" fill="none" stroke="#e5e5ea" stroke-width="5"/>
-          <circle cx="30" cy="30" r="26" fill="none" stroke="#34c759" stroke-width="5"
-            stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
-        </svg>
-        <div class="t-ring-lbl"><span class="t-rpct">${p.pct}%</span><span class="t-rsub">done</span></div>
-      </div>
-      <div class="t-pd">
-        <div class="t-pr"><span class="t-pn you">You</span><div class="t-pb"><div class="t-pbf" style="width:${totalMy?Math.round(doneMy/totalMy*100):0}%;background:#ff6b35;"></div></div><span class="t-pf" style="color:#ff6b35;">${doneMy}/${totalMy}</span></div>
-        <div class="t-pr"><span class="t-pn">Bank Team</span><div class="t-pb"><div class="t-pbf" style="width:${p.pct}%;background:#007aff;"></div></div><span class="t-pf" style="color:#007aff;">${p.done}/${p.total}</span></div>
-      </div>
-    </div>
+  html += '<div class="t-sec" style="margin-top:4px;"><span class="t-sec-lbl">Activity</span></div>';
+  html += '<div class="t-feed">'+S.log.slice(0,7).map(function(l){
+    return '<div class="t-fi"><div class="t-fi-dot" style="background:'+l.color+';"></div><div class="t-fi-time">'+l.time+'</div><div class="t-fi-text">'+l.text+'</div></div>';
+  }).join('')+'</div>';
 
-    ${myAct.length?`
-    <div class="t-sec"><span class="t-sec-lbl">Action Required</span><span class="t-sec-ct">${myAct.length}</span></div>
-    <div class="t-list">${myAct.map(([k,t])=>tItem(k,t,'action')).join('')}</div>`
-    :`<div style="margin:8px 12px;background:#f0fdf4;border-radius:12px;padding:12px;text-align:center;font-size:12px;color:#15803d;font-weight:500;">✓ Nothing pending from your end</div>`}
-
-    ${bankInProg.length?`
-    <div class="t-sec" style="margin-top:4px;"><span class="t-sec-lbl">In Progress</span><span class="t-sec-ct">Bank team</span></div>
-    <div class="t-list">${bankInProg.map(([k,t])=>tItem(k,t,'bank')).join('')}</div>`:''}
-
-    ${allDone.length?`
-    <div class="t-sec" style="margin-top:4px;"><span class="t-sec-lbl">Completed</span><span class="t-sec-ct">${allDone.length}</span></div>
-    <div class="t-list">${allDone.map(([k,t])=>tItem(k,t,'done')).join('')}</div>`:''}
-
-    <div class="t-sec" style="margin-top:4px;"><span class="t-sec-lbl">Activity</span></div>
-    <div class="t-feed">
-      ${STATE.activityLog.slice(0,7).map(l=>`
-        <div class="t-fi">
-          <div class="t-fi-dot" style="background:${l.color};"></div>
-          <div class="t-fi-time">${l.time}</div>
-          <div class="t-fi-text">${l.text}</div>
-        </div>`).join('')}
-    </div>
-    <div style="height:20px;"></div>
-  </div>`;
+  html += '</div>';
+  document.getElementById('tma-screen').innerHTML = html;
 }
 
-function toggleTExp(id){
-  const el=document.getElementById(id);if(el)el.classList.toggle('open');
+function toggleTExp(id) {
+  var el=document.getElementById(id);
+  if (el) el.classList.toggle('open');
 }
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════════
-document.getElementById('modal-bg').addEventListener('click',e=>{if(e.target===document.getElementById('modal-bg'))closeModal();});
+// ═══════════════════════════════
+document.getElementById('modal-bg').addEventListener('click', function(e) {
+  if (e.target===document.getElementById('modal-bg')) closeModal();
+});
 
-// Set live time
-function setTime(){
-  const now=new Date();
-  const d=document.getElementById('il-dt');
-  if(d)d.textContent=`📅 ${now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})} · ${now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`;
+function setTime() {
+  var d=document.getElementById('il-dt');
+  var now=new Date();
+  if(d) d.textContent='&#128197; '+now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+' · '+now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
 }
-setTime();setInterval(setTime,60000);
+setTime(); setInterval(setTime, 60000);
 
-reeval();updateCounts();render();
+reeval(); updateCounts(); render();
 </script>
 </body>
 </html>
