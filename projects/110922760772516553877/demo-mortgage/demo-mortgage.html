@@ -62,7 +62,20 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .il-side a.disabled{color:var(--mu2);cursor:default;pointer-events:none;}
 .il-main{flex:1;overflow-y:auto;padding:16px 18px 80px;background:var(--bg);}
 
-/* FILTER */
+/* Info / Guide buttons */
+.sec-info-btn{background:var(--bl);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:6px;flex-shrink:0;font-family:var(--f);line-height:1;}
+.sec-info-btn:hover{background:#1e3a8a;}
+.guide-fab{position:fixed;bottom:22px;right:22px;z-index:400;background:var(--nv);color:#fff;border:none;border-radius:24px;padding:10px 18px;font-family:var(--f);font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;align-items:center;gap:6px;}
+.guide-fab:hover{background:#1a3a70;}
+.guide-modal{max-width:640px!important;max-height:85vh;overflow-y:auto;}
+.guide-sec{margin-bottom:18px;border-bottom:1px solid var(--bd);padding-bottom:16px;}
+.guide-sec:last-child{border-bottom:none;margin-bottom:0;}
+.guide-sec-title{font-size:13px;font-weight:700;color:var(--nv);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.guide-badge{font-size:9.5px;padding:2px 7px;border-radius:3px;font-weight:700;}
+.guide-body{font-size:12px;color:#374151;line-height:1.65;}
+.guide-body li{margin:5px 0 5px 16px;list-style:disc;}
+.guide-note{background:#fef9ec;border:1px solid #fde68a;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#78350f;margin-top:8px;}
+.guide-warn{background:#fff1f2;border:1px solid #fecaca;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#7f1d1d;margin-top:8px;}
 .ft-row{display:flex;align-items:center;justify-content:flex-end;margin-bottom:12px;gap:8px;}
 .ft-lbl{font-size:11px;color:var(--mu);font-weight:500;}
 .ft{display:flex;background:#f3f4f6;border-radius:7px;padding:2px;gap:2px;}
@@ -324,6 +337,7 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 
 <div class="toast" id="toast"></div>
 <div class="modal-bg" id="modal-bg"><div class="modal" id="modal-cnt"></div></div>
+<button class="guide-fab" onclick="showDemoGuide()">&#9432; Demo Guide</button>
 
 <!-- USER SWITCHER -->
 <div class="user-bar">
@@ -1588,10 +1602,11 @@ function sbadge(es) {
   return '<span class="ts-bk" style="background:#f3f4f6;color:var(--mu);">In progress</span>';
 }
 
-function sec(cls, ico, title, badge, body) {
+function sec(cls, ico, title, badge, body, infoKey) {
+  var infoBtn = infoKey ? '<button class="sec-info-btn" onclick="event.stopPropagation();showSecInfo(\''+infoKey+'\')" title="About this section">i</button>' : '';
   return '<div class="ts '+cls+'">' +
     '<div class="ts-hdr" onclick="togSec(this)">' +
-    '<div class="ts-hl"><span class="ts-icon">'+ico+'</span><span class="ts-title">'+title+'</span>'+badge+'</div>' +
+    '<div class="ts-hl"><span class="ts-icon">'+ico+'</span><span class="ts-title">'+title+'</span>'+badge+infoBtn+'</div>' +
     '<span class="ts-tog op">&#9660;</span>' +
     '</div>' +
     '<div class="ts-body">'+body+'</div>' +
@@ -1757,14 +1772,14 @@ function render() {
     var fUps=filtLT(ups); var fLeg=filtLT(legT); var fTech=filtLT(techT);
     secs=
       sec('ts-lt','&#128206;','Scanned Document Uploads',sbadge(ups),
-        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fUps.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>') +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fUps.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>','lt-uploads') +
       sec('ts-doc','&#9878;&#65039;','Legal Workstream',sbadge(legT),
-        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fLeg.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>') +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fLeg.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>','lt-legal') +
       sec('ts-tech','&#127959;&#65039;','Technical Workstream',sbadge(techT),
-        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fTech.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>') +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fTech.map(function(e){ return ltRow(e[0]); }).join('')||emptyRow())+'</tbody></table></div>','lt-tech') +
       sec('ts-ld','&#128176;','Pricing Confirmation',sbadge(prE),
         '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+disRow('ld-price',false)+'</tbody></table></div>' +
-        '<div style="padding:10px 16px;font-size:11.5px;color:var(--mu);">Pricing must be confirmed before Initiate Disbursement button activates.</div>');
+        '<div style="padding:10px 16px;font-size:11.5px;color:var(--mu);">Pricing must be confirmed before Initiate Disbursement button activates.</div>','lt-pricing');
   } else {
     var docs=sortDis(filtDis(disE.filter(function(e){ return e[0].indexOf('dp-')===0; })));
     var docsA=disE.filter(function(e){ return e[0].indexOf('dp-')===0; });
@@ -1789,18 +1804,18 @@ function render() {
       sec('ts-doc','&#128196;','Documents',sbadge(docsA),
         '<div class="sh">Originals Required for Security Creation</div>' +
         '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(docs.map(function(e){ return disRow(e[0],true); }).join('')||em)+'</tbody></table></div>' +
-        refRows) +
+        refRows,'dis-docs') +
       sec('ts-sc','&#128203;','Sanction Conditions',sbadge(scsA),
-        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(scs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>') +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(scs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>','dis-sc') +
       sec('ts-ld','&#128176;','Loan Details',sbadge(ldsA),
-        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(lds.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>') +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(lds.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>','dis-ld') +
       sec('ts-vf','&#9989;','Verification &amp; Approvals',sbadge(vfsA.concat(casA)),
         '<div class="sh">Local Ops Check</div>' +
         '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(vfs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>' +
         '<div class="sh" style="margin-top:1px;">Credit Approval</div>' +
-        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(cas.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>') +
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(cas.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>','dis-vf') +
       sec('ts-fc','&#128272;','KFS &#183; E-Sign &#183; FCPG &#183; <span class="finn">FinnOne</span> NDC',sbadge(fcsA),
-        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fcs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>');
+        '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fcs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>','dis-fc');
   }
 
   // Query broadcast banner — pull directly from all queried tasks in state
@@ -2094,8 +2109,69 @@ function toggleTExp(id) {
 }
 
 // ═══════════════════════════════
-// INIT
+// DEMO GUIDE CONTENT
 // ═══════════════════════════════
+var GUIDE_SECTIONS = {
+  'lt': {title:'Legal / Technical / Pricing — Overview',badge:'Sourcing Stage',badgeColor:'#7c3aed',
+    content:'<div class="guide-body"><p style="margin-bottom:10px;">This screen applies in <strong>two scenarios</strong>:</p><ol style="margin-left:16px;line-height:1.9;margin-bottom:10px;"><li><strong>Property identified during underwriting</strong> — The case is under credit evaluation. When property is identified, Sales can initiate Legal &amp; Technical tasks in parallel while awaiting sanction.</li><li><strong>Property identified post-sanction</strong> — Once sanctioned and property is identified, this screen opens. Legal, Technical, and Pricing Confirmation must all be completed before disbursement can be initiated.</li></ol><div class="guide-note">&#128204; <strong>Document list is pre-populated</strong> based on Product · State · Variant. The Legal team may require additional documents on a case-by-case basis — this list may not be exhaustive.</div><p style="margin-top:10px;">Once all three streams are complete, <strong>Initiate Disbursement</strong> activates and the Disbursement Dashboard opens.</p></div>'},
+  'lt-uploads':{title:'Scanned Document Uploads',badge:'LT Stage',badgeColor:'#6d28d9',
+    content:'<div class="guide-body"><p>Customer or Sales uploads scanned copies of property documents at the start of Legal &amp; Technical. These include Sale Agreement, Title Deed, Property Tax Receipt, Address Proof, and Property Sketch/Survey Map.</p><ul><li>Can be uploaded by <strong>Customer via TMA</strong> or by <strong>Sales RM</strong> on their behalf.</li><li><strong>Property Sketch/Survey Map</strong> upload is the gate that unlocks both Legal and Technical workstreams simultaneously.</li></ul><div class="guide-note">Scanned copies appear as reference rows in the disbursement dashboard and are also accessible from the Documents tab.</div></div>'},
+  'lt-legal':{title:'Legal Workstream',badge:'LT Stage',badgeColor:'#1e40af',
+    content:'<div class="guide-body"><p>Handles title search and TSR generation by an empanelled legal vendor.</p><ul><li>Sales initiates → Legal Vendor is assigned.</li><li>Legal Vendor reviews documents and generates the <strong>Title Search Report (TSR)</strong>.</li><li>Sales uploads the TSR to complete the workstream.</li></ul><div class="guide-note">TSR is stored in the Documents tab and used by Credit during the "Originals vs TSR Review" approval task.</div></div>'},
+  'lt-tech':{title:'Technical Workstream',badge:'LT Stage',badgeColor:'#0891b2',
+    content:'<div class="guide-body"><p>Handles physical inspection and valuation of the property.</p><ul><li>Sales initiates → Technical Manager is allocated.</li><li>Technical Manager conducts site inspection.</li><li>Rapid validation completes and the <strong>Technical Inspection Report</strong> is published.</li></ul><div class="guide-note">Technical Report is stored in the Documents tab once published.</div></div>'},
+  'lt-pricing':{title:'Pricing Confirmation',badge:'LT Stage',badgeColor:'#b45309',
+    content:'<div class="guide-body"><p>Sales RM confirms the final pricing terms for this case before disbursement is initiated.</p><ul><li>Independent task — can be completed at any point during the LT stage.</li><li><strong>Hard gate:</strong> Initiate Disbursement will not activate until pricing is confirmed.</li></ul></div>'},
+  'dis-docs':{title:'Documents — Originals for Security Creation',badge:'Independent',badgeColor:'#1e40af',
+    content:'<div class="guide-body"><p style="margin-bottom:8px;">Original property documents required for creating a legal charge/mortgage. Visible to both <strong>Sales RM and Customer</strong>.</p><ul><li><strong>Mark Received</strong> — Sales confirms originals collected. Updated in system.</li><li><strong>OTC / PDD Request</strong> — If original cannot be collected immediately, Sales requests OTC or PDD. Goes to <strong>Credit tray</strong> for approval.<ul style="margin-top:4px;"><li>Credit approves → Marked as OTC/PDD approved.</li><li>Credit rejects → Sent back as "Original Required" to Sales/Customer.</li></ul></li></ul><div class="guide-note">&#9989; <strong>Gate:</strong> Once all originals are received or approved — the <strong>Physical Document Verification</strong> task unlocks for Local Ops.</div><p style="margin-top:8px;font-size:11.5px;color:#6b7280;">Scanned copies from Legal &amp; Technical are visible here in reference mode — not active tasks, but viewable.</p></div>'},
+  'dis-sc':{title:'Sanction Conditions',badge:'Independent',badgeColor:'#b45309',
+    content:'<div class="guide-body"><p>Additional documents stipulated by Credit at sanction. Visible to <strong>Sales RM and Customer</strong>.</p><ul><li>Sales/Customer uploads → flows directly to <strong>Local Ops tray</strong> for verification.</li><li>Local Ops verifies or raises a query → Sales corrects → resubmits → Local Ops re-verifies.</li></ul><div class="guide-note">&#9989; <strong>Independent task</strong> — runs fully in parallel with Documents and Loan Details.</div></div>'},
+  'dis-ld':{title:'Loan Details',badge:'Independent',badgeColor:'#0f766e',content:'<div class="guide-body"><p>Data entry tasks from the IGF stage, now integrated into the disbursement workflow. Filled in by Sales RM only.</p><ul><li>Covers: Beneficiary Account, Repayment Details, EMI and Tenure, Own Contribution.</li><li>On submission flows to Local Ops for verification. Query flow is supported.</li></ul><div class="guide-note">Independent task — runs in parallel with Documents and Sanction Conditions.</div><div class="guide-note" style="margin-top:6px;">When Repayment Details are verified by Local Ops, eNACH mandate is auto-triggered to the Customer tray.</div></div>'},
+  'dis-vf':{title:'Verification and Approvals',badge:'Dependent',badgeColor:'#6d28d9',content:'<div class="guide-body"><p><b>1. Physical Document Verification (Local Ops)</b></p><ul style="margin-bottom:10px;"><li>Unlocks when all originals are received or OTC/PDD approved.</li><li>Checklist tailored to Product, State and Variant.</li><li>Partial save supported. Unchecked items auto-raise a query to Sales. Sales resolves, Local Ops re-verifies.</li><li>Once complete, Disbursement Memo is generated.</li></ul><p><b>2. Credit Approval (3 tasks)</b></p><ul><li>Unlocks only when originals received, SC verified, LD verified, and physical check done.</li><li>Tasks: Sanction Condition Revalidation, Docs vs TSR Review, Pricing and Own Contribution Review.</li></ul><div class="guide-note">All 3 Credit tasks done: KFS auto-triggered to Customer TMA.</div></div>'},
+  'dis-fc':{title:'KFS, E-Sign, FCPG, NDC, FinnOne',badge:'Sequential Chain',badgeColor:'#9b1c1c',content:'<div class="guide-body"><p style="margin-bottom:8px;">Final sequential chain. Each step unlocks only after the previous completes.</p><ul><li><b>KFS</b> Auto-triggered to Customer once all Credit approvals done. Customer accepts via TMA. Sales: Remind only.</li><li><b>eNACH</b> Auto-triggered when Repayment Details verified. Customer sets up auto-debit.</li><li><b>E-Sign</b> Sales initiates. Customer signs full booklet via TMA. Sales confirms.</li><li><b>FCPG (RCU)</b> RCU verifies. Can query Sales; Sales resolves; RCU makes final call. <span style="color:#7c3aed;font-weight:600;">Discussion: Can be moved to right after Credit approval.</span></li><li><b>NDC Check (Local Ops)</b> Verifies originals against E-Sign copies. 8-item checklist. <span style="color:#7c3aed;font-weight:600;">Discussion: Workflow to be confirmed.</span></li><li><b>Submit to FinnOne</b> Case pushed to FinnOne. LAN generated. All verified data flows in without manual re-entry.</li></ul></div>'},
+  'documents-tab':{title:'Documents Tab',badge:'Reference View',badgeColor:'#374151',
+    content:'<div class="guide-body"><p style="margin-bottom:8px;">Consolidated reference view of all documents in this case.</p><ul><li><strong>Scanned Copies</strong> — Uploaded by Customer or Sales during LT stage.</li><li><strong>Legal Documents</strong> — TSR by Legal Vendor.</li><li><strong>Technical Documents</strong> — Technical Inspection Report by Technical Manager.</li><li><strong>Bank Generated</strong> — DM, KFS, E-Sign Booklet, eNACH Mandate — auto-generated as process progresses.</li></ul><div class="guide-note">Reference only. Original document tasks tracked in the Disbursement Dashboard. OTC/PDD approved documents are not shown here.</div></div>'}
+};
+
+
+function showSecInfo(key) {
+  var g = GUIDE_SECTIONS[key];
+  if (!g) return;
+  openModal(
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">' +
+    '<div style="font-size:15px;font-weight:700;color:var(--nv);">'+g.title+'</div>' +
+    '<span style="background:'+g.badgeColor+';color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">'+g.badge+'</span>' +
+    '</div>' +
+    g.content +
+    '<div class="modal-btns" style="margin-top:14px;"><button class="btn b-gh" onclick="closeModal()">Close</button>' +
+    '<button class="btn b-nv" onclick="closeModal();showDemoGuide()">Full Guide</button></div>'
+  );
+}
+
+function showDemoGuide() {
+  var html = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--bd);">' +
+    '<div><div style="font-size:16px;font-weight:700;color:var(--nv);">&#9432; Disbursement Process — Demo Guide</div>' +
+    '<div style="font-size:12px;color:var(--mu);margin-top:2px;">End-to-end workflow reference for this demonstration</div></div>' +
+    '</div>';
+
+  var order = ['lt','lt-uploads','lt-legal','lt-tech','lt-pricing','dis-docs','dis-sc','dis-ld','dis-vf','dis-fc','documents-tab'];
+  order.forEach(function(key) {
+    var g = GUIDE_SECTIONS[key];
+    if (!g) return;
+    html += '<div class="guide-sec">' +
+      '<div class="guide-sec-title">' +
+      '<span style="background:'+g.badgeColor+';color:#fff;font-size:9px;padding:2px 7px;border-radius:3px;font-weight:700;">'+g.badge+'</span> ' +
+      g.title +
+      '</div>' +
+      g.content +
+      '</div>';
+  });
+
+  html += '<div class="modal-btns"><button class="btn b-gh" onclick="closeModal()">Close</button></div>';
+  document.getElementById('modal-cnt').innerHTML = html;
+  document.getElementById('modal-cnt').className = 'modal guide-modal';
+  document.getElementById('modal-bg').classList.add('open');
+}
 document.getElementById('modal-bg').addEventListener('click', function(e) {
   if (e.target===document.getElementById('modal-bg')) closeModal();
 });
