@@ -143,29 +143,31 @@ body{font-family:var(--f);background:#e8eaed;color:var(--tx);font-size:13px;line
 .b-dis-off{background:#f3f4f6;color:var(--mu2);padding:9px 18px;font-size:12px;border-radius:8px;border:1px solid var(--bd);cursor:not-allowed;font-family:var(--f);font-weight:600;}
 
 /* TASK SECTIONS */
-.ts{background:#fff;border:1px solid var(--bd);border-radius:10px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-.ts-lt  {border-top:3px solid #7c3aed;}
-.ts-tech{border-top:3px solid #0891b2;}
-.ts-doc {border-top:3px solid #1e40af;}
-.ts-sc  {border-top:3px solid #b45309;}
-.ts-ld  {border-top:3px solid #0f766e;}
-.ts-vf  {border-top:3px solid #6d28d9;}
-.ts-fc  {border-top:3px solid #9b1c1c;}
-.ts-hdr{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:2px solid var(--bd2);}
-.ts-hdr:hover{background:#fafafa;}
+.ts{background:#fff;border:1px solid #dde3ef;border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);}
+.ts-lt  {border-top:4px solid #7c3aed;}
+.ts-tech{border-top:4px solid #0891b2;}
+.ts-doc {border-top:4px solid #1e40af;}
+.ts-sc  {border-top:4px solid #b45309;}
+.ts-ld  {border-top:4px solid #0f766e;}
+.ts-vf  {border-top:4px solid #6d28d9;}
+.ts-fc  {border-top:4px solid #9b1c1c;}
+.ts-hdr{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid #eaeff8;background:#fcfcfe;}
+.ts-hdr:hover{background:#f5f7fc;}
 .ts-hl{display:flex;align-items:center;gap:10px;}
 .ts-icon{font-size:14px;}
-.ts-title{font-size:13px;font-weight:700;color:var(--nv);}
+.ts-title{font-size:13.5px;font-weight:700;color:var(--nv);letter-spacing:-.1px;}
 .ts-bk{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono);}
 .ts-tog{color:var(--mu2);font-size:10px;transition:transform .18s;}
 .ts-tog.op{transform:rotate(180deg);}
-.sh{padding:5px 16px;background:#f1f5fb;border-bottom:1px solid #dde8f7;font-size:10px;font-weight:700;color:#3b5ea6;text-transform:uppercase;letter-spacing:.5px;}
+.sh{padding:6px 18px;background:#f1f5fb;border-bottom:1px solid #dde8f7;font-size:10px;font-weight:700;color:#3b5ea6;text-transform:uppercase;letter-spacing:.6px;}
 
 /* TABLE */
 .t-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.t{width:100%;border-collapse:collapse;font-size:12px;}
-.t th{background:#eef2fb;color:#374151;font-weight:700;font-size:10.5px;padding:7px 12px;text-align:left;border-bottom:2px solid #c7d7f0;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
-.t td{padding:7px 12px;border-bottom:1px solid var(--bd2);vertical-align:middle;}
+.t{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+.t th{background:#eef2fb;color:#374151;font-weight:700;font-size:10.5px;padding:8px 14px;text-align:left;border-bottom:2px solid #c7d7f0;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+.t th:first-child{padding-left:18px;}.t th:last-child{padding-right:18px;}
+.t td{padding:9px 14px;border-bottom:1px solid #eef1f7;vertical-align:middle;}
+.t td:first-child{padding-left:18px;}.t td:last-child{padding-right:18px;}
 .t tbody tr:last-child td{border-bottom:none;}
 .t tbody tr:hover td{background:#f8faff;}
 .t tbody tr.mine td{background:#fffcf5;}
@@ -460,7 +462,9 @@ var S = {
     'ld-bene':  {cat:'ld', name:'Beneficiary Account',             status:'locked',owner:['sales'],           by:null,qry:null},
     'ld-repay': {cat:'ld', name:'Repayment Details',               status:'locked',owner:['sales'],           by:null,qry:null},
     'ld-emi':   {cat:'ld', name:'EMI Start & Tenure',              status:'locked',owner:['sales'],           by:null,qry:null},
-    'ld-own':   {cat:'ld', name:'Own Contribution',                status:'locked',owner:['sales'],           by:null,qry:null},
+    'ld-seller':{cat:'ld', name:'Seller Verification',             status:'locked',owner:['sales'],           by:null,qry:null},
+    'ld-noc':   {cat:'ld', name:'NOC',                             status:'locked',owner:['sales'],           by:null,qry:null},
+    'ld-own':   {cat:'ld', name:'Own Contribution Validation (AA)',status:'locked',owner:['sales'],           by:null,qry:null},
     // Physical Document Verification moved to per-doc row — no separate vp-phys task
     'ca-sc':    {cat:'ca', name:'Sanction Condition Revalidation', status:'locked',owner:['credit'],          by:null,qry:null},
     'ca-docs':  {cat:'ca', name:'Original Documents vs TSR Review',status:'locked',owner:['credit'],          by:null,qry:null},
@@ -518,12 +522,17 @@ function ltPend(u) {
   return Object.values(S.lt).filter(function(t){ return t.owner.indexOf(u)>=0 && t.status==='pending'; }).length;
 }
 function disPend(u) {
-  return Object.values(S.dis).filter(function(t){
+  return Object.entries(S.dis).filter(function(e){
+    var k=e[0]; var t=e[1];
     if (u==='ops'   && t.status==='pending-checker') return true;
-    if (u==='ops'   && t.status==='done' && t.cat==='doc' && t.owner.indexOf('ops')>=0) return true; // returned after Sales correction
+    if (u==='ops'   && t.status==='done' && t.cat==='doc' && t.owner.indexOf('ops')>=0) return true;
     if (u==='sales' && (t.status==='checker-queried'||t.status==='orig-required')) return true;
-    if (u==='customer' && t.status==='orig-required' && t.owner.indexOf('customer')>=0) return true;
     if (u==='sales' && t.status==='queried' && t.owner.indexOf('sales')>=0) return true;
+    if (u==='customer' && t.status==='orig-required' && t.owner.indexOf('customer')>=0) return true;
+    if (u==='customer' && k==='fc-kfs'   && t.sub==='customer-pending') return true;
+    if (u==='customer' && k==='fc-esign' && t.sub==='customer-pending') return true;
+    if (u==='customer' && k==='fc-enach' && t.status==='pending' && t.owner.indexOf('customer')>=0) return true;
+    if (u==='rcu'   && k==='fc-fcpg' && t.status==='pending') return true;
     return t.owner.indexOf(u)>=0 && ['pending','queried','credit-pending','otcpdd-pending'].indexOf(t.status)>=0;
   }).length;
 }
@@ -565,7 +574,19 @@ function reeval() {
   if (L['ta-alloc'].status==='done' && L['ts-insp'].status==='locked')   L['ts-insp'].status='pending';
   if (L['ts-insp'].status==='done'  && L['tr-rapid'].status==='locked')  L['tr-rapid'].status='pending';
 
-  if (!F.disStart) return;
+  // Auto-trigger disbursement: all 5 scanned docs uploaded + pricing confirmed/not-required
+  if (!F.disStart) {
+    var allUploadsRdy = ['lu-agree','lu-title','lu-tax','lu-addr','lu-sketch'].every(function(k){ return L[k].status==='done'; });
+    if (allUploadsRdy && D['ld-price'].status==='done') {
+      F.disStart = true; S.phase = 'dis'; S.sideView = 'dash';
+      ['dp-patta','dp-sale','dp-title','dp-ec','sc-noc','sc-inc','ld-bene','ld-repay','ld-emi','ld-own','ld-seller','ld-noc'].forEach(function(k){ if(D[k]) D[k].status='pending'; });
+      var _b=document.getElementById('case-badge'); if(_b){_b.className='b-ip';_b.textContent='Disbursement – In Progress';}
+      var _nLt=document.getElementById('nav-lt'); if(_nLt) _nLt.className='on';
+      var _nDocs=document.getElementById('nav-docs'); if(_nDocs) _nDocs.className='';
+      logIt('Disbursement auto-initiated — Docs uploaded & Pricing confirmed','#e8600a');
+    }
+    if (!F.disStart) return;
+  }
 
   // auto-complete fee
   if (D['sc-fee'].status==='locked' || D['sc-fee'].status==='pending') {
@@ -600,7 +621,7 @@ function reeval() {
   // OTC/PDD-pending docs do NOT block credit -- resolved inside credit V&A
   var fcpgDoneNow = D['fc-fcpg'].status==='done';
   var scAllDone = ['sc-noc','sc-inc','sc-fee'].every(function(k){ return D[k].status==='done'||D[k].status==='verified'; });
-  var ldAllDone = ['ld-bene','ld-repay','ld-emi','ld-own','ld-price'].every(function(k){ return D[k].status==='done'||D[k].status==='verified'; });
+  var ldAllDone = ['ld-bene','ld-repay','ld-emi','ld-own','ld-price','ld-seller','ld-noc'].every(function(k){ return D[k]&&(D[k].status==='done'||D[k].status==='verified'); });
   if (fcpgDoneNow && scAllDone && ldAllDone && !F.dmDone) {
     F.dmDone = true; F.opsDone = true;
     ['ca-sc','ca-docs','ca-price'].forEach(function(k){
@@ -699,6 +720,7 @@ function doDis(id, action) {
   } else if (action==='query')   { showQueryModal(id); return; }
   else if  (action==='remind')   { toastMsg('Reminder sent'); return; }
   else if  (action==='otcpdd')   { showOTCModal(id); return; }
+  else if  (action==='not-required') { t.status='done'; t.by='Not Required'; t.notRequired=true; logIt(t.name+' — marked as Not Required','#6b7280'); toastMsg('Marked as Not Required'); }
   else if  (action==='rcu')      { t.status='done'; t.by='RCU'; logIt('FCPG complete','#6d28d9'); toastMsg('FCPG complete'); }
   else if  (action==='ndc')      { showNDCModal(); return; }
   else if  (action==='finnone')  { t.status='done'; t.by='Local Ops'; logIt('Submitted to FinnOne!','#34c759'); showSuccessModal(); return; }
@@ -716,7 +738,7 @@ function completeLT() {
 function initDis() {
   if (S.dis['ld-price'].status !== 'done') { toastMsg('Please confirm Pricing Approval first'); return; }
   S.F.disStart = true; S.phase = 'dis';
-  ['dp-patta','dp-sale','dp-title','dp-ec','sc-noc','sc-inc','ld-bene','ld-repay','ld-emi','ld-own'].forEach(function(k){ S.dis[k].status='pending'; });
+  ['dp-patta','dp-sale','dp-title','dp-ec','sc-noc','sc-inc','ld-bene','ld-repay','ld-emi','ld-own','ld-seller','ld-noc'].forEach(function(k){ if(S.dis[k]) S.dis[k].status='pending'; });
   var b = document.getElementById('case-badge');
   if (b) { b.className='b-ip'; b.textContent='Disbursement – In Progress'; }
   logIt('Disbursement initiated', '#e8600a');
@@ -746,12 +768,13 @@ function submitCheckerQuery(id) {
   var t = S.dis[id];
   t.status = 'checker-queried';
   t.checkerQry = txt;
+  t.qryBy = rnm(S.user);
   t.owner = ['sales']; // flows back to sales
   logIt('Local Ops query on '+t.name+' — Sales to correct', '#dc2626');
   toastMsg('Query raised — Sales RM notified');
   // Broadcast query visibility to all internal stakeholders
   S.queryBroadcast = S.queryBroadcast || [];
-  S.queryBroadcast.push({id:id, task:t.name, qry:txt, by:'Local Ops'});
+  S.queryBroadcast.push({id:id, task:t.name, qry:txt, by:rnm(S.user)});
   closeModal(); reeval(); updateCounts(); render();
 }
 function showSCCorrectModal(id) {
@@ -977,36 +1000,146 @@ function saveDocCheckPartial(docId) {
 }
 
 function showDMModal() {
-  var D = S.dis; var L = S.lt;
-  var html = '<div class="ndc-hdr" style="background:var(--nv);"><h3>Disbursement Memo</h3><span class="finn-badge">Preview</span></div>';
-  html += '<div style="font-size:11.5px;color:var(--mu);margin-bottom:12px;">Auto-generated from verified case data. Credit can download for records.</div>';
-  var fields = [
-    ['Applicant Name','Rajesh Chhaganbhai Godhaniya'],
-    ['Application No.','77212387114'],
-    ['Loan Product','Home Loan — Non BT'],
-    ['Loan Amount','₹ 69,40,109'],
-    ['Tranche','1 of 1'],
-    ['Sanctioned On','08 Jan 2026'],
-    ['Beneficiary Account', D['ld-bene']&&D['ld-bene'].status==='done'?(D['ld-bene'].formData&&D['ld-bene'].formData.acc||'Verified ✓'):'Pending'],
-    ['Repayment Mode', D['ld-repay']&&D['ld-repay'].status==='done'?'eNACH — Auto-debit':'Pending'],
-    ['EMI Start', D['ld-emi']&&D['ld-emi'].status==='done'?'01 Mar 2026':'Pending'],
-    ['Own Contribution', D['ld-own']&&D['ld-own'].status==='done'?(D['ld-own'].formData&&D['ld-own'].formData.amt||'Verified ✓'):'Pending'],
-    ['Documents Status','Received / OTC Approved'],
-    ['FCPG Check', D['fc-fcpg']&&D['fc-fcpg'].status==='done'?'Completed':'Pending'],
-    ['Generated On', (function(){ var n=new Date(); return ('0'+n.getDate()).slice(-2)+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][n.getMonth()]+' '+n.getFullYear(); })()]
-  ];
-  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
-  fields.forEach(function(f){
-    html += '<tr style="border-bottom:1px solid var(--bd2);">' +
-      '<td style="padding:7px 10px;font-weight:600;color:var(--nv);width:45%;">'+f[0]+'</td>' +
-      '<td style="padding:7px 10px;color:var(--tx);">'+f[1]+'</td></tr>';
+  var D = S.dis;
+  var now = new Date();
+  var mn = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var dateStr = ('0'+now.getDate()).slice(-2)+' '+mn[now.getMonth()]+' '+now.getFullYear();
+  var dmRef = 'DM/HL/'+now.getFullYear()+'/'+('0'+(now.getMonth()+1)).slice(-2)+'/77212387114';
+  var bene = D['ld-bene']; var repay = D['ld-repay']; var emi = D['ld-emi']; var own = D['ld-own']; var seller = D['ld-seller']; var noc = D['ld-noc'];
+  function fd(task, field, fallback) {
+    return (task && task.formData && task.formData[field]) ? task.formData[field] : (fallback || '<span style="color:#9ca3af;font-style:italic;">Not captured</span>');
+  }
+  function chk(task) { return (task && (task.status==='done'||task.status==='verified')) ? '<span style="color:#15803d;font-weight:600;">&#10003; Completed</span>' : '<span style="color:#9ca3af;">&#9203; Pending</span>'; }
+
+  var html = '';
+  // ── Document Shell ──────────────────────────────
+  html += '<div style="font-family:Georgia,serif;font-size:11px;color:#1a1a1a;line-height:1.6;">';
+
+  // Letterhead
+  html += '<div style="border-bottom:3px double #9b1c1c;padding-bottom:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;">' +
+    '<div>' +
+      '<div style="font-size:18px;font-weight:700;color:#9b1c1c;letter-spacing:-.3px;font-family:var(--f);">ICICI BANK LIMITED</div>' +
+      '<div style="font-size:9.5px;color:#6b7280;font-family:var(--f);margin-top:1px;">Mortgage Loans Division &nbsp;|&nbsp; Home Loans</div>' +
+    '</div>' +
+    '<div style="text-align:right;font-family:var(--mono);font-size:9px;color:#6b7280;">' +
+      '<div style="font-weight:700;color:#1a1a1a;font-size:10px;">DISBURSEMENT MEMO</div>' +
+      '<div>Ref: '+dmRef+'</div>' +
+      '<div>Date: '+dateStr+'</div>' +
+    '</div>' +
+  '</div>';
+
+  // To / Subject block
+  html += '<div style="margin-bottom:12px;font-size:11px;">' +
+    '<div><strong>To:</strong> Branch Credit Manager / Operations Head, West Zone</div>' +
+    '<div style="margin-top:4px;"><strong>Sub:</strong> Authorization for Disbursement of Home Loan — Application No. 77212387114</div>' +
+  '</div>';
+  html += '<div style="border-top:1px solid #e5e7eb;margin-bottom:10px;"></div>';
+
+  // Section helper
+  function dmSec(title, rows) {
+    var r = '<div style="margin-bottom:10px;">' +
+      '<div style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#9b1c1c;border-bottom:1px solid #fecaca;padding-bottom:3px;margin-bottom:6px;">'+title+'</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
+    rows.forEach(function(row,i){
+      r += '<tr style="background:'+(i%2===0?'#fafafa':'#fff')+';border-bottom:1px solid #f4f5f7;">' +
+        '<td style="padding:4px 8px 4px 0;font-weight:600;color:#374151;width:44%;vertical-align:top;">'+row[0]+'</td>' +
+        '<td style="padding:4px 0 4px 8px;color:#1a1a1a;">'+row[1]+'</td></tr>';
+    });
+    r += '</table></div>';
+    return r;
+  }
+
+  html += dmSec('A. Applicant & Loan Details', [
+    ['Applicant Name',           'RAJESH CHHAGANBHAI GODHANIYA'],
+    ['Application Number',       '77212387114'],
+    ['Loan Product',             'Home Loan — Non BT'],
+    ['Sanctioned Amount',        '₹ 69,40,109'],
+    ['Disbursement Amount',      '₹ 69,40,109  (Tranche 1 of 1)'],
+    ['Rate of Interest (ROI)',   fd(D['ld-price'],'roi','8.75') + '% p.a. — ' + fd(D['ld-price'],'scheme','Floating Rate')],
+    ['Approved By',              fd(D['ld-price'],'aprby','Credit Manager — West Zone')],
+    ['Sanction Date',            '08 January 2026'],
+    ['Application Date',         '08 January 2026']
+  ]);
+
+  html += dmSec('B. Disbursement — Beneficiary Details', [
+    ['Payee / Beneficiary Name', fd(bene,'bname')],
+    ['Bank Name',                fd(bene,'bank')],
+    ['Account Number',           fd(bene,'acc')],
+    ['Account Type',             fd(bene,'btype')],
+    ['IFSC Code',                fd(bene,'ifsc')],
+    ['Disbursement Mode',        'RTGS / NEFT']
+  ]);
+
+  html += dmSec('C. Repayment & EMI Details', [
+    ['Repayment Mode',           fd(repay,'mode')],
+    ['Repayment Bank',           fd(repay,'rbank')],
+    ['Repayment Account No.',    fd(repay,'racc')],
+    ['Repayment IFSC',           fd(repay,'rifsc')],
+    ['EMI Start Date',           fd(emi,'estart')],
+    ['Loan Tenure',              fd(emi,'tenure') + ' months'],
+    ['EMI Amount (Rs)',          fd(emi,'emiamt')]
+  ]);
+
+  html += dmSec('D. Own Contribution — AA Validation', [
+    ['Contribution Amount',      'Rs ' + fd(own,'ocamt')],
+    ['AA Consent Reference ID',  fd(own,'aaref')],
+    ['Source Bank & Account',    fd(own,'aabank') + (own&&own.formData&&own.formData.aaacc?' — A/C '+own.formData.aaacc:'')],
+    ['Statement Period',         fd(own,'aastmt') + ' to ' + fd(own,'aasto')],
+    ['AA Validation Status',     fd(own,'aasts')]
+  ]);
+
+  html += dmSec('E. Seller Verification', [
+    ['Seller Name',              fd(seller,'sname')],
+    ['Seller PAN',               fd(seller,'span')],
+    ['Seller Bank & Account',    fd(seller,'sbank') + (seller&&seller.formData&&seller.formData.sacc?' — '+seller.formData.sacc:'')],
+    ['Account Type',             fd(seller,'sacct')],
+    ['IFSC Code',                fd(seller,'sifsc')],
+    ['Registered Mobile',        fd(seller,'smob')]
+  ]);
+
+  html += dmSec('F. NOC Details', [
+    ['NOC Type',                 fd(noc,'noctype')],
+    ['Issued By',                fd(noc,'nocby')],
+    ['Reference Number',         fd(noc,'nocref')],
+    ['Issue Date',               fd(noc,'nocdt')],
+    ['Valid Until',              fd(noc,'nocval')]
+  ]);
+
+  html += dmSec('G. Pre-Disbursement Compliance Checklist', [
+    ['Original Docs — All Received / OTC Approved',  chk({status: ['dp-patta','dp-sale','dp-title','dp-ec'].every(function(k){ var t=D[k]; return t&&(t.status==='done'||t.status==='verified'||t.status==='otcpdd'); })?'done':'pending'})],
+    ['Sanction Conditions Verified',  chk({status: ['sc-noc','sc-inc','sc-fee'].every(function(k){ return D[k]&&(D[k].status==='done'||D[k].status==='verified'); })?'done':'pending'})],
+    ['Loan Details — All Verified',   chk({status: ['ld-bene','ld-repay','ld-emi','ld-own','ld-seller','ld-noc'].every(function(k){ return D[k]&&(D[k].status==='done'||D[k].status==='verified'); })?'done':'pending'})],
+    ['FCPG — RCU Physical Verification', chk(D['fc-fcpg'])],
+    ['KFS — Customer Acceptance',        chk(D['fc-kfs'])],
+    ['E-Sign Booklet',                   chk(D['fc-esign'])],
+    ['eNACH Mandate',                    chk(D['fc-enach'])]
+  ]);
+
+  // Signatory
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:10px;">';
+  ['Prepared By<br><br><br><span style="border-top:1px solid #374151;padding-top:3px;display:block;margin-top:10px;font-size:9.5px;color:#6b7280;">Sales RM</span>',
+   'Checked By<br><br><br><span style="border-top:1px solid #374151;padding-top:3px;display:block;margin-top:10px;font-size:9.5px;color:#6b7280;">Local Ops</span>',
+   'Authorized By<br><br><br><span style="border-top:1px solid #374151;padding-top:3px;display:block;margin-top:10px;font-size:9.5px;color:#6b7280;">Credit Manager</span>'
+  ].forEach(function(s){
+    html += '<div style="text-align:center;font-size:10px;color:#374151;">'+s+'</div>';
   });
-  html += '</table>';
-  html += '<div class="modal-btns" style="margin-top:14px;">' +
-    '<button class="btn b-gh" onclick="closeModal()">Close</button>' +
-    '<button class="btn b-nv" onclick="toastMsg(\'Downloading DM...\')">Download PDF</button>' +
-    '</div>';
-  openModal(html);
+  html += '</div>';
+
+  html += '<div style="text-align:center;font-size:8.5px;color:#9ca3af;border-top:1px solid #f4f5f7;padding-top:6px;">'+
+    'This is a system-generated Disbursement Memo. &nbsp;|&nbsp; ICICI Bank Ltd. — Mortgage Loans &nbsp;|&nbsp; '+dmRef+' &nbsp;|&nbsp; Generated: '+dateStr+
+  '</div>';
+
+  html += '</div>'; // end font shell
+
+  document.getElementById('modal-cnt').innerHTML =
+    '<div style="margin:-22px -22px 14px;background:var(--r);padding:14px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">' +
+    '<span style="color:#fff;font-size:14px;font-weight:700;font-family:var(--f);">Disbursement Memo — Preview</span>' +
+    '<span style="font-family:var(--mono);font-size:9px;background:rgba(255,255,255,.15);color:#fff;padding:2px 8px;border-radius:3px;font-weight:700;">DRAFT</span>' +
+    '</div>' +
+    html +
+    '<div class="modal-btns"><button class="btn b-gh" onclick="closeModal()">Close</button><button class="btn b-nv" onclick="toastMsg(\'Downloading DM as PDF...\')">&#8615; Download PDF</button></div>';
+  document.getElementById('modal-cnt').className = 'modal guide-modal';
+  document.getElementById('modal-bg').classList.add('open');
 }
 
 function showQueryModal(id, preItems) {
@@ -1038,10 +1171,10 @@ function submitQuery(id, preItems) {
   if (preItems && preItems.length) qparts.push('Pending items:\n' + preItems.map(function(l){ return '• '+l; }).join('\n'));
   if (extra) qparts.push(extra);
   var txt = qparts.join('\n\n') || 'Clarification required.';
-  t.status='queried'; t.qry=txt;
-  // Checklist tasks and FCPG route to Sales for resolution; remember original owner
-  if (id==='fc-ndc'||id==='fc-fcpg') {
-    t.checkerOrigOwner = t.owner.slice(); // save for return
+  t.status='queried'; t.qry=txt; t.qryBy=rnm(S.user);
+  // Checklist, FCPG, and Credit V&A tasks route to Sales; remember original owner for return
+  if (id==='fc-ndc'||id==='fc-fcpg'||id.indexOf('ca-')===0) {
+    t.checkerOrigOwner = t.owner.slice();
     t.owner=['sales'];
   }
   logIt('Query raised on '+t.name+' by '+rnm(S.user), '#dc2626');
@@ -1156,21 +1289,48 @@ var LD_FORMS = {
     ]
   },
   'ld-own': {
-    title: 'Enter Own Contribution Details',
+    title: 'Own Contribution Validation — Account Aggregator (AA)',
     fields: [
-      {id:'ocamt', label:'Amount (Rs)',         type:'text', ph:'e.g. 1735000'},
-      {id:'ocmode',label:'Mode of Payment',     type:'text', ph:'Cheque / NEFT / Cash'},
-      {id:'ocdate',label:'Date of Payment',     type:'text', ph:'e.g. 15 Jan 2026'},
-      {id:'ocref', label:'Reference / Cheque No.', type:'text', ph:'Transaction reference'}
+      {id:'aaref',  label:'AA Consent / Reference ID',    type:'text', ph:'e.g. AA-CONSENT-2026-XXXXX'},
+      {id:'aabank', label:'Bank Name',                    type:'text', ph:'Bank where contribution is held'},
+      {id:'aaacc',  label:'Account Number',               type:'text', ph:'Account from which contribution paid'},
+      {id:'ocamt',  label:'Contribution Amount (Rs)',      type:'text', ph:'e.g. 1735000'},
+      {id:'aastmt', label:'Statement Period (From)',       type:'text', ph:'e.g. 01 Nov 2025'},
+      {id:'aasto',  label:'Statement Period (To)',         type:'text', ph:'e.g. 15 Jan 2026'},
+      {id:'aasts',  label:'AA Validation Status',         type:'text', ph:'Validated / Pending / Exception'}
+    ]
+  },
+  'ld-seller': {
+    title: 'Seller Verification — Banking Details',
+    fields: [
+      {id:'sname',  label:'Seller Full Name',              type:'text', ph:'As per bank records'},
+      {id:'span',   label:'Seller PAN',                    type:'text', ph:'e.g. ABCDE1234F'},
+      {id:'sbank',  label:'Bank Name',                     type:'text', ph:'e.g. SBI, HDFC Bank'},
+      {id:'sacc',   label:'Account Number',                type:'text', ph:'Enter account number'},
+      {id:'sifsc',  label:'IFSC Code',                     type:'text', ph:'e.g. SBIN0001234'},
+      {id:'sacct',  label:'Account Type',                  type:'text', ph:'Savings / Current'},
+      {id:'smob',   label:'Mobile Linked to Account',      type:'text', ph:'10-digit mobile number'}
+    ]
+  },
+  'ld-noc': {
+    title: 'NOC Details',
+    fields: [
+      {id:'noctype',label:'NOC Type',                      type:'text', ph:'Builder / Society / Previous Bank / Other'},
+      {id:'nocby',  label:'Issued By',                     type:'text', ph:'Name of issuing authority'},
+      {id:'nocref', label:'Reference / Certificate No.',   type:'text', ph:'NOC reference number'},
+      {id:'nocdt',  label:'Issue Date',                    type:'text', ph:'e.g. 01 Mar 2026'},
+      {id:'nocval', label:'Valid Until',                   type:'text', ph:'e.g. 30 Jun 2026'}
     ]
   }
 };
 var LD_DEMO = {
-  'ld-price': {roi:'8.75', scheme:'Home Loan — Floating Rate', aprby:'Credit Manager — West Zone'},
-  'ld-bene':  {bname:'Rajesh C. Godhaniya', bank:'HDFC Bank', acc:'50100234567890', ifsc:'HDFC0001234', btype:'Savings'},
-  'ld-repay': {mode:'NACH', rbank:'HDFC Bank', racc:'50100234567890', rifsc:'HDFC0001234'},
-  'ld-emi':   {estart:'01 May 2026', tenure:'240', emiamt:'58240'},
-  'ld-own':   {ocamt:'1735000', ocmode:'NEFT', ocdate:'15 Jan 2026', ocref:'NEFT2026011512345'}
+  'ld-price':  {roi:'8.75', scheme:'Home Loan — Floating Rate', aprby:'Credit Manager — West Zone'},
+  'ld-bene':   {bname:'Rajesh C. Godhaniya', bank:'HDFC Bank', acc:'50100234567890', ifsc:'HDFC0001234', btype:'Savings'},
+  'ld-repay':  {mode:'NACH', rbank:'HDFC Bank', racc:'50100234567890', rifsc:'HDFC0001234'},
+  'ld-emi':    {estart:'01 May 2026', tenure:'240', emiamt:'58240'},
+  'ld-own':    {aaref:'AA-CONSENT-2026-78901', aabank:'HDFC Bank', aaacc:'50100234567890', ocamt:'1735000', aastmt:'01 Nov 2025', aasto:'15 Jan 2026', aasts:'Validated'},
+  'ld-seller': {sname:'Suresh Kumar Shah', span:'ABCDE1234F', sbank:'State Bank of India', sacc:'20123456789', sifsc:'SBIN0001234', sacct:'Savings', smob:'9876543210'},
+  'ld-noc':    {noctype:'Previous Bank', nocby:'HDFC Bank Ltd.', nocref:'NOC/2026/0034512', nocdt:'01 Mar 2026', nocval:'31 Aug 2026'}
 };
 function fillDemoData(id) {
   var demo = LD_DEMO[id];
@@ -1212,6 +1372,10 @@ function saveLDForm(id) {
   });
   if (!allFilled) { toastMsg('Please fill all fields'); return; }
   var t = S.dis[id];
+  // Store form data for viewing later
+  var formData = {};
+  form.fields.forEach(function(f){ var el=document.getElementById('ldf-'+f.id); if(el) formData[f.id]=el.value.trim(); });
+  t.formData = formData;
   var wasQueried = t.status==='checker-queried';
   if (wasQueried) {
     // Corrections after Local Ops query — route back to checker
@@ -1221,6 +1385,27 @@ function saveLDForm(id) {
     doDis(id, 'confirm');
   }
   closeModal();
+}
+
+function showLDViewModal(id) {
+  var t = S.dis[id]; var form = LD_FORMS[id];
+  if (!form) return;
+  var html = '<h3 style="margin-bottom:14px;">'+form.title+'</h3>';
+  if (!t.formData) {
+    html += '<p style="color:var(--mu);">No data entered yet.</p>';
+  } else {
+    html += '<div style="background:#f8f9fa;border-radius:8px;padding:4px 12px;margin-bottom:12px;">';
+    form.fields.forEach(function(f){
+      var val = t.formData[f.id] || '—';
+      html += '<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd2);">' +
+        '<span style="font-size:11px;font-weight:600;color:var(--nv);min-width:190px;flex-shrink:0;">'+f.label+'</span>' +
+        '<span style="font-size:12px;color:var(--tx);">'+val+'</span></div>';
+    });
+    html += '</div>';
+  }
+  if (t.checkerComment) html += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#14532d;margin-bottom:10px;"><strong>Sales note:</strong> '+t.checkerComment+'</div>';
+  html += '<div class="modal-btns"><button class="btn b-gh" onclick="closeModal()">Close</button><button class="btn b-tl" onclick="closeModal();doDis(\''+id+'\',\'checker-verify\')">Verify &#10003;</button></div>';
+  openModal(html);
 }
 
 // ── Credit checklist modals ──
@@ -1557,14 +1742,15 @@ function showSuccessModal() {
 // ═══════════════════════════════
 // RENDER HELPERS
 // ═══════════════════════════════
-function stB(s, o, sub, owners, cat) {
+function stB(s, o, sub, owners, cat, notReq) {
+  if (s==='done' && notReq)     return '<span class="st s-wait"><span class="sd"></span>Not Required</span>';
   if (s==='verified')           return '<span class="st s-done"><span class="sd"></span>Verified &#10003;</span>';
   if (s==='done' && cat==='doc' && owners && owners.length===1 && owners[0]==='ops')
                                 return '<span class="st s-prog"><span class="sd"></span>Received — Pending Verification</span>';
   if (s==='done')               return '<span class="st s-done"><span class="sd"></span>Done</span>';
   if (s==='otcpdd')             return '<span class="st s-otc"><span class="sd"></span>'+(o||'OTC/PDD')+' Approved</span>';
   if (s==='otcpdd-pending')     return '<span class="st s-prog"><span class="sd"></span>OTC/PDD — Awaiting Credit</span>';
-  if (s==='queried')        return '<span class="st s-qry"><span class="sd"></span>Queried — Ops</span>';
+  if (s==='queried')        return '<span class="st s-qry"><span class="sd"></span>Queried — Pending Resolution</span>';
   if (s==='orig-required')      return '<span class="st s-qry"><span class="sd"></span>Original Required</span>';
   if (s==='pending-checker')    return '<span class="st s-prog"><span class="sd"></span>Submitted — Pending Verification</span>';
   if (s==='checker-queried')    return '<span class="st s-qry"><span class="sd"></span>Query by Local Ops</span>';
@@ -1601,7 +1787,8 @@ function disBtn(id) {
   if (s==='pending-checker') {
     if (u==='ops') {
       var note = t.checkerComment ? '<div style="background:#f0fdf4;border-radius:4px;padding:4px 8px;font-size:10.5px;color:var(--gn);margin-bottom:4px;">Sales note: '+t.checkerComment+'</div>' : '';
-      return note + '<div class="acts"><button class="btn b-tl" onclick="doDis(\''+id+'\',\'checker-verify\')">Verify</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'checker-query\')">Raise Query</button></div>';
+      var vwBtn = (t.cat==='ld' && t.formData) ? '<button class="btn b-gh" onclick="showLDViewModal(\''+id+'\')">View</button>' : '';
+      return note + '<div class="acts">'+vwBtn+'<button class="btn b-tl" onclick="doDis(\''+id+'\',\'checker-verify\')">Verify</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'checker-query\')">Raise Query</button></div>';
     }
     return '<span style="font-size:10.5px;color:var(--tl);">Submitted — awaiting Local Ops</span>';
   }
@@ -1633,14 +1820,14 @@ function disBtn(id) {
       if (u==='ops') return '<span style="font-size:10.5px;color:var(--am);">Awaiting Sales resolution</span>';
       return '<button class="btn b-gh" onclick="toggleQR(\''+id+'\')">View Query</button>';
     }
-    // Checklist tasks (fc-ndc) and FCPG: Sales adds resolution, sends back to original owner
-    var isChecklist = (id==='fc-ndc'||id==='fc-fcpg');
-    if (isChecklist) {
+    // Checklist (fc-ndc), FCPG, and Credit V&A (ca-*): Sales adds resolution, task returns to original owner
+    var isQueryReturn = (id==='fc-ndc'||id==='fc-fcpg'||id.indexOf('ca-')===0);
+    if (isQueryReturn) {
       if (u==='sales' && t.owner.indexOf('sales')>=0)
         return '<div class="acts"><button class="btn b-fi" onclick="toggleQR(\''+id+'\')">View Query</button><button class="btn b-nv" onclick="showSalesResolutionModal(\''+id+'\')">Add Resolution</button></div>';
-      // Original checker (ops/rcu) sees awaiting note
-      var origO = t.checkerOrigOwner || ['ops'];
-      if (origO.indexOf(u)>=0) return '<span style="font-size:10.5px;color:var(--am);">Awaiting Sales resolution</span>';
+      // Original checker (credit/ops/rcu) sees awaiting note
+      var origO = t.checkerOrigOwner || ['credit'];
+      if (origO.indexOf(u)>=0) return '<span style="font-size:10.5px;color:var(--am);">Query raised — awaiting Sales resolution</span>';
       return '<button class="btn b-gh" onclick="toggleQR(\''+id+'\')">View Query</button>';
     }
     // Regular queried tasks
@@ -1679,13 +1866,19 @@ function disBtn(id) {
     return '<button class="btn b-rm" onclick="doDis(\''+id+'\',\'remind\')">Remind</button>';
   }
   if (t.cat==='sc')  return '<div class="acts"><button class="btn b-up" onclick="doDis(\''+id+'\',\'upload\')">Upload</button><button class="btn b-rm" onclick="doDis(\''+id+'\',\'remind\')">Remind</button></div>';
-  if (t.cat==='ld')  return '<button class="btn b-fi" onclick="showLDModal(\''+id+'\')">Enter Details</button>';
+  if (t.cat==='ld') {
+    if (id==='ld-price') return '<div class="acts"><button class="btn b-fi" onclick="showLDModal(\''+id+'\')">Enter Details</button><button class="btn b-gh" onclick="doDis(\''+id+'\',\'not-required\')">Not Required</button></div>';
+    return '<button class="btn b-fi" onclick="showLDModal(\''+id+'\')">Enter Details</button>';
+  }
   // Credit approval tasks
   if (t.cat==='ca') {
-    if (id==='ca-sc')    return '<div class="acts"><button class="btn b-gn" onclick="showSCRevalModal()">View &amp; Approve</button></div>';
-    if (id==='ca-docs')  return '<div class="acts"><button class="btn b-gn" onclick="showDocTSRModal()">View &amp; Approve</button></div>';
-    if (id==='ca-price') return '<div class="acts"><button class="btn b-gn" onclick="showPricingReviewModal()">View BRE &amp; Approve</button></div>';
-    return '<div class="acts"><button class="btn b-gn" onclick="doDis(\''+id+'\',\'approve\')">Approve</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'query\')">Query</button></div>';
+    var salesNote = t.salesResolution
+      ? '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:5px 8px;font-size:10.5px;color:#14532d;margin-bottom:5px;"><strong>Sales response:</strong> '+t.salesResolution.substring(0,120)+'</div>'
+      : '';
+    if (id==='ca-sc')    return salesNote+'<div class="acts"><button class="btn b-gn" onclick="showSCRevalModal()">View &amp; Approve</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'query\')">Raise Query</button></div>';
+    if (id==='ca-docs')  return salesNote+'<div class="acts"><button class="btn b-gn" onclick="showDocTSRModal()">View &amp; Approve</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'query\')">Raise Query</button></div>';
+    if (id==='ca-price') return salesNote+'<div class="acts"><button class="btn b-gn" onclick="showPricingReviewModal()">View &amp; Approve</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'query\')">Raise Query</button></div>';
+    return salesNote+'<div class="acts"><button class="btn b-gn" onclick="doDis(\''+id+'\',\'approve\')">Approve</button><button class="btn b-re" onclick="doDis(\''+id+'\',\'query\')">Raise Query</button></div>';
   }
   if (id==='fc-enach') {
     if (u==='customer') return '<button class="btn b-nv" onclick="doDis(\'fc-enach\',\'complete\')">Complete eNACH</button>';
@@ -1825,7 +2018,7 @@ function filtLT(es) {
   return es.filter(function(e){ return e[1].owner.indexOf(u)>=0&&e[1].status==='pending'; });
 }
 
-var TH = '<thead><tr><th>Task / Document</th><th style="width:175px;">Status</th><th style="width:145px;">Pending With</th><th style="width:58px;text-align:center;">View</th><th style="width:210px;">Actions</th></tr></thead>';
+var TH = '<thead><tr><th>Task / Document</th><th style="width:155px;">Status</th><th style="width:150px;">Pending With</th><th style="width:60px;text-align:center;">View</th><th style="width:220px;">Actions</th></tr></thead>';
 
 function ltRow(id) {
   var t=S.lt[id]; var u=S.user;
@@ -1859,7 +2052,7 @@ function disRow(id, sv) {
   var vdoc=sv&&t.status!=='locked'?'<button class="btn b-gh" style="font-size:10px;" onclick="toastMsg(\'Opening...\')">View</button>':'—';
   return '<tr class="'+(mine?'mine':'')+(t.status==='locked'?' arch':'')+'">' +
     '<td><span class="name">'+t.name+mt+'</span></td>' +
-    '<td>'+stB(t.status,t.otc,t.sub,t.owner,t.cat)+'</td>' +
+    '<td>'+stB(t.status,t.otc,t.sub,t.owner,t.cat,t.notRequired)+'</td>' +
     '<td>'+(t.status==='locked'?'<span class="p-no">—</span>':pwB(t.owner))+'</td>' +
     '<td style="text-align:center;">'+vdoc+'</td>' +
     '<td>'+disBtn(id)+'</td>' +
@@ -1934,30 +2127,43 @@ function getDocList() {
 
 function renderDocPane() {
   var docs = getDocList();
-  var cats = [{id:'scanned',label:'Scanned Copies'},{id:'legal',label:'Legal Documents'},{id:'technical',label:'Technical Documents'},{id:'bank',label:'Bank Generated'}];
-  var html = '<div style="margin-bottom:14px;"><h2 style="font-size:16px;font-weight:700;color:var(--nv);margin-bottom:4px;">&#128196; Documents</h2>' +
-    '<p style="font-size:12px;color:var(--mu);">All documents submitted or generated in this case. Updates as process moves forward.</p></div>';
+  var cats = [
+    {id:'scanned',   label:'Scanned Copies',       icon:'📄', accent:'#1e40af'},
+    {id:'legal',     label:'Legal Documents',       icon:'⚖️',  accent:'#7c3aed'},
+    {id:'technical', label:'Technical Documents',   icon:'🏗️',  accent:'#0891b2'},
+    {id:'bank',      label:'Bank Generated',        icon:'🏦', accent:'#0f766e'}
+  ];
+  var html = '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+    '<span style="font-size:18px;">📁</span>' +
+    '<div><h2 style="font-size:15px;font-weight:700;color:var(--nv);margin:0;">Documents</h2>' +
+    '<p style="font-size:11.5px;color:var(--mu);margin:2px 0 0;">All documents submitted or generated in this case.</p></div></div>';
 
   if (!docs.length) {
-    html += '<div style="background:#fff;border:1px solid var(--bd);border-radius:10px;padding:32px;text-align:center;color:var(--mu);font-size:13px;">No documents uploaded yet. Documents will appear here as they are submitted.</div>';
+    html += '<div style="background:#fff;border:1px solid #dde3ef;border-radius:12px;padding:36px;text-align:center;color:var(--mu);font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.05);">No documents yet. They will appear here as the process progresses.</div>';
   } else {
     cats.forEach(function(cat) {
       var items = docs.filter(function(d){ return d.cat===cat.id; });
       if (!items.length) return;
-      html += '<div style="background:#fff;border:1px solid var(--bd);border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
-        '<div style="padding:10px 16px;background:#f8faff;border-bottom:1px solid var(--bd);font-size:11px;font-weight:700;color:#3b5ea6;text-transform:uppercase;letter-spacing:.4px;">'+cat.label+'</div>' +
-        '<table style="width:100%;border-collapse:collapse;font-size:12.5px;">' +
-        '<thead><tr style="background:#eef2fb;"><th style="padding:8px 14px;text-align:left;font-size:10.5px;font-weight:700;color:#374151;border-bottom:2px solid #c7d7f0;">Document</th>' +
-        '<th style="padding:8px 14px;text-align:left;font-size:10.5px;font-weight:700;color:#374151;border-bottom:2px solid #c7d7f0;width:160px;">Type</th>' +
-        '<th style="padding:8px 14px;text-align:left;font-size:10.5px;font-weight:700;color:#374151;border-bottom:2px solid #c7d7f0;width:140px;">Submitted By</th>' +
-        '<th style="padding:8px 14px;text-align:center;font-size:10.5px;font-weight:700;color:#374151;border-bottom:2px solid #c7d7f0;width:70px;">View</th>' +
+      html += '<div style="background:#fff;border:1px solid #dde3ef;border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);border-top:4px solid '+cat.accent+';">' +
+        '<div style="padding:13px 18px;background:#fcfcfe;border-bottom:1px solid #eaeff8;display:flex;align-items:center;gap:8px;">' +
+        '<span style="font-size:13px;">'+cat.icon+'</span>' +
+        '<span style="font-size:13px;font-weight:700;color:var(--nv);letter-spacing:-.1px;">'+cat.label+'</span>' +
+        '<span style="margin-left:6px;font-size:10px;font-weight:700;color:'+cat.accent+';background:'+cat.accent+'18;padding:2px 7px;border-radius:4px;font-family:var(--mono);">'+items.length+' doc'+(items.length>1?'s':'')+'</span>' +
+        '</div>' +
+        '<table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">' +
+        '<thead><tr style="background:#eef2fb;">' +
+        '<th style="padding:8px 18px;text-align:left;font-size:10.5px;font-weight:700;color:#374151;border-bottom:2px solid #c7d7f0;text-transform:uppercase;letter-spacing:.3px;">Document</th>' +
+        '<th style="padding:8px 14px;text-align:left;font-size:10.5px;font-weight:700;color:#374151;border-bottom:2px solid #c7d7f0;text-transform:uppercase;letter-spacing:.3px;width:170px;">Type</th>' +
+        '<th style="padding:8px 14px;text-align:left;font-size:10.5px;font-weight:700;color:#374151;border-bottom:2px solid #c7d7f0;text-transform:uppercase;letter-spacing:.3px;width:150px;">Submitted By</th>' +
+        '<th style="padding:8px 18px;text-align:center;font-size:10.5px;font-weight:700;color:#374151;border-bottom:2px solid #c7d7f0;text-transform:uppercase;letter-spacing:.3px;width:80px;">View</th>' +
         '</tr></thead><tbody>' +
-        items.map(function(d){
-          return '<tr style="border-bottom:1px solid #f4f5f7;">' +
-            '<td style="padding:10px 14px;font-weight:500;color:var(--tx);">'+d.name+'</td>' +
-            '<td style="padding:10px 14px;"><span style="font-size:10.5px;font-weight:600;color:'+d.color+';">'+d.type+'</span></td>' +
+        items.map(function(d, i){
+          var isLast = (i === items.length - 1);
+          return '<tr style="'+(isLast?'':'border-bottom:1px solid #eef1f7;')+'">' +
+            '<td style="padding:10px 18px;font-weight:500;color:var(--tx);">'+d.name+'</td>' +
+            '<td style="padding:10px 14px;"><span style="font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:4px;background:'+d.color+'18;color:'+d.color+';">'+d.type+'</span></td>' +
             '<td style="padding:10px 14px;color:var(--mu);font-size:11.5px;">'+d.by+'</td>' +
-            '<td style="padding:10px 14px;text-align:center;"><button class="btn b-gh" style="font-size:11px;" onclick="toastMsg(\'Opening document...\')">View ↗</button></td>' +
+            '<td style="padding:10px 18px;text-align:center;"><button class="btn b-gh" style="font-size:11px;" onclick="toastMsg(\'Opening document...\')">View ↗</button></td>' +
             '</tr>';
         }).join('') +
         '</tbody></table></div>';
@@ -1995,10 +2201,7 @@ function render() {
   var dc=S.phase==='lt'?ltDn:dp.done;
   var tc=S.phase==='lt'?ltTot:dp.total;
 
-  // Phase controls (no banner — buttons live in journey bar)
   var ltAllDone=ltDn===ltTot;
-  var prDone=S.dis['ld-price'].status==='done';
-  var canDis=ltAllDone&&prDone;
 
   // Sections
   var secs='';
@@ -2048,9 +2251,13 @@ function render() {
       sec('ts-ld','&#128176;','Loan Details',sbadge(ldsA),
         '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(lds.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>','dis-ld') +
       sec('ts-vf','&#9989;','Verification &amp; Approvals',sbadge(casA),
-        '<div style="padding:8px 16px;background:#f8faff;border-bottom:1px solid var(--bd);font-size:11.5px;color:#374151;">' +
-        '<span style="font-weight:600;">Disbursement Memo</span> &nbsp;—&nbsp; Generated based on all verified data in this case. ' +
-        '<button class="btn b-gh" style="font-size:10px;margin-left:8px;" onclick="showDMModal()">View DM</button></div>' +
+        '<div style="padding:10px 16px;background:'+(S.F.dmDone?'#f8faff':'#f9fafb')+';border-bottom:1px solid var(--bd);font-size:11.5px;display:flex;align-items:center;gap:8px;">' +
+        '<span style="font-weight:600;color:'+(S.F.dmDone?'var(--nv)':'#9ca3af')+';">&#128196; Disbursement Memo</span>' +
+        '<span style="color:'+(S.F.dmDone?'#374151':'#9ca3af')+';">&nbsp;—&nbsp;'+(S.F.dmDone?'Generated. Click to preview standard DM.':'Locked until Verification &amp; Approvals complete.')+'</span>' +
+        (S.F.dmDone
+          ? '<button class="btn b-gh" style="font-size:10px;margin-left:4px;" onclick="showDMModal()">View DM &#8599;</button>'
+          : '<button class="btn" style="font-size:10px;margin-left:4px;padding:4px 11px;border-radius:5px;border:1px solid #e5e7eb;background:#f3f4f6;color:#9ca3af;cursor:not-allowed;" disabled>View DM</button>') +
+        '</div>' +
         '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(cas.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>','dis-vf') +
       sec('ts-fc','&#128272;','KFS &#183; E-Sign &#183; FCPG &#183; Pre-Disbursement Check &#183; <span class="finn">FinnOne</span>',sbadge(fcsA),
         '<div class="t-wrap"><table class="t">'+TH+'<tbody>'+(fcs.map(function(e){ return disRow(e[0],false); }).join('')||em)+'</tbody></table></div>','dis-fc');
@@ -2064,7 +2271,7 @@ function render() {
       var t = S.dis[k];
       if (t.status === 'queried' || t.status === 'checker-queried') {
         var qtext = t.qry || t.checkerQry || 'Query raised';
-        var by = t.status === 'checker-queried' ? 'Local Ops' : 'Ops';
+        var by = t.qryBy || (t.status === 'checker-queried' ? 'Local Ops' : 'Ops');
         queriedTasks.push({task: t.name, qry: qtext, by: by, id: k});
       }
     });
@@ -2085,11 +2292,14 @@ function render() {
 
   // Journey progress — same calculation as customer TMA (step-based, 6 steps)
   var allLTDone = Object.values(S.lt).every(function(t){ return t.status==='done'; });
-  var step4Done = allLTDone; // Property OK
+  var step4Done = allLTDone;
   var step5Done = S.F.creditDone;
   var step6Done = S.F.ndcDone;
-  var stepsComplete = 3 + (step4Done?1:0) + (step5Done?1:0) + (step6Done?1:0);
-  var overallPct = Math.round(stepsComplete/6*100);
+  // Task-based progress — moves with every task completion
+  var ltDoneCt = Object.values(S.lt).filter(function(t){ return t.status==='done'; }).length;
+  var disDoneCt = Object.values(S.dis).filter(function(t){ return ['done','verified','otcpdd'].indexOf(t.status)>=0; }).length;
+  var totalTasks = ltE.length + disE.length;
+  var overallPct = totalTasks > 0 ? Math.round((ltDoneCt + disDoneCt) / totalTasks * 100) : 0;
   var step4s = step4Done?'done':(S.phase==='lt'?'active':'done');
   var step5s = step5Done?'done':(S.phase==='dis'?'active':'wait');
   var step6s = step6Done?'done':'wait';
@@ -2115,9 +2325,7 @@ function render() {
     (S.phase==='lt' ?
       '<div style="display:flex;gap:8px;align-items:center;">'+
       '<button class="b-lt" style="padding:6px 13px;font-size:11px;" onclick="completeLT()">&#10003; Mark L&amp;T Complete <span style="font-size:9px;opacity:.7;">(demo)</span></button>'+
-      (canDis
-        ? '<button class="b-dis" style="padding:6px 13px;font-size:11px;" onclick="initDis()">&#128640; Initiate Disbursement</button>'
-        : '<button class="b-dis-off" style="padding:6px 13px;font-size:11px;" disabled>&#128274; Initiate Disbursement</button>')+
+      '<span style="font-size:10px;color:var(--mu);font-style:italic;">Disbursement starts automatically when docs uploaded + pricing confirmed</span>'+
       '</div>'
     : '') +
     '</div>' +
@@ -2203,13 +2411,14 @@ function renderTMA() {
   var ltDn=Object.values(S.lt).filter(function(t){ return t.status==='done'; }).length;
   var ltTot=Object.keys(S.lt).length;
   // Step-based pct for journey stepper
-  var _allLTDone = ltDn===ltTot;
-  var _stepsComplete = 3 + (_allLTDone?1:0) + (S.F.creditDone?1:0) + (S.F.ndcDone?1:0);
-  var pct = Math.round(_stepsComplete/6*100);
-  // Ring shows customer task completion (You %)
+  // Task-based overall progress — synced with internal dashboard
+  var ltDoneCt = Object.values(S.lt).filter(function(t){ return t.status==='done'; }).length;
+  var disDoneCt = Object.values(S.dis).filter(function(t){ return ['done','verified','otcpdd'].indexOf(t.status)>=0; }).length;
+  var totalTasksCt = Object.keys(S.lt).length + Object.keys(S.dis).length;
+  var pct = totalTasksCt > 0 ? Math.round((ltDoneCt + disDoneCt) / totalTasksCt * 100) : 0;
   var custPct = totMy ? Math.round(dnMy/totMy*100) : 0;
   var circ=(2*Math.PI*26).toFixed(1);
-  var offset=(2*Math.PI*26*(1-custPct/100)).toFixed(1);
+  var offset=(2*Math.PI*26*(1-pct/100)).toFixed(1);
 
   function tItem(k, t, mode) {
     var icon=k.indexOf('lu-')===0||k.indexOf('sc-')===0?'&#128196;':k.indexOf('dp-')===0?'&#128218;':'&#128176;';
@@ -2323,7 +2532,7 @@ function renderTMA() {
     '<div class="t-ring">' +
     '<svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#e5e5ea" stroke-width="5"/>' +
     '<circle cx="30" cy="30" r="26" fill="none" stroke="#34c759" stroke-width="5" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offset+'" stroke-linecap="round"/></svg>' +
-    '<div class="t-ring-lbl"><span class="t-rpct">'+custPct+'%</span><span class="t-rsub">done</span></div></div>' +
+    '<div class="t-ring-lbl"><span class="t-rpct">'+pct+'%</span><span class="t-rsub">overall</span></div></div>' +
     '<div class="t-pd">' +
     '<div class="t-pr"><span class="t-pn you">You</span><div class="t-pb"><div class="t-pbf" style="width:'+custPct+'%;background:#ff6b35;"></div></div><span class="t-pf" style="color:#ff6b35;">'+dnMy+'/'+totMy+'</span></div>' +
     '<div class="t-pr"><span class="t-pn">Bank Team</span><div class="t-pb"><div class="t-pbf" style="width:'+bankPct+'%;background:#007aff;"></div></div><span class="t-pf" style="color:#007aff;">'+bankPct+'%</span></div>' +
@@ -2362,17 +2571,45 @@ function renderTMA() {
     }).join('')+'</div>';
   }
 
-  // Activity — customer-relevant events only
-  var custLog = S.log.filter(function(l){
-    var t=l.text.toLowerCase();
-    return t.indexOf('sanctioned')>=0||t.indexOf('legal')>=0||t.indexOf('technical')>=0||
-           t.indexOf('disbursement initiated')>=0||t.indexOf('kfs')>=0||t.indexOf('e-sign')>=0||
-           t.indexOf('finnone')>=0||t.indexOf('case created')>=0||t.indexOf('property identified')>=0;
-  });
+  // Activity — milestone-based, plain-language feed for customer
+  var F=S.F; var D=S.dis; var L=S.lt;
+  var milestones = [];
+  // Always show: application started
+  milestones.push({color:'#34c759', text:'Your home loan application was submitted successfully.'});
+  // Property documents uploaded
+  var allUploaded = ['lu-agree','lu-title','lu-tax','lu-addr','lu-sketch'].every(function(k){ return L[k]&&L[k].status==='done'; });
+  if (allUploaded) milestones.push({color:'#34c759', text:'We\'ve received all your property documents — thank you!'});
+  // Legal check done (TSR uploaded = legal workstream complete)
+  if (L['lt-tsrup']&&L['lt-tsrup'].status==='done') milestones.push({color:'#34c759', text:'Legal check on your property is complete.'});
+  // Technical inspection done (rapid validation published = tech workstream complete)
+  if (L['tr-rapid']&&L['tr-rapid'].status==='done') milestones.push({color:'#34c759', text:'Technical inspection of your property is done — our team has completed the site visit and report.'});
+  // Disbursement process started
+  if (F.disStart) milestones.push({color:'#007aff', text:'Great news — your disbursement process has started!'});
+  // Original property documents received
+  var origDocs = ['dp-patta','dp-sale','dp-title','dp-ec'];
+  var origDoneCt = origDocs.filter(function(k){ return D[k]&&(D[k].status==='done'||D[k].status==='verified'||D[k].status==='otcpdd'); }).length;
+  if (origDoneCt===4) milestones.push({color:'#34c759', text:'All original property documents have been received by the bank.'});
+  else if (origDoneCt>0) milestones.push({color:'#ff9500', text:origDoneCt+' of 4 original property documents received so far.'});
+  // eNACH done
+  if (D['fc-enach']&&D['fc-enach'].status==='done') milestones.push({color:'#34c759', text:'Your EMI auto-debit (eNACH) is set up — you\'re all sorted for repayments.'});
+  // Physical verification (RCU/FCPG) done
+  if (F.fcpgDone) milestones.push({color:'#34c759', text:'Physical verification of your documents is complete.'});
+  // Credit approval done
+  if (F.creditDone) milestones.push({color:'#34c759', text:'Your loan details have been reviewed and approved by our team.'});
+  // KFS accepted
+  if (D['fc-kfs']&&D['fc-kfs'].status==='done') milestones.push({color:'#34c759', text:'You\'ve accepted the Key Fact Statement — your loan terms are confirmed.'});
+  // E-Sign done
+  if (F.esignDone) milestones.push({color:'#34c759', text:'Your loan agreement has been signed successfully.'});
+  // Pre-disbursement check done
+  if (F.ndcDone) milestones.push({color:'#34c759', text:'Final checks are complete — we\'re almost ready to transfer your funds!'});
+  // Disbursed (FinnOne)
+  if (D['fc-finnone']&&D['fc-finnone'].status==='done') milestones.push({color:'#34c759', text:'🎉 Your loan amount has been disbursed. Welcome to your new home!'});
+  // Show newest-first (reverse), cap at 8
+  milestones = milestones.reverse().slice(0,8);
   html += '<div class="t-sec" style="margin-top:4px;"><span class="t-sec-lbl">Activity</span></div>';
-  html += '<div class="t-feed">'+(custLog.length?custLog.slice(0,6).map(function(l){
-    return '<div class="t-fi"><div class="t-fi-dot" style="background:'+l.color+';"></div><div class="t-fi-time">'+l.time+'</div><div class="t-fi-text">'+l.text+'</div></div>';
-  }).join(''):'<div class="t-fi"><div class="t-fi-dot" style="background:#34c759;"></div><div class="t-fi-time">08:30</div><div class="t-fi-text">Case created in iLens</div></div>')+'</div>';
+  html += '<div class="t-feed">'+milestones.map(function(m,i){
+    return '<div class="t-fi"><div class="t-fi-dot" style="background:'+m.color+';"></div><div class="t-fi-text">'+m.text+'</div></div>';
+  }).join('')+'</div>';
 
   html += '</div>';
   document.getElementById('tma-screen').innerHTML = html;
@@ -2396,7 +2633,7 @@ function toggleTExp(id) {
 // ═══════════════════════════════
 var GUIDE_SECTIONS = {
   'lt': {title:'Legal / Technical / Pricing — Overview',badge:'Sourcing Stage',badgeColor:'#7c3aed',
-    content:'<div class="guide-body"><p style="margin-bottom:10px;">This screen applies in <strong>two scenarios</strong>:</p><ol style="margin-left:16px;line-height:1.9;margin-bottom:10px;"><li><strong>Property identified during underwriting</strong> — The case is under credit evaluation. When property is identified, Sales can initiate Legal &amp; Technical tasks in parallel while awaiting sanction.</li><li><strong>Property identified post-sanction</strong> — Once sanctioned and property is identified, this screen opens. Legal, Technical, and Pricing Confirmation must all be completed before disbursement can be initiated.</li></ol><div class="guide-note">&#128204; <strong>Document list is pre-populated</strong> based on Product · State · Variant. The Legal team may require additional documents on a case-by-case basis — this list may not be exhaustive.</div><p style="margin-top:10px;">Once all three streams are complete, <strong>Initiate Disbursement</strong> activates and the Disbursement Dashboard opens.</p></div>'},
+    content:'<div class="guide-body"><p style="margin-bottom:10px;">This screen applies in <strong>two scenarios</strong>:</p><ol style="margin-left:16px;line-height:1.9;margin-bottom:10px;"><li><strong>Property identified during underwriting</strong> — Sales can initiate Legal &amp; Technical tasks in parallel while the case is under credit evaluation.</li><li><strong>Property identified post-sanction</strong> — Once sanctioned and property is identified, this screen opens for L&amp;T and Pricing.</li></ol><div class="guide-note">&#128640; <strong>Auto-transition to Disbursement:</strong> Once all 5 scanned documents are uploaded AND Pricing Approval is either confirmed or marked "Not Required", the Disbursement Dashboard opens automatically — no manual button needed.</div><div class="guide-note" style="margin-top:6px;">&#128204; Legal &amp; Technical workstreams continue in parallel after disbursement starts.</div></div>'},
   'lt-uploads':{title:'Scanned Document Uploads',badge:'LT Stage',badgeColor:'#6d28d9',
     content:'<div class="guide-body"><p>Customer or Sales uploads scanned copies of property documents at the start of Legal &amp; Technical. These include Sale Agreement, Title Deed, Property Tax Receipt, Address Proof, and Property Sketch/Survey Map.</p><ul><li>Can be uploaded by <strong>Customer via TMA</strong> or by <strong>Sales RM</strong> on their behalf.</li><li><strong>Property Sketch/Survey Map</strong> upload is the gate that unlocks both Legal and Technical workstreams simultaneously.</li></ul><div class="guide-note">Scanned copies appear as reference rows in the disbursement dashboard and are also accessible from the Documents tab.</div></div>'},
   'lt-legal':{title:'Legal Workstream',badge:'LT Stage',badgeColor:'#1e40af',
@@ -2404,14 +2641,14 @@ var GUIDE_SECTIONS = {
   'lt-tech':{title:'Technical Workstream',badge:'LT Stage',badgeColor:'#0891b2',
     content:'<div class="guide-body"><p>Handles physical inspection and valuation of the property.</p><ul><li>Sales initiates → Technical Manager is allocated.</li><li>Technical Manager conducts site inspection.</li><li>Rapid validation completes and the <strong>Technical Inspection Report</strong> is published.</li></ul><div class="guide-note">Technical Report is stored in the Documents tab once published.</div></div>'},
   'lt-pricing':{title:'Pricing Confirmation',badge:'LT Stage',badgeColor:'#b45309',
-    content:'<div class="guide-body"><p>Sales RM confirms the final pricing terms for this case before disbursement is initiated.</p><ul><li>Independent task — can be completed at any point during the LT stage.</li><li><strong>Hard gate:</strong> Initiate Disbursement will not activate until pricing is confirmed.</li></ul></div>'},
+    content:'<div class="guide-body"><p>Sales RM confirms the final pricing terms before disbursement auto-initiates.</p><ul><li>Two options: <strong>Enter Details</strong> (fill ROI, scheme, approving authority) OR <strong>Not Required</strong> (mark as not applicable for this case).</li><li><strong>Auto-trigger gate:</strong> Once all 5 scanned docs are uploaded AND this task is either confirmed or marked Not Required, disbursement opens automatically.</li></ul></div>'},
   'dis-docs':{title:'Documents — Originals for Security Creation',badge:'Independent',badgeColor:'#1e40af',
     content:'<div class="guide-body"><p style="margin-bottom:8px;">Original property documents required for creating a legal charge/mortgage. Visible to both <strong>Sales RM and Customer</strong>.</p><ul><li><strong>Mark Received</strong> — Sales confirms originals collected. Updated in system.</li><li><strong>OTC / PDD Request</strong> — If original cannot be collected immediately, Sales requests OTC or PDD. Goes to <strong>Credit tray</strong> for approval.<ul style="margin-top:4px;"><li>Credit approves → Marked as OTC/PDD approved.</li><li>Credit rejects → Sent back as "Original Required" to Sales/Customer.</li></ul></li></ul><div class="guide-note">&#9989; <strong>Gate:</strong> Once all originals are received or OTC/PDD approved — Local Ops <strong>Verify Checklist</strong> buttons unlock per document. Once all docs verified → FCPG unlocks for RCU.</div><p style="margin-top:8px;font-size:11.5px;color:#6b7280;">Scanned copies from Legal &amp; Technical are visible here in reference mode — not active tasks, but viewable.</p></div>'},
   'dis-sc':{title:'Sanction Conditions',badge:'Independent',badgeColor:'#b45309',
     content:'<div class="guide-body"><p>Additional documents stipulated by Credit at sanction. Visible to <strong>Sales RM and Customer</strong>.</p><ul><li>Sales/Customer uploads → flows directly to <strong>Local Ops tray</strong> for verification.</li><li>Local Ops verifies or raises a query → Sales corrects → resubmits → Local Ops re-verifies.</li></ul><div class="guide-note">&#9989; <strong>Independent task</strong> — runs fully in parallel with Documents and Loan Details.</div></div>'},
-  'dis-ld':{title:'Loan Details',badge:'Independent',badgeColor:'#0f766e',content:'<div class="guide-body"><p>Data entry tasks from the IGF stage, now integrated into the disbursement workflow. Filled in by Sales RM only.</p><ul><li>Covers: Beneficiary Account, Repayment Details, EMI and Tenure, Own Contribution.</li><li>On submission flows to Local Ops for verification. Query flow is supported.</li></ul><div class="guide-note">Independent task — runs in parallel with Documents and Sanction Conditions.</div><div class="guide-note" style="margin-top:6px;">When Repayment Details are verified by Local Ops, eNACH mandate is auto-triggered to the Customer tray.</div></div>'},
-  'dis-vf':{title:'Verification and Approvals',badge:'Dependent',badgeColor:'#6d28d9',content:'<div class="guide-body"><p><b>Credit Approval (3 tasks)</b></p><ul><li>Unlocks only when: FCPG done + all SC verified by Ops + all LD verified by Ops.</li><li>Tasks: Sanction Condition Revalidation, Original Docs vs TSR Review, Own Contribution Review.</li><li>OTC/PDD requests are reviewed by Credit here — not a separate step.</li></ul><div class="guide-note">&#9989; All 3 Credit tasks done → KFS auto-triggered to Customer TMA.</div><div class="guide-note" style="margin-top:6px;">Disbursement Memo is viewable/downloadable once this section unlocks.</div></div>'},
-  'dis-fc':{title:'KFS, E-Sign, FCPG, Pre-Disbursement Check, FinnOne',badge:'Sequential Chain',badgeColor:'#9b1c1c',content:'<div class="guide-body"><p style="margin-bottom:8px;">Final sequential chain. Each step unlocks only after the previous completes.</p><ul><li><b>KFS</b> Auto-triggered to Customer once all Credit approvals done. Customer accepts via TMA. Sales: Remind only.</li><li><b>eNACH</b> Auto-triggered when Repayment Details verified. Customer sets up auto-debit.</li><li><b>E-Sign</b> Sales initiates. Customer signs full booklet via TMA. Sales confirms.</li><li><b>FCPG (RCU)</b> RCU verifies. Can query Sales; Sales resolves; RCU makes final call. <span style="color:#7c3aed;font-weight:600;">Discussion: Can be moved to right after Credit approval.</span></li><li><b>Pre-Disbursement Check (Local Ops)</b> Verifies originals against E-Sign copies. 8-item checklist. <span style="color:#7c3aed;font-weight:600;">Discussion: Checklist items to be confirmed per product/state/variant.</span></li><li><b>Submit to FinnOne</b> Case pushed to FinnOne. LAN generated. All verified data flows in without manual re-entry.</li></ul></div>'},
+  'dis-ld':{title:'Loan Details',badge:'Independent',badgeColor:'#0f766e',content:'<div class="guide-body"><p>Data entry tasks filled by Sales RM and verified by Local Ops (maker-checker). 7 tasks in total:</p><ul><li><strong>Pricing Approval Confirmation</strong> — ROI, scheme, approving authority.</li><li><strong>Beneficiary Account</strong> — Disbursement beneficiary bank details.</li><li><strong>Repayment Details</strong> — ECS/NACH details for EMI debit.</li><li><strong>EMI &amp; Tenure</strong> — Start date, months, EMI amount.</li><li><strong>Seller Verification</strong> — Seller\'s full banking details: name, PAN, bank, A/C, IFSC, account type, mobile.</li><li><strong>NOC</strong> — NOC type, issuing authority, reference, issue date, validity.</li><li><strong>Own Contribution Validation (AA)</strong> — Validated via Account Aggregator: consent ID, bank, A/C, amount, statement period, AA status.</li></ul><div class="guide-note">Local Ops can click <strong>View</strong> to see entered data before verifying.</div><div class="guide-note" style="margin-top:6px;">When Repayment Details are verified, eNACH is auto-triggered to Customer.</div></div>'},
+  'dis-vf':{title:'Verification and Approvals',badge:'Dependent',badgeColor:'#6d28d9',content:'<div class="guide-body"><p><b>Credit Approval (3 tasks)</b></p><ul><li>Unlocks only when: FCPG done + all SC verified by Ops + all LD verified by Ops.</li><li>Tasks: Sanction Condition Revalidation, Original Docs vs TSR Review, Own Contribution Review.</li><li>Each task: Credit can <b>View &amp; Approve</b> OR <b>Raise Query</b>. Query goes to Sales tray → Sales adds comments → task returns to Credit with Sales response visible → Credit approves or queries again.</li><li>OTC/PDD requests are also reviewed by Credit here.</li></ul><div class="guide-note">&#9989; All 3 Credit tasks done → KFS auto-triggered to Customer TMA.</div><div class="guide-note" style="margin-top:6px;">&#128196; <strong>Disbursement Memo</strong> — Locked until this section unlocks. Once open, shows full standard DM with all recorded data.</div></div>'},
+  'dis-fc':{title:'KFS, E-Sign, FCPG, Pre-Disbursement Check, FinnOne',badge:'Sequential Chain',badgeColor:'#9b1c1c',content:'<div class="guide-body"><p style="margin-bottom:8px;">Final sequential chain. Each step unlocks only after the previous completes.</p><ul><li><b>KFS</b> Auto-triggered to Customer once all Credit approvals done. Customer accepts via TMA. Sales: Remind only.</li><li><b>eNACH</b> Auto-triggered when Repayment Details verified. Customer sets up auto-debit.</li><li><b>E-Sign</b> Sales initiates. Customer signs full booklet via TMA. Sales confirms.</li><li><b>FCPG (RCU)</b> Unlocks after all docs verified. RCU verifies. Can query Sales; Sales resolves; RCU makes final call.</li><li><b>Pre-Disbursement Check (Local Ops)</b> Unlocks after E-Sign. Checklist-based verification. Partial save + query flow supported.</li><li><b>Submit to FinnOne</b> Case pushed to FinnOne. LAN generated. All verified data flows in without manual re-entry.</li></ul></div>'},
   'documents-tab':{title:'Documents Tab',badge:'Reference View',badgeColor:'#374151',
     content:'<div class="guide-body"><p style="margin-bottom:8px;">Consolidated reference view of all documents in this case.</p><ul><li><strong>Scanned Copies</strong> — Uploaded by Customer or Sales during LT stage.</li><li><strong>Legal Documents</strong> — TSR by Legal Vendor.</li><li><strong>Technical Documents</strong> — Technical Inspection Report by Technical Manager.</li><li><strong>Bank Generated</strong> — DM, KFS, E-Sign Booklet, eNACH Mandate — auto-generated as process progresses.</li></ul><div class="guide-note">Reference only. Original document tasks tracked in the Disbursement Dashboard. OTC/PDD approved documents are not shown here.</div></div>'}
 };
