@@ -3,10 +3,12 @@ import { useRouter } from 'next/router';
 import {
   Copy, CheckCircle, Search, Upload, Code2, Lock, Globe,
   LayoutGrid, RefreshCw, Plus, Trash2, Clock, ExternalLink,
+  ArrowLeft, FolderOpen, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProjectCard from '@/components/ProjectCard';
+import FolderCard from '@/components/FolderCard';
 import FileDropzone from '@/components/FileDropzone';
 import RecentActivity from '@/components/ActivityPane';
 import { getProjects, createProject, getPublicProjects } from '@/services/api';
@@ -91,6 +93,12 @@ export default function Dashboard() {
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | Visibility>('all');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  // Folder state
+  const [activeFolder, setActiveFolder] = useState<string | null>(null);
+
+  // Public "Yours" grouping
+  const [yoursExpanded, setYoursExpanded] = useState(false);
+
   // Right panel
   const [recentHistory, setRecentHistory] = useState<HistoryEntry[]>([]);
 
@@ -110,6 +118,12 @@ export default function Dashboard() {
 
   const handleEditCodeChanged = useCallback((slug: string, editCode: string) => {
     const update = (p: Project) => p.slug === slug ? { ...p, editCode } : p;
+    setProjects((prev) => prev.map(update));
+    if (_cache) _cache.data = _cache.data.map(update);
+  }, []);
+
+  const handleFolderChanged = useCallback((slug: string, folder: string | undefined) => {
+    const update = (p: Project) => p.slug === slug ? { ...p, folder } : p;
     setProjects((prev) => prev.map(update));
     if (_cache) _cache.data = _cache.data.map(update);
   }, []);
@@ -275,8 +289,38 @@ export default function Dashboard() {
     return matchesSearch && matchesVisibility;
   }), [projects, debouncedSearch, visibilityFilter]);
 
-  const visibleProjects = filteredProjects.slice(0, page * PAGE_SIZE);
-  const hasMore = visibleProjects.length < filteredProjects.length;
+  // Derive folders from projects
+  const folders = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of projects) {
+      if (p.folder) {
+        map.set(p.folder, (map.get(p.folder) ?? 0) + 1);
+      }
+    }
+    return Array.from(map.entries())
+      .map(([name, count]) => ({ name, projectCount: count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [projects]);
+
+  // Filter folders and projects based on activeFolder
+  const gridProjects = useMemo(() => {
+    if (activeFolder === null) {
+      // Top-level: show only uncategorized projects
+      return filteredProjects.filter((p) => !p.folder);
+    }
+    // Inside a folder: show only projects in that folder
+    return filteredProjects.filter((p) => p.folder === activeFolder);
+  }, [filteredProjects, activeFolder]);
+
+  const filteredFolders = useMemo(() => {
+    if (activeFolder !== null) return [];
+    const q = debouncedSearch.toLowerCase();
+    if (!q) return folders;
+    return folders.filter((f) => f.name.toLowerCase().includes(q));
+  }, [folders, debouncedSearch, activeFolder]);
+
+  const visibleProjects = gridProjects.slice(0, page * PAGE_SIZE);
+  const hasMore = visibleProjects.length < gridProjects.length;
 
   // Stat card values
   const publicCount = projects.filter((p) => (p.visibility ?? 'personal') === 'public').length;
@@ -362,6 +406,24 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* Folder breadcrumb */}
+              {activeFolder !== null && (
+                <div className="flex items-center gap-2 mb-4">
+                  <button
+                    onClick={() => { setActiveFolder(null); setPage(1); }}
+                    className="flex items-center gap-1 text-sm text-primary hover:underline font-medium"
+                  >
+                    <ArrowLeft size={14} />
+                    All Projects
+                  </button>
+                  <span className="text-gray-300">/</span>
+                  <span className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                    <FolderOpen size={14} className="text-violet-500" />
+                    {activeFolder}
+                  </span>
+                </div>
+              )}
+
               {/* Grid */}
               {loadingProjects ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -382,9 +444,17 @@ export default function Dashboard() {
                     Retry
                   </button>
                 </div>
-              ) : filteredProjects.length > 0 ? (
+              ) : (filteredFolders.length > 0 || gridProjects.length > 0) ? (
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {filteredFolders.map((f) => (
+                      <FolderCard
+                        key={`folder-${f.name}`}
+                        name={f.name}
+                        projectCount={f.projectCount}
+                        onClick={() => { setActiveFolder(f.name); setPage(1); }}
+                      />
+                    ))}
                     {visibleProjects.map((project) => (
                       <ProjectCard
                         key={project.slug}
@@ -393,7 +463,9 @@ export default function Dashboard() {
                         onVisibilityChanged={handleVisibilityChanged}
                         onRenamed={handleRenamed}
                         onEditCodeChanged={handleEditCodeChanged}
+                        onFolderChanged={handleFolderChanged}
                         currentUserId={currentUserId}
+                        availableFolders={folders.map((f) => f.name)}
                       />
                     ))}
                   </div>
@@ -425,49 +497,89 @@ export default function Dashboard() {
               )}
 
               {/* Public Projects section */}
-              {!loadingProjects && !loadError && (
-                <div className="mt-10">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Globe size={15} className="text-emerald-500" />
-                    <h2 className="text-base font-bold text-gray-800">
-                      Public Projects
-                      {!loadingPublic && (
-                        <span className="ml-2 text-sm font-normal text-gray-400">
-                          {publicProjects.length} from all users
-                        </span>
-                      )}
-                    </h2>
-                  </div>
-                  <div className="li-card !p-4" style={{ borderColor: 'rgba(16,185,129,0.15)', background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)' }}>
-                    <p className="text-xs text-emerald-600 mb-4">
-                      Projects marked as Public by any user appear here for everyone.
-                    </p>
-                    {loadingPublic ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
-                      </div>
-                    ) : publicProjects.length > 0 ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {publicProjects.map((project) => (
-                          <ProjectCard
-                            key={project.slug}
-                            project={project}
-                            onDeleted={handlePublicDeleted}
-                            onVisibilityChanged={handleVisibilityChanged}
-                            onRenamed={handleRenamed}
-                            isPublicView
-                            currentUserId={currentUserId}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-center py-6 text-emerald-700/50">
-                        No public projects yet. Set any project to Public to share it here.
+              {!loadingProjects && !loadError && (() => {
+                const myPublicProjects = publicProjects.filter((p) => p.ownerId === currentUserId);
+                const othersPublicProjects = publicProjects.filter((p) => p.ownerId !== currentUserId);
+                return (
+                  <div className="mt-10">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Globe size={15} className="text-emerald-500" />
+                      <h2 className="text-base font-bold text-gray-800">
+                        Public Projects
+                        {!loadingPublic && (
+                          <span className="ml-2 text-sm font-normal text-gray-400">
+                            {publicProjects.length} from all users
+                          </span>
+                        )}
+                      </h2>
+                    </div>
+                    <div className="li-card !p-4" style={{ borderColor: 'rgba(16,185,129,0.15)', background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)' }}>
+                      <p className="text-xs text-emerald-600 mb-4">
+                        Projects marked as Public by any user appear here for everyone.
                       </p>
-                    )}
+                      {loadingPublic ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+                        </div>
+                      ) : publicProjects.length > 0 ? (
+                        <>
+                          {/* "Yours" collapsible group */}
+                          {myPublicProjects.length > 0 && (
+                            <div className="mb-4">
+                              <button
+                                onClick={() => setYoursExpanded((v) => !v)}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-violet-50 hover:bg-violet-100 transition-colors"
+                              >
+                                {yoursExpanded ? <ChevronDown size={14} className="text-violet-500" /> : <ChevronRight size={14} className="text-violet-500" />}
+                                <span className="text-sm font-semibold text-violet-700">Yours</span>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-violet-200 text-violet-700 font-semibold">
+                                  {myPublicProjects.length}
+                                </span>
+                              </button>
+                              {yoursExpanded && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-3">
+                                  {myPublicProjects.map((project) => (
+                                    <ProjectCard
+                                      key={project.slug}
+                                      project={project}
+                                      onDeleted={handlePublicDeleted}
+                                      onVisibilityChanged={handleVisibilityChanged}
+                                      onRenamed={handleRenamed}
+                                      isPublicView
+                                      currentUserId={currentUserId}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Others' public projects */}
+                          {othersPublicProjects.length > 0 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                              {othersPublicProjects.map((project) => (
+                                <ProjectCard
+                                  key={project.slug}
+                                  project={project}
+                                  onDeleted={handlePublicDeleted}
+                                  onVisibilityChanged={handleVisibilityChanged}
+                                  onRenamed={handleRenamed}
+                                  isPublicView
+                                  currentUserId={currentUserId}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm text-center py-6 text-emerald-700/50">
+                          No public projects yet. Set any project to Public to share it here.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             {/* ── Right panel ── */}

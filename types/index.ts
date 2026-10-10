@@ -21,6 +21,7 @@ export interface Project {
   editCode?: string;
   ownerName?: string;
   lastUpdatedByName?: string;
+  folder?: string;
 }
 
 export interface ProjectMetadata {
@@ -38,6 +39,35 @@ export interface CreateProjectResponse {
 
 export interface UpdateProjectResponse {
   message: string;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalProjects: number;
+  projectsByFileType: Record<string, number>;
+  recentUploads: number;
+}
+
+export interface AdminUser {
+  sub: string;
+  provider: string;
+  name: string;
+  email: string;
+  avatar: string;
+  firstLoginAt: string;
+  lastLoginAt: string;
+  loginCount: number;
+  projectCount: number;
+}
+
+export interface AdminActivity {
+  projectName: string;
+  slug: string;
+  ownerId: string;
+  ownerName: string;
+  version: number;
+  uploadedAt: string;
+  updatedBy: string;
 }
 
 export interface Notification {

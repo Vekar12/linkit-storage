@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Link2, Bell, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X, RefreshCw, Trash2 } from 'lucide-react';
+import { Link2, Bell, LogOut, ChevronDown, Upload, LayoutGrid, Clock, Menu, X, RefreshCw, Trash2, Shield } from 'lucide-react';
 import { logout } from '@/lib/auth';
 import { getTokenPayload, type TokenPayload } from '@/lib/jwt';
 import { getNotifications, getUnreadCount, markNotificationsRead, clearNotifications } from '@/services/api';
@@ -127,8 +127,11 @@ export default function TopNav() {
     }
   };
 
+  const isAdmin = user?.sub === process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+
   const currentView = typeof router.query.view === 'string' ? router.query.view : undefined;
-  const isActive = (view?: string) => {
+  const isActive = (view?: string, href?: string) => {
+    if (href === '/admin') return router.pathname === '/admin';
     if (!view) return router.pathname === '/dashboard' && !currentView;
     return router.pathname === '/dashboard' && currentView === view;
   };
@@ -138,9 +141,10 @@ export default function TopNav() {
   const initials = displayName.slice(0, 2).toUpperCase();
 
   const navItems = [
-    { label: 'Projects', icon: LayoutGrid, view: undefined, href: '/dashboard' },
-    { label: 'Upload',   icon: Upload,      view: 'upload',    href: '/dashboard?view=upload' },
-    { label: 'Recent',   icon: Clock,       view: 'recent',    href: '/dashboard?view=recent' },
+    { label: 'Projects', icon: LayoutGrid, view: undefined as string | undefined, href: '/dashboard' },
+    { label: 'Upload',   icon: Upload,      view: 'upload' as string | undefined,    href: '/dashboard?view=upload' },
+    { label: 'Recent',   icon: Clock,       view: 'recent' as string | undefined,    href: '/dashboard?view=recent' },
+    ...(isAdmin ? [{ label: 'Admin', icon: Shield, view: undefined as string | undefined, href: '/admin' }] : []),
   ];
 
   return (
@@ -164,7 +168,7 @@ export default function TopNav() {
           style={{ backgroundColor: '#f3f4f6', border: '1px solid rgba(0,0,0,0.06)' }}
         >
           {navItems.map(({ label, view, href }) => (
-            <Link key={label} href={href} className={isActive(view) ? 'nav-tab-active' : 'nav-tab'}>
+            <Link key={label} href={href} className={isActive(view, href) ? 'nav-tab-active' : 'nav-tab'}>
               {label}
             </Link>
           ))}
@@ -326,7 +330,7 @@ export default function TopNav() {
               href={href}
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                isActive(view)
+                isActive(view, href)
                   ? 'bg-violet-50 text-primary'
                   : 'text-gray-600 hover:bg-gray-50'
               }`}

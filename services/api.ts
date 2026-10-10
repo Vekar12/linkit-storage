@@ -5,6 +5,9 @@ import type {
   CreateProjectResponse,
   UpdateProjectResponse,
   Notification,
+  AdminStats,
+  AdminUser,
+  AdminActivity,
 } from '@/types';
 
 export const api = axios.create({
@@ -37,12 +40,14 @@ api.interceptors.response.use(
 export const createProject = async (
   projectName: string,
   file: File,
-  visibility: 'personal' | 'public' = 'personal'
+  visibility: 'personal' | 'public' = 'personal',
+  folder?: string
 ): Promise<CreateProjectResponse> => {
   const formData = new FormData();
   formData.append('projectName', projectName);
   formData.append('file', file);
   formData.append('visibility', visibility);
+  if (folder) formData.append('folder', folder);
   const { data } = await api.post<CreateProjectResponse>('/projects', formData);
   return data;
 };
@@ -125,4 +130,24 @@ export const markNotificationRead = async (id: string): Promise<void> => {
 export const markNotificationsRead = async (ids: string[]): Promise<void> => {
   if (ids.length === 0) return;
   await api.patch('/notifications/read', { ids });
+};
+
+export const moveToFolder = async (slug: string, folder: string | null): Promise<Project> => {
+  const { data } = await api.patch<Project>(`/projects/${slug}`, { folder: folder ?? '' });
+  return data;
+};
+
+export const getAdminStats = async (): Promise<AdminStats> => {
+  const { data } = await api.get<AdminStats>('/admin/stats');
+  return data;
+};
+
+export const getAdminUsers = async (): Promise<AdminUser[]> => {
+  const { data } = await api.get<AdminUser[]>('/admin/users');
+  return data;
+};
+
+export const getAdminActivity = async (limit?: number): Promise<AdminActivity[]> => {
+  const { data } = await api.get<AdminActivity[]>('/admin/activity', { params: limit ? { limit } : undefined });
+  return data;
 };

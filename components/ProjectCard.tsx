@@ -1,8 +1,8 @@
-import { memo, useState } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe, Pencil, FileText } from 'lucide-react';
+import { ExternalLink, Download, RefreshCw, Calendar, Copy, CheckCircle, Trash2, Lock, Globe, Pencil, FileText, FolderOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { deleteProject, setProjectVisibility, renameProject, rotateEditCode } from '@/services/api';
+import { deleteProject, setProjectVisibility, renameProject, rotateEditCode, moveToFolder } from '@/services/api';
 import { addHistory } from '@/lib/history';
 import { getApiError } from '@/lib/errors';
 import type { Project } from '@/types';
@@ -24,11 +24,13 @@ interface ProjectCardProps {
   onVisibilityChanged?: (slug: string, visibility: 'personal' | 'public') => void;
   onRenamed?: (slug: string, projectName: string) => void;
   onEditCodeChanged?: (slug: string, editCode: string) => void;
+  onFolderChanged?: (slug: string, folder: string | undefined) => void;
   isPublicView?: boolean;
   currentUserId?: string;
+  availableFolders?: string[];
 }
 
-function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEditCodeChanged, isPublicView = false, currentUserId = '' }: ProjectCardProps) {
+function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEditCodeChanged, onFolderChanged, isPublicView = false, currentUserId = '', availableFolders = [] }: ProjectCardProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
@@ -40,6 +42,33 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
   const [displayName, setDisplayName] = useState(project.projectName);
   const [isRenaming, setIsRenaming] = useState(false);
   const [nameInput, setNameInput] = useState(project.projectName);
+  const [folderMenuOpen, setFolderMenuOpen] = useState(false);
+  const [newFolderInput, setNewFolderInput] = useState('');
+  const [showNewFolderInput, setShowNewFolderInput] = useState(false);
+  const folderMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (folderMenuRef.current && !folderMenuRef.current.contains(e.target as Node)) {
+        setFolderMenuOpen(false);
+        setShowNewFolderInput(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleMoveToFolder = async (folder: string | null) => {
+    setFolderMenuOpen(false);
+    setShowNewFolderInput(false);
+    try {
+      await moveToFolder(project.slug, folder);
+      onFolderChanged?.(project.slug, folder || undefined);
+      toast.success(folder ? `Moved to "${folder}"` : 'Removed from folder');
+    } catch {
+      toast.error('Could not move project.');
+    }
+  };
 
   const handleToggleVisibility = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -196,19 +225,91 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
     >
       {/* Top bar */}
       <div className="flex items-center justify-between px-3 pt-3">
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          title={confirmDelete ? 'Click again to confirm' : 'Delete project'}
-          aria-label={confirmDelete ? 'Confirm delete' : 'Delete project'}
-          className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
-            confirmDelete
-              ? 'bg-red-500 text-white'
-              : 'bg-red-50 text-red-400 hover:bg-red-100'
-          }`}
-        >
-          <Trash2 size={12} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            title={confirmDelete ? 'Click again to confirm' : 'Delete project'}
+            aria-label={confirmDelete ? 'Confirm delete' : 'Delete project'}
+            className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
+              confirmDelete
+                ? 'bg-red-500 text-white'
+                : 'bg-red-50 text-red-400 hover:bg-red-100'
+            }`}
+          >
+            <Trash2 size={12} />
+          </button>
+
+          {/* Folder button */}
+          {!isPublicView && (
+            <div className="relative" ref={folderMenuRef}>
+              <button
+                onClick={(e) => { e.stopPropagation(); setFolderMenuOpen((v) => !v); }}
+                title={project.folder ? `In folder: ${project.folder}` : 'Move to folder'}
+                aria-label="Move to folder"
+                className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
+                  project.folder
+                    ? 'bg-violet-100 text-violet-500 hover:bg-violet-200'
+                    : 'bg-gray-50 text-gray-300 hover:bg-gray-100 hover:text-gray-500'
+                }`}
+              >
+                <FolderOpen size={12} />
+              </button>
+
+              {folderMenuOpen && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute left-0 top-8 w-44 bg-white rounded-xl py-1 z-50"
+                  style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)', border: '1px solid rgba(0,0,0,0.06)' }}
+                >
+                  {availableFolders.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => handleMoveToFolder(f)}
+                      className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 transition-colors ${
+                        project.folder === f ? 'text-primary font-semibold' : 'text-gray-600'
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                  {project.folder && (
+                    <button
+                      onClick={() => handleMoveToFolder(null)}
+                      className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-red-50 transition-colors border-t border-gray-50"
+                    >
+                      Remove from folder
+                    </button>
+                  )}
+                  <div className="border-t border-gray-50">
+                    {showNewFolderInput ? (
+                      <div className="px-2 py-2">
+                        <input
+                          value={newFolderInput}
+                          onChange={(e) => setNewFolderInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && newFolderInput.trim()) handleMoveToFolder(newFolderInput.trim());
+                            if (e.key === 'Escape') { setShowNewFolderInput(false); setNewFolderInput(''); }
+                          }}
+                          placeholder="Folder name"
+                          autoFocus
+                          className="w-full text-xs px-2 py-1.5 border border-gray-200 rounded-lg outline-none focus:border-primary"
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowNewFolderInput(true)}
+                        className="w-full text-left px-3 py-2 text-xs text-primary hover:bg-violet-50 transition-colors font-medium"
+                      >
+                        + New folder...
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-1.5">
           {isOwnProject && (
