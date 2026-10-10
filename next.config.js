@@ -34,7 +34,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               `connect-src 'self' ${API_URL} https://raw.githubusercontent.com`,
-              "frame-src 'self' https://view.officeapps.live.com https://storage.googleapis.com https:",  // allow file iframes + Office viewer
+              "frame-src 'self' blob: https://view.officeapps.live.com https://vekar12.github.io",  // allow Office viewer + GitHub Pages content
               "object-src 'none'",
               "base-uri 'self'",
             ].join('; '),

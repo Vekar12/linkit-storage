@@ -8,15 +8,14 @@ import DashboardLayout from '@/components/DashboardLayout';
 
 export default function VersionHistoryPage() {
   const router = useRouter();
-  const { slug, owner: ownerId, editCode: editCodeParam, name: nameParam } = router.query;
+  const { slug, owner: ownerId, name: nameParam } = router.query;
   const [editCode, setEditCode] = useState('');
   const [projectName, setProjectName] = useState('');
 
-  // Sync from URL params after router hydrates (query is empty on first SSR render)
+  // Sync project name from URL params after router hydrates
   useEffect(() => {
-    if (typeof editCodeParam === 'string' && editCodeParam && !editCode) setEditCode(editCodeParam);
     if (typeof nameParam === 'string' && nameParam) setProjectName(nameParam);
-  }, [editCodeParam, nameParam]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [nameParam]);
 
   const [metadata, setMetadata] = useState<ProjectMetadata | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,19 +93,16 @@ export default function VersionHistoryPage() {
 
   const handleDownloadHtmlAsPdf = async (version: number) => {
     const url = versionDownloadUrl(version);
-    const win = window.open('', '_blank');
-    if (!win) { toast.error('Allow popups to save as PDF.'); return; }
     try {
       const res = await fetch(url);
       const html = await res.text();
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-      win.focus();
-      win.onload = () => win.print();
-      setTimeout(() => { if (!win.closed) win.print(); }, 2000);
+      const blob = new Blob([html], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+      const win = window.open(blobUrl, '_blank');
+      if (!win) { URL.revokeObjectURL(blobUrl); toast.error('Allow popups to save as PDF.'); return; }
+      win.onload = () => { win.print(); URL.revokeObjectURL(blobUrl); };
+      setTimeout(() => { if (!win.closed) win.print(); URL.revokeObjectURL(blobUrl); }, 2000);
     } catch {
-      try { win.close(); } catch {}
       toast.error('Could not load file for PDF export.');
     }
   };
