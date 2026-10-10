@@ -18,6 +18,15 @@ export const uploadLimiter = rateLimit({
   message: { error: 'Upload limit reached, please wait before uploading again.' },
 });
 
+// Auth callback — 15 requests per minute per IP (prevents brute-force)
+export const authLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many auth attempts, please try again later.' },
+});
+
 // GET /notifications — 120 requests per minute per IP
 export const notificationsLimiter = rateLimit({
   windowMs: 60_000,

@@ -43,7 +43,7 @@ router.get('/', requireAuth, getProjectsLimiter, getProjects);
 router.post('/', requireAuth, uploadLimiter, upload.single('file'), createProject);
 router.put('/:slug', requireAuth, uploadLimiter, validateSlug, upload.single('file'), updateProject);
 router.patch('/:slug', requireAuth, validateSlug, updateVisibility);
-router.delete('/:slug', requireAuth, validateSlug, deleteProject);
+router.delete('/:slug', requireAuth, uploadLimiter, validateSlug, deleteProject);
 
 // Public routes — ownerId is part of the URL for share-page resolution
 router.get('/:ownerId/:slug/metadata', validateOwnerId, validateSlug, getProjectMetadata);

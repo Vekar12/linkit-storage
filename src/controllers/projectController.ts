@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
-import { randomBytes } from 'crypto';
+import { randomBytes, timingSafeEqual } from 'crypto';
 import { ProjectMetadata, Visibility } from '../types';
 import { generateSlug } from '../utils/slugUtils';
 import {
@@ -22,6 +22,11 @@ import { extractUser } from '../middleware/auth';
 import { notifyContributors } from '../services/notificationService';
 
 const MAX_VERSIONS = 50; // keep metadata.json bounded; archived files in storage are unaffected
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 // 8-char alphanumeric edit code, unambiguous characters
 function generateEditCode(): string {
@@ -128,7 +133,7 @@ export async function updateProject(
         return;
       }
       const editCode = typeof req.body.editCode === 'string' ? req.body.editCode.trim() : '';
-      if (!editCode || editCode !== metadata.editCode) {
+      if (!editCode || !metadata.editCode || !safeEqual(editCode, metadata.editCode)) {
         res.status(403).json({ error: 'Invalid or missing edit code' });
         return;
       }
@@ -221,7 +226,7 @@ export async function collaboratorUpdateProject(
         return;
       }
       const editCode = typeof req.body.editCode === 'string' ? req.body.editCode.trim() : '';
-      if (!editCode || editCode !== metadata.editCode) {
+      if (!editCode || !metadata.editCode || !safeEqual(editCode, metadata.editCode)) {
         res.status(403).json({ error: 'Invalid or missing edit code' });
         return;
       }
