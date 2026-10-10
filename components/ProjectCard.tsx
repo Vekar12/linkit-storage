@@ -144,20 +144,16 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
 
   const handleDownloadHtmlAsPdf = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const win = window.open('', '_blank');
-    if (!win) { toast.error('Allow popups to save as PDF.'); return; }
     try {
       const res = await fetch(downloadUrl);
       const html = await res.text();
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-      win.focus();
-      // onload fires after resources finish; fallback timeout handles edge cases
-      win.onload = () => win.print();
-      setTimeout(() => { if (!win.closed) win.print(); }, 2000);
+      const blob = new Blob([html], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+      const win = window.open(blobUrl, '_blank');
+      if (!win) { URL.revokeObjectURL(blobUrl); toast.error('Allow popups to save as PDF.'); return; }
+      win.onload = () => { win.print(); URL.revokeObjectURL(blobUrl); };
+      setTimeout(() => { if (!win.closed) win.print(); URL.revokeObjectURL(blobUrl); }, 2000);
     } catch {
-      try { win.close(); } catch {}
       toast.error('Could not load file for PDF export.');
     }
   };
@@ -192,9 +188,8 @@ function ProjectCard({ project, onDeleted, onVisibilityChanged, onRenamed, onEdi
   return (
     <div
       onClick={() => {
-        const editParam = !isPublicView && project.editCode && project.visibility === 'public' ? `&editCode=${project.editCode}` : '';
         const nameParam = `&name=${encodeURIComponent(project.projectName)}`;
-        router.push(`/projects/${project.slug}?owner=${project.ownerId}${nameParam}${editParam}`);
+        router.push(`/projects/${project.slug}?owner=${project.ownerId}${nameParam}`);
       }}
       className={`rounded-2xl flex flex-col justify-between aspect-square cursor-pointer overflow-hidden li-project-card ${isOwnProject ? 'li-project-card-own' : ''}`}
       style={{ backgroundColor: isOwnProject ? '#faf5ff' : '#ffffff' }}

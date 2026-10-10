@@ -23,6 +23,8 @@ export default function AuthCallback() {
     // Case 1: backend already exchanged code and sent ?token=
     if (token) {
       saveToken(token as string);
+      // Immediately clear token from browser history/URL
+      window.history.replaceState({}, '', '/auth/callback');
       router.replace('/dashboard');
       return;
     }

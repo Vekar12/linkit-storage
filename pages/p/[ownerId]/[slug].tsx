@@ -55,19 +55,16 @@ export default function PublicViewPage() {
   const downloadUrl = `${baseURL}/projects/${ownerId}/${slug}/download`;
 
   const handleSaveAsPdf = async () => {
-    const win = window.open('', '_blank');
-    if (!win) { toast.error('Allow popups to save as PDF.'); return; }
     try {
       const res = await fetch(downloadUrl);
       const html = await res.text();
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-      win.focus();
-      win.onload = () => win.print();
-      setTimeout(() => { if (!win.closed) win.print(); }, 2000);
+      const blob = new Blob([html], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+      const win = window.open(blobUrl, '_blank');
+      if (!win) { URL.revokeObjectURL(blobUrl); toast.error('Allow popups to save as PDF.'); return; }
+      win.onload = () => { win.print(); URL.revokeObjectURL(blobUrl); };
+      setTimeout(() => { if (!win.closed) win.print(); URL.revokeObjectURL(blobUrl); }, 2000);
     } catch {
-      try { win.close(); } catch {}
       toast.error('Could not load file for PDF export.');
     }
   };
@@ -80,7 +77,7 @@ export default function PublicViewPage() {
             src={latestURL}
             title={slug as string}
             className="w-full h-full border-0"
-            sandbox={isHTML ? 'allow-scripts allow-same-origin allow-forms' : undefined}
+            sandbox={isHTML ? 'allow-scripts allow-forms' : undefined}
           />
         )}
 
