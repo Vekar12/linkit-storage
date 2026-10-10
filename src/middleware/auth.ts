@@ -67,3 +67,15 @@ export function requireAuth(
   req.user = user;
   next();
 }
+
+export function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  if (!req.user || req.user.id !== process.env.ADMIN_USER_ID) {
+    res.status(403).json({ error: 'Forbidden: admin access required' });
+    return;
+  }
+  next();
+}

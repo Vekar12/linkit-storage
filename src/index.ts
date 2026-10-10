@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import projectRoutes from './routes/projectRoutes';
 import authRoutes from './routes/authRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import adminRoutes from './routes/adminRoutes';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -60,6 +61,7 @@ app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
 app.use('/projects', projectRoutes);
 app.use('/auth', authRoutes);
 app.use('/notifications', notificationRoutes);
+app.use('/admin', adminRoutes);
 
 app.use(errorHandler);
 

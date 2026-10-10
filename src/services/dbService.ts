@@ -45,7 +45,8 @@ export async function createProjectMetadata(
   ownerId: string,
   visibility: Visibility = 'personal',
   ownerName?: string,
-  editCode?: string
+  editCode?: string,
+  folder?: string
 ): Promise<ProjectMetadata> {
   const now = new Date().toISOString();
   const metadata: ProjectMetadata = {
@@ -57,6 +58,7 @@ export async function createProjectMetadata(
     ownerName,
     lastUpdatedByName: ownerName,
     visibility,
+    ...(folder ? { folder } : {}),
     ...(editCode ? { editCode } : {}),
     createdAt: now,
     updatedAt: now,

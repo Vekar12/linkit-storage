@@ -79,12 +79,23 @@ export async function createProject(
     const filePath = `projects/${ownerId}/${slug}/${filename}`;
     const fileURL = buildPagesUrl(ownerId, slug, filename);
 
+    const rawFolder: string | undefined = req.body.folder;
+    let folder: string | undefined;
+    if (rawFolder) {
+      folder = String(rawFolder).replace(/<[^>]*>/g, '').replace(/[^\w\s\-().]/g, '').trim();
+      if (folder.length > 50) {
+        res.status(400).json({ error: 'folder must be 50 characters or fewer' });
+        return;
+      }
+      if (!folder) folder = undefined;
+    }
+
     const editCode = visibility === 'public' ? generateEditCode() : undefined;
 
     await uploadFile(filePath, file.buffer, `feat: create project ${slug}`);
     const metadata = await createProjectMetadata(
       projectName, slug, filename,
-      ext.replace('.', ''), fileURL, ownerId, visibility, ownerName, editCode
+      ext.replace('.', ''), fileURL, ownerId, visibility, ownerName, editCode, folder
     );
 
     res.status(201).json({
@@ -434,11 +445,11 @@ export async function updateVisibility(
   try {
     const { slug } = req.params;
     const ownerId = req.user!.id;
-    const { visibility, projectName: rawName, regenerateCode } = req.body;
+    const { visibility, projectName: rawName, regenerateCode, folder: rawFolder } = req.body;
 
     // Validate fields — at least one must be present
-    if (visibility === undefined && rawName === undefined && !regenerateCode) {
-      res.status(400).json({ error: 'Provide at least one of: visibility, projectName, regenerateCode' });
+    if (visibility === undefined && rawName === undefined && !regenerateCode && rawFolder === undefined) {
+      res.status(400).json({ error: 'Provide at least one of: visibility, projectName, regenerateCode, folder' });
       return;
     }
 
@@ -463,6 +474,19 @@ export async function updateVisibility(
         return;
       }
       updates.projectName = projectName;
+    }
+
+    if (rawFolder !== undefined) {
+      if (rawFolder === null) {
+        updates.folder = undefined;
+      } else {
+        const folder = String(rawFolder).replace(/<[^>]*>/g, '').replace(/[^\w\s\-().]/g, '').trim();
+        if (folder.length > 50) {
+          res.status(400).json({ error: 'folder must be 50 characters or fewer' });
+          return;
+        }
+        updates.folder = folder || undefined;
+      }
     }
 
     const metadata = await getProjectBySlug(ownerId, slug);

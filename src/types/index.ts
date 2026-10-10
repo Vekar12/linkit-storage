@@ -19,6 +19,7 @@ export interface ProjectMetadata {
   ownerName?: string;
   lastUpdatedByName?: string;
   visibility: Visibility;
+  folder?: string;
   editCode?: string;
   createdAt: string;
   updatedAt: string;
