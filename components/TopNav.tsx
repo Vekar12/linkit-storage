@@ -127,7 +127,8 @@ export default function TopNav() {
     }
   };
 
-  const isAdmin = user?.sub === process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+  const ADMIN_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+  const isAdmin = !!user && !!ADMIN_ID && user.sub === ADMIN_ID;
 
   const currentView = typeof router.query.view === 'string' ? router.query.view : undefined;
   const isActive = (view?: string, href?: string) => {
@@ -140,12 +141,14 @@ export default function TopNav() {
   const avatarUrl = user?.avatar_url || user?.picture || null;
   const initials = displayName.slice(0, 2).toUpperCase();
 
-  const navItems = [
+  const baseNavItems = [
     { label: 'Projects', icon: LayoutGrid, view: undefined as string | undefined, href: '/dashboard' },
     { label: 'Upload',   icon: Upload,      view: 'upload' as string | undefined,    href: '/dashboard?view=upload' },
     { label: 'Recent',   icon: Clock,       view: 'recent' as string | undefined,    href: '/dashboard?view=recent' },
-    ...(isAdmin ? [{ label: 'Admin', icon: Shield, view: undefined as string | undefined, href: '/admin' }] : []),
   ];
+  const navItems = isAdmin
+    ? [...baseNavItems, { label: 'Admin', icon: Shield, view: undefined as string | undefined, href: '/admin' }]
+    : baseNavItems;
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
