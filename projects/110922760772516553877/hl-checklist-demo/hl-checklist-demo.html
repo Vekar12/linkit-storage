@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iLens - Checklist Master Based Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f0f0; color: #333; font-size: 13px; }
+
+        /* ===== VIEW SWITCHER ===== */
+        .view-switcher {
+            background: #1a1a2e; color: #fff; display: flex; justify-content: center;
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .view-switcher button {
+            background: none; border: none; color: #aaa; padding: 13px 32px;
+            font-size: 13px; font-weight: 600; cursor: pointer; position: relative;
+            transition: all 0.2s; letter-spacing: 0.3px; display: flex; align-items: center; gap: 8px;
+        }
+        .view-switcher button:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .view-switcher button.active { color: #fff; }
+        .view-switcher button.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: #c0392b;
+        }
+        .view-switcher .badge {
+            background: #c0392b; color: #fff; border-radius: 50%; min-width: 18px; height: 18px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700; padding: 0 4px;
+        }
+
+        /* ===== HEADER ===== */
+        .ilens-header {
+            background: #fff; border-bottom: 1px solid #ddd; padding: 8px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo-area { display: flex; align-items: baseline; gap: 4px; }
+        .logo-area .logo {
+            font-size: 22px; font-weight: 700; color: #1a3c6e; font-style: italic;
+            font-family: Georgia, 'Times New Roman', serif;
+        }
+        .logo-area .logo-sub { font-size: 10px; color: #888; font-style: normal; }
+        .header-search {
+            flex: 1; max-width: 360px; margin: 0 30px; position: relative;
+        }
+        .header-search input {
+            width: 100%; padding: 7px 12px 7px 32px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;
+        }
+        .header-search::before {
+            content: '\1F50D'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 12px;
+        }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-datetime { font-size: 11px; color: #666; white-space: nowrap; }
+        .user-info { display: flex; align-items: center; gap: 8px; }
+        .user-avatar {
+            width: 34px; height: 34px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff;
+        }
+        .user-name { font-size: 12px; font-weight: 600; color: #333; }
+        .user-role { font-size: 10px; color: #999; }
+
+        /* ===== NAV BAR ===== */
+        .nav-bar {
+            background: linear-gradient(180deg, #7a2020, #5a1515); color: #fff;
+            display: flex; justify-content: center; padding: 0; border-bottom: 3px solid #4a1010;
+        }
+        .nav-bar a {
+            color: rgba(255,255,255,0.8); text-decoration: none; padding: 10px 16px; font-size: 11px;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            transition: all 0.2s; cursor: pointer; min-width: 70px; text-align: center;
+        }
+        .nav-bar a:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .nav-bar a.active { color: #fff; background: rgba(255,255,255,0.15); border-bottom: 2px solid #fff; }
+        .nav-bar .nav-icon { font-size: 18px; }
+
+        /* ===== VIEWS ===== */
+        .view-panel { display: none; }
+        .view-panel.active { display: block; }
+
+        /* ===== APP INFO BAR ===== */
+        .app-info-bar {
+            background: #fff; border-bottom: 1px solid #e0e0e0; padding: 10px 20px;
+            display: flex; align-items: center; gap: 12px; font-size: 12px;
+        }
+        .app-info-bar .applicant { font-weight: 700; font-size: 14px; color: #1a3c6e; }
+        .app-info-bar .sep { color: #ccc; }
+        .app-info-bar .detail { color: #555; }
+        .app-info-bar .status-group { margin-left: auto; display: flex; gap: 28px; }
+        .app-info-bar .status-group .item { text-align: center; }
+        .app-info-bar .status-group .item .lbl { font-size: 10px; color: #888; display: block; margin-bottom: 2px; }
+        .app-info-bar .status-group .item .val { font-size: 12px; font-weight: 600; }
+        .app-info-bar .status-group .item .val.bold { font-weight: 700; }
+        .app-info-bar .status-group .item .val.red { color: #c0392b; }
+
+        /* ===== iLENS LAYOUT ===== */
+        .ilens-content { display: flex; min-height: calc(100vh - 220px); }
+        .ilens-sidebar {
+            width: 250px; background: #fff; border-right: 1px solid #e0e0e0; flex-shrink: 0; overflow-y: auto;
+        }
+        .sidebar-icons { display: flex; border-bottom: 1px solid #e0e0e0; }
+        .sidebar-icons button {
+            flex: 1; padding: 12px; background: none; border: none; font-size: 18px;
+            cursor: pointer; color: #666; border-bottom: 2px solid transparent;
+        }
+        .sidebar-icons button.active { color: #7a2020; border-bottom-color: #7a2020; }
+        .sidebar-dots {
+            width: 30px; background: #7a2020; display: flex; align-items: flex-start;
+            justify-content: center; padding-top: 12px; cursor: pointer;
+        }
+        .sidebar-dots span { color: #fff; font-size: 16px; font-weight: 700; }
+        .switch-product {
+            display: inline-flex; align-items: center; gap: 4px; margin: 12px 14px;
+            color: #fff; background: #c0392b; border: none; padding: 5px 12px;
+            border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;
+        }
+        .product-card {
+            margin: 0 14px 14px; border: 2px solid #1a3c6e; border-radius: 6px; padding: 12px;
+        }
+        .product-card .top { display: flex; justify-content: space-between; font-size: 11px; color: #888; }
+        .product-card .pname { font-size: 14px; font-weight: 600; color: #1a3c6e; margin-top: 4px; }
+        .product-card .pamount { font-size: 16px; font-weight: 700; color: #333; margin-top: 2px; }
+        .sidebar-links { padding: 4px 0; }
+        .sidebar-links a {
+            display: block; padding: 9px 18px; font-size: 12px; color: #1a3c6e;
+            text-decoration: none; border-left: 3px solid transparent;
+        }
+        .sidebar-links a:hover, .sidebar-links a.active { background: #edf2ff; border-left-color: #1a3c6e; font-weight: 600; }
+        .sidebar-links a.sub { padding-left: 32px; font-size: 11px; color: #2a5daa; }
+
+        /* ===== MAIN CONTENT ===== */
+        .ilens-main { flex: 1; padding: 20px 24px; background: #f5f5f5; overflow-y: auto; }
+        .section-title { font-size: 20px; font-weight: 700; color: #7a2020; margin-bottom: 4px; }
+        .form-row { display: flex; gap: 40px; margin: 14px 0 20px; }
+        .form-group label { font-size: 12px; color: #555; display: block; margin-bottom: 5px; }
+        .form-group .req { color: #c0392b; }
+        .form-group .value { font-size: 13px; font-weight: 500; }
+        .radio-group { display: flex; gap: 14px; align-items: center; }
+        .radio-group label { display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; }
+        .radio-group input[type="radio"] { accent-color: #7a2020; width: 15px; height: 15px; }
+        .edit-icon {
+            float: right; color: #1a3c6e; font-size: 16px; cursor: pointer; padding: 4px;
+            border: 1px solid #1a3c6e; border-radius: 3px;
+        }
+
+        /* ===== ACCORDION ===== */
+        .checklist-accordion {
+            margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px;
+            overflow: hidden; background: #fff;
+        }
+        .acc-header {
+            padding: 14px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+            background: #fafafa; transition: background 0.15s; color: #333;
+        }
+        .acc-header:hover { background: #f0f0f0; }
+        .acc-header .arrow { font-size: 14px; color: #888; transition: transform 0.25s; }
+        .acc-header.open { background: #f5f5f5; border-bottom: 1px solid #e0e0e0; }
+        .acc-header.open .arrow { transform: rotate(90deg); }
+        .acc-body { display: none; }
+        .acc-body.open { display: block; }
+        .all-verified { text-align: right; padding: 10px 18px 4px; }
+        .all-verified label { font-size: 13px; color: #555; display: inline-flex; align-items: center; gap: 5px; }
+        .check-item { padding: 14px 18px; border-bottom: 1px solid #f0f0f0; }
+        .check-item:last-child { border-bottom: none; }
+        .check-item .check-text { font-size: 13px; color: #333; margin-bottom: 8px; line-height: 1.55; }
+        .check-item .check-options .radio-group { margin-left: 4px; }
+        .new-tag {
+            display: inline-block; background: #e74c3c; color: #fff; font-size: 9px;
+            font-weight: 700; padding: 2px 6px; border-radius: 3px; margin-left: 8px;
+            vertical-align: middle; letter-spacing: 0.5px; animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* ===== ADMIN / MASTER ===== */
+        .admin-content { padding: 20px 24px; max-width: 1320px; margin: 0 auto; }
+        .master-title { font-size: 18px; font-weight: 700; color: #7a2020; margin-bottom: 16px; }
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+        }
+        .toolbar .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+        .toolbar select, .toolbar input[type="text"] {
+            padding: 7px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; min-width: 150px;
+        }
+        .toolbar select:focus, .toolbar input:focus { outline: none; border-color: #1a3c6e; }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 8px 18px; border: none; border-radius: 4px; font-size: 12px;
+            font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex;
+            align-items: center; gap: 5px; white-space: nowrap;
+        }
+        .btn-primary { background: #1a3c6e; color: #fff; }
+        .btn-primary:hover { background: #15325c; }
+        .btn-success { background: #27ae60; color: #fff; }
+        .btn-success:hover { background: #219a52; }
+        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-danger:hover { background: #a93226; }
+        .btn-outline { background: #fff; color: #1a3c6e; border: 1.5px solid #1a3c6e; }
+        .btn-outline:hover { background: #edf2ff; }
+        .btn-outline-danger { background: #fff; color: #c0392b; border: 1.5px solid #c0392b; }
+        .btn-outline-danger:hover { background: #fef0f0; }
+        .btn-sm { padding: 5px 12px; font-size: 11px; }
+        .btn-icon { padding: 5px 8px; font-size: 14px; min-width: 30px; justify-content: center; }
+        .btn-search { background: #c0392b; color: #fff; padding: 7px 24px; }
+        .btn-search:hover { background: #a93226; }
+
+        /* ===== TABLE ===== */
+        .master-table {
+            width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px;
+            overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .master-table th {
+            background: #f5f5f5; padding: 10px 14px; text-align: left; font-size: 11px;
+            color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+            border-bottom: 2px solid #e0e0e0; white-space: nowrap;
+        }
+        .master-table th .sort-icon { font-size: 9px; color: #bbb; margin-left: 3px; }
+        .master-table td {
+            padding: 10px 14px; font-size: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top;
+        }
+        .master-table tr:hover { background: #fafcff; }
+        .status-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;
+        }
+        .status-badge.active { background: #e8f5e9; color: #2e7d32; }
+        .status-badge.inactive { background: #fce4ec; color: #c62828; }
+        .status-badge.pending { background: #fff3e0; color: #e65100; }
+        .status-badge.approved { background: #e8f5e9; color: #2e7d32; }
+        .status-badge.rejected { background: #fce4ec; color: #c62828; }
+
+        /* ===== APPROVAL CARDS ===== */
+        .approval-card {
+            background: #fff; border-radius: 6px; margin-bottom: 14px; overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); border-left: 4px solid #f39c12;
+        }
+        .approval-card.approved-card { border-left-color: #27ae60; }
+        .approval-card.rejected-card { border-left-color: #c0392b; }
+        .approval-card-header {
+            padding: 14px 18px; display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #f0f0f0;
+        }
+        .approval-card-header .left { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .change-type {
+            padding: 3px 10px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+        }
+        .change-type.add { background: #e8f5e9; color: #2e7d32; }
+        .change-type.modify { background: #e3f2fd; color: #1565c0; }
+        .change-type.delete { background: #fce4ec; color: #c62828; }
+        .approval-card-body { padding: 14px 18px; }
+        .approval-detail {
+            display: grid; grid-template-columns: 130px 1fr; gap: 6px;
+            font-size: 12px; margin-bottom: 6px; line-height: 1.5;
+        }
+        .approval-detail .lbl { color: #888; font-weight: 500; }
+        .approval-detail .old-text { color: #999; text-decoration: line-through; background: #fef0f0; padding: 2px 4px; border-radius: 2px; }
+        .approval-detail .new-text { background: #f0fef0; padding: 2px 4px; border-radius: 2px; }
+        .approval-actions { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
+        .remarks-input {
+            flex: 1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px;
+            font-size: 12px; font-family: inherit;
+        }
+        .remarks-input:focus { outline: none; border-color: #1a3c6e; }
+
+        /* ===== PREVIEW PANEL ===== */
+        .preview-panel {
+            background: #f8f9ff; border: 1px solid #d0d8f0; border-radius: 6px;
+            padding: 14px 16px; margin-top: 12px;
+        }
+        .preview-panel h4 { font-size: 12px; color: #1a3c6e; margin-bottom: 10px; font-weight: 600; }
+        .preview-item {
+            font-size: 11px; color: #555; padding: 5px 0; border-bottom: 1px solid #e8ecf4;
+            display: flex; align-items: flex-start; gap: 6px;
+        }
+        .preview-item:last-child { border-bottom: none; }
+        .preview-item .dot { color: #1a3c6e; font-weight: 700; flex-shrink: 0; }
+        .preview-item.highlight { background: #fff3cd; padding: 5px 6px; border-radius: 3px; font-weight: 600; color: #333; }
+
+        /* ===== AUDIT TRAIL ===== */
+        .audit-trail { margin-top: 12px; }
+        .audit-row {
+            display: flex; gap: 10px; font-size: 11px; color: #666; padding: 4px 0;
+            border-bottom: 1px dotted #e0e0e0; align-items: center;
+        }
+        .audit-row:last-child { border-bottom: none; }
+        .audit-row .timestamp { color: #999; min-width: 130px; }
+        .audit-row .action-tag {
+            font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 2px;
+            text-transform: uppercase;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #fff; border-radius: 8px; width: 640px; max-width: 95vw;
+            max-height: 88vh; overflow-y: auto; box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+        }
+        .modal-header {
+            padding: 16px 20px; border-bottom: 1px solid #e0e0e0; display: flex;
+            justify-content: space-between; align-items: center; background: #fafafa;
+        }
+        .modal-header h3 { font-size: 15px; color: #1a3c6e; font-weight: 700; }
+        .close-btn {
+            background: none; border: none; font-size: 20px; cursor: pointer; color: #888;
+            width: 28px; height: 28px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; transition: all 0.15s;
+        }
+        .close-btn:hover { background: #f0f0f0; color: #333; }
+        .modal-body { padding: 20px; }
+        .modal-footer {
+            padding: 14px 20px; border-top: 1px solid #e0e0e0; display: flex;
+            justify-content: flex-end; gap: 8px; background: #fafafa;
+        }
+        .form-field { margin-bottom: 14px; }
+        .form-field label {
+            display: block; font-size: 12px; font-weight: 600; color: #444; margin-bottom: 5px;
+        }
+        .form-field input, .form-field select, .form-field textarea {
+            width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px;
+            font-size: 13px; font-family: inherit;
+        }
+        .form-field textarea { resize: vertical; min-height: 70px; }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+            outline: none; border-color: #1a3c6e; box-shadow: 0 0 0 2px rgba(26,60,110,0.08);
+        }
+        .form-field .hint { font-size: 10px; color: #999; margin-top: 3px; }
+        .form-row-inline { display: flex; gap: 14px; }
+        .form-row-inline .form-field { flex: 1; }
+        .scoping-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .scoping-section {
+            background: #f8f9fa; border: 1px solid #e8e8e8; border-radius: 4px; padding: 10px 12px;
+        }
+        .scoping-section label.section-label {
+            font-size: 11px; font-weight: 600; color: #1a3c6e; margin-bottom: 6px; display: block;
+        }
+        .chip-group { display: flex; flex-wrap: wrap; gap: 5px; }
+        .chip {
+            padding: 3px 10px; border: 1px solid #ccc; border-radius: 14px; font-size: 11px;
+            cursor: pointer; transition: all 0.15s; user-select: none;
+        }
+        .chip:hover { border-color: #1a3c6e; }
+        .chip.selected { background: #1a3c6e; color: #fff; border-color: #1a3c6e; }
+
+        /* ===== INFO BAR ===== */
+        .info-bar {
+            background: #e8f4fd; border: 1px solid #b8d8f0; border-radius: 4px;
+            padding: 10px 16px; margin: 16px 0; display: flex; align-items: center; gap: 8px;
+            font-size: 12px; color: #1565c0;
+        }
+        .info-bar .info-icon { font-size: 16px; }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff;
+            padding: 12px 20px; border-radius: 6px; font-size: 13px; z-index: 3000;
+            display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            max-width: 400px; line-height: 1.4;
+        }
+        .toast.show { display: block; animation: slideUp 0.25s ease; }
+        .toast.success { background: #27ae60; }
+        .toast.error { background: #c0392b; }
+        .toast.info { background: #1a3c6e; }
+        @keyframes slideUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .ilens-sidebar { display: none; }
+            .app-info-bar { flex-direction: column; align-items: flex-start; }
+            .app-info-bar .status-group { margin-left: 0; }
+            .view-switcher button { padding: 10px 14px; font-size: 11px; }
+            .scoping-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- VIEW SWITCHER -->
+<div class="view-switcher">
+    <button class="active" onclick="switchView('ilens', this)">iLens Screen</button>
+    <button onclick="switchView('master', this)">Checklist Master (Admin)</button>
+    <button id="approvalTab" onclick="switchView('approval', this)">
+        Ops Approval <span class="badge" id="pendingCount" style="display:none;">0</span>
+    </button>
+</div>
+
+<!-- ================================================================ -->
+<!-- SCREEN 1: iLENS NDC & DI -->
+<!-- ================================================================ -->
+<div id="view-ilens" class="view-panel active">
+    <div class="ilens-header">
+        <div class="logo-area">
+            <span class="logo">iLens</span>
+            <span class="logo-sub">Mortgage Loan</span>
+        </div>
+        <div class="header-search">
+            <input type="text" placeholder="Search by Application Number">
+        </div>
+        <div class="header-right">
+            <span class="header-datetime">&#128197; 11 Oct 2026 10:53</span>
+            <div class="user-info">
+                <div class="user-avatar" style="background:#7a2020;">MD</div>
+                <div>
+                    <div class="user-name">MAHARSHI NITIN D (90106339)</div>
+                    <div class="user-role">Product Support</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <a href="#"><span class="nav-icon">&#127968;</span>Home</a>
+        <a href="#"><span class="nav-icon">&#128200;</span>Application Pipeline</a>
+        <a href="#" class="active"><span class="nav-icon">&#128196;</span>Loan Application</a>
+        <a href="#"><span class="nav-icon">&#128101;</span>Prospects</a>
+        <a href="#"><span class="nav-icon">&#128203;</span>APF</a>
+        <a href="#"><span class="nav-icon">&#127974;</span>Collateral</a>
+        <a href="#"><span class="nav-icon">&#128202;</span>PAS Reports</a>
+        <a href="#"><span class="nav-icon">&#128230;</span>Dispatch</a>
+        <a href="#" style="margin-left:auto;"><span class="nav-icon">&#128279;</span>Quick Links</a>
+    </div>
+
+    <div class="app-info-bar">
+        <span class="applicant">SAKENDAR ALI AHMED</span>
+        <span class="sep">|</span>
+        <span class="detail">7731000025269</span>
+        <span class="sep">|</span>
+        <span class="detail">23.00 Lakhs</span>
+        <span class="sep">|</span>
+        <span class="detail">Loan Against Property</span>
+        <span class="sep">|</span>
+        <span class="detail">BT</span>
+        <div class="status-group">
+            <div class="item"><span class="lbl">Application Date</span><span class="val bold">05 Aug 2026</span></div>
+            <div class="item"><span class="lbl">Status</span><span class="val">Disbursement-Disbursed</span></div>
+            <div class="item"><span class="lbl">TAT</span><span class="val red">1 day 6 hrs 21 mins</span></div>
+        </div>
+    </div>
+
+    <div class="ilens-content">
+        <div class="ilens-sidebar">
+            <div style="display:flex;">
+                <div style="flex:1;">
+                    <div class="sidebar-icons">
+                        <button class="active" title="Documents">&#128196;</button>
+                        <button title="Workflow">&#128260;</button>
+                    </div>
+                    <button class="switch-product">&#10094; Switch Product</button>
+                    <div class="product-card">
+                        <div class="top"><span>Product 1</span><span>Tranche 1</span></div>
+                        <div class="pname">Loan Against Property</div>
+                        <div class="pamount">&#8377; 23,00,000</div>
+                    </div>
+                    <div class="sidebar-links">
+                        <a href="#">Disbursement Summary</a>
+                        <a href="#">Information Gathering Form</a>
+                        <a href="#">Verifications</a>
+                        <a href="#" class="sub">Seller Verification</a>
+                        <a href="#" class="sub">Original Document Verification</a>
+                        <a href="#" class="sub">NOC Verification</a>
+                    </div>
+                </div>
+                <div class="sidebar-dots"><span>&#8942;</span></div>
+            </div>
+        </div>
+
+        <div class="ilens-main">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <div class="section-title">NDC & DI</div>
+                </div>
+                <span class="edit-icon" title="Edit">&#128221;</span>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Disbursal Type <span class="req">*</span></label>
+                    <div class="value">First and Final</div>
+                </div>
+                <div class="form-group">
+                    <label>Physical Mandate Received <span class="req">*</span></label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="mandate" checked> Yes</label>
+                        <label><input type="radio" name="mandate"> No</label>
+                    </div>
+                </div>
+            </div>
+            <div id="ilens-checklists"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SCREEN 2: ADMIN MASTER -->
+<!-- ================================================================ -->
+<div id="view-master" class="view-panel">
+    <div class="ilens-header">
+        <div class="logo-area"><span class="logo">iLens</span></div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar" style="background:#e67e22;">AA</div>
+                <div>
+                    <div class="user-name">Admin Admin</div>
+                    <div class="user-role">DMA Admin</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="nav-bar">
+        <a href="#"><span class="nav-icon">&#128172;</span>Message Center</a>
+        <a href="#"><span class="nav-icon">&#128736;</span>Experience Mgmt Admin</a>
+        <a href="#"><span class="nav-icon">&#128451;</span>Master Data</a>
+        <a href="#"><span class="nav-icon">&#128220;</span>Rules</a>
+        <a href="#"><span class="nav-icon">&#128229;</span>Inbox</a>
+        <a href="#"><span class="nav-icon">&#128100;</span>User Tracking</a>
+        <a href="#" class="active"><span class="nav-icon">&#128218;</span>Masters</a>
+        <a href="#"><span class="nav-icon">&#10067;</span>FAQ</a>
+        <a href="#"><span class="nav-icon">&#128736;</span>Support Team Tool</a>
+        <a href="#"><span class="nav-icon">&#128202;</span>Report Dumps</a>
+    </div>
+
+    <div class="admin-content">
+        <div class="toolbar">
+            <div class="filters">
+                <select id="filterStage" onchange="renderMasterTable()">
+                    <option value="">All Stages</option>
+                    <option value="NDC & DI" selected>NDC & DI</option>
+                    <option value="DM Prep">DM Prep</option>
+                </select>
+                <select id="filterCategory" onchange="renderMasterTable()">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="filterStatus" onchange="renderMasterTable()">
+                    <option value="">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+                <input type="text" id="filterSearch" placeholder="Search checklist items..." oninput="renderMasterTable()">
+                <button class="btn btn-search" onclick="renderMasterTable()">Search</button>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <div class="master-title" style="margin-bottom:0;">Checklist Master</div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-outline" onclick="openAddCategoryModal()">+ Add Category</button>
+                <button class="btn btn-primary" onclick="openAddCheckModal()">+ Add Checklist Item</button>
+            </div>
+        </div>
+
+        <table class="master-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">Sr.</th>
+                    <th>Stage</th>
+                    <th>Category</th>
+                    <th style="width:32%;">Checklist Item</th>
+                    <th>Applicability</th>
+                    <th>Status</th>
+                    <th>Eff. Date</th>
+                    <th>Modified</th>
+                    <th style="width:100px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="masterTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SCREEN 3: OPS APPROVAL -->
+<!-- ================================================================ -->
+<div id="view-approval" class="view-panel">
+    <div class="ilens-header">
+        <div class="logo-area"><span class="logo">iLens</span></div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar" style="background:#2c3e50;">OP</div>
+                <div>
+                    <div class="user-name">OPS HEAD (90100001)</div>
+                    <div class="user-role">Operations Head</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="nav-bar">
+        <a href="#"><span class="nav-icon">&#128229;</span>Inbox</a>
+        <a href="#" class="active"><span class="nav-icon">&#9989;</span>Pending Approvals</a>
+        <a href="#"><span class="nav-icon">&#128202;</span>Reports</a>
+        <a href="#"><span class="nav-icon">&#128197;</span>Audit Log</a>
+    </div>
+    <div class="admin-content">
+        <div class="toolbar">
+            <div class="master-title" style="margin-bottom:0;">Checklist Change Requests</div>
+            <div class="filters">
+                <select id="approvalFilter" onchange="renderApprovals()">
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="">All</option>
+                </select>
+            </div>
+        </div>
+        <div id="approvalCards" style="margin-top:16px;"></div>
+        <div id="noApprovals" style="text-align:center; padding:50px; color:#888; font-size:14px; display:none;">
+            <div style="font-size:40px; margin-bottom:10px;">&#128203;</div>
+            No pending change requests found.
+        </div>
+    </div>
+</div>
+
+<!-- ===== ADD/EDIT CHECKLIST MODAL ===== -->
+<div class="modal-overlay" id="checkModal">
+    <div class="modal" style="width:700px;">
+        <div class="modal-header">
+            <h3 id="checkModalTitle">Add Checklist Item</h3>
+            <button class="close-btn" onclick="closeModal('checkModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="editIndex" value="-1">
+
+            <div class="form-row-inline">
+                <div class="form-field">
+                    <label>Stage <span style="color:#c0392b">*</span></label>
+                    <select id="checkStage">
+                        <option value="NDC & DI">NDC & DI</option>
+                        <option value="DM Prep">DM Prep</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Category <span style="color:#c0392b">*</span></label>
+                    <select id="checkCategory"></select>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>Checklist Item Description <span style="color:#c0392b">*</span></label>
+                <textarea id="checkDescription" placeholder="Enter the checklist verification text..." maxlength="500"></textarea>
+                <div class="hint"><span id="charCount">0</span>/500 characters</div>
+            </div>
+
+            <div class="form-row-inline">
+                <div class="form-field">
+                    <label>Status</label>
+                    <select id="checkStatus">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Effective From <span style="color:#c0392b">*</span></label>
+                    <input type="date" id="checkEffDate" value="">
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>Applicability / Scoping Parameters</label>
+                <div class="scoping-grid">
+                    <div class="scoping-section">
+                        <label class="section-label">Product Variant</label>
+                        <div class="chip-group" id="chipVariant">
+                            <span class="chip selected" data-val="HL" onclick="toggleChip(this)">HL</span>
+                            <span class="chip selected" data-val="LAP" onclick="toggleChip(this)">LAP</span>
+                            <span class="chip selected" data-val="LRD" onclick="toggleChip(this)">LRD</span>
+                            <span class="chip selected" data-val="HEL" onclick="toggleChip(this)">HEL</span>
+                            <span class="chip" data-val="IIFL-BT" onclick="toggleChip(this)">IIFL-BT</span>
+                        </div>
+                    </div>
+                    <div class="scoping-section">
+                        <label class="section-label">Sub-Variant</label>
+                        <div class="chip-group" id="chipSubVariant">
+                            <span class="chip selected" data-val="Salaried" onclick="toggleChip(this)">Salaried</span>
+                            <span class="chip selected" data-val="SENP" onclick="toggleChip(this)">SENP</span>
+                            <span class="chip" data-val="SEP" onclick="toggleChip(this)">SEP</span>
+                        </div>
+                    </div>
+                    <div class="scoping-section">
+                        <label class="section-label">E-Sign Status</label>
+                        <div class="chip-group" id="chipEsign">
+                            <span class="chip selected" data-val="Completed" onclick="toggleChip(this)">Completed</span>
+                            <span class="chip selected" data-val="Pending" onclick="toggleChip(this)">Pending</span>
+                            <span class="chip selected" data-val="NA" onclick="toggleChip(this)">N/A</span>
+                        </div>
+                    </div>
+                    <div class="scoping-section">
+                        <label class="section-label">ENACH Status</label>
+                        <div class="chip-group" id="chipEnach">
+                            <span class="chip selected" data-val="Registered" onclick="toggleChip(this)">Registered</span>
+                            <span class="chip selected" data-val="Not Registered" onclick="toggleChip(this)">Not Registered</span>
+                            <span class="chip selected" data-val="NA" onclick="toggleChip(this)">N/A</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('checkModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveCheckItem()">Submit for Approval</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ADD CATEGORY MODAL ===== -->
+<div class="modal-overlay" id="categoryModal">
+    <div class="modal" style="width:420px;">
+        <div class="modal-header">
+            <h3>Add New Category</h3>
+            <button class="close-btn" onclick="closeModal('categoryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-field">
+                <label>Category Name <span style="color:#c0392b">*</span></label>
+                <input type="text" id="newCategoryName" placeholder="e.g., Legal Compliance">
+            </div>
+            <div class="form-field">
+                <label>Applicable Stage</label>
+                <select id="newCategoryStage">
+                    <option value="NDC & DI">NDC & DI</option>
+                    <option value="DM Prep">DM Prep</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('categoryModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="addCategory()">Add Category</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== AUDIT TRAIL MODAL ===== -->
+<div class="modal-overlay" id="auditModal">
+    <div class="modal" style="width:600px;">
+        <div class="modal-header">
+            <h3 id="auditModalTitle">Audit Trail</h3>
+            <button class="close-btn" onclick="closeModal('auditModal')">&times;</button>
+        </div>
+        <div class="modal-body" id="auditModalBody"></div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+let categories = [
+    { name: 'DRF', stage: 'NDC & DI' },
+    { name: 'Internal Checklist', stage: 'NDC & DI' },
+    { name: 'Fees and Clearance', stage: 'NDC & DI' },
+    { name: 'PEMI/NACH/Security NACH', stage: 'NDC & DI' },
+    { name: 'POP/OTC', stage: 'NDC & DI' },
+    { name: 'DM Document Check', stage: 'DM Prep' },
+    { name: 'Sanction Terms Validation', stage: 'DM Prep' },
+];
+
+let checklistItems = [
+    { id:1, stage:'NDC & DI', category:'DRF', description:'Disbursal Request Amount on DRF not less than amount disbursed to be cross Checked with DM.', status:'Active', effectiveDate:'2026-09-01', modified:'10 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved for go-live'}] },
+    { id:2, stage:'NDC & DI', category:'DRF', description:'Disbursement made as per requested Mode mentioned (Details in DM as per DRF) For LRD/LAP/HEL cases disbursement should be in favour of ICICI bank account only. "Check the favouring of Disbursement cheque on the DM as? "" XYZ (name of customer) ICICI Bank A/c XXXXXXXXXXXX""? else reject the case." In case of any deviation check for approval in IAS from respective Business Zonal Heads, in absence of approval reject the case.', status:'Active', effectiveDate:'2026-09-01', modified:'10 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['LRD','LAP','HEL'],subVariant:['Salaried','SENP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:3, stage:'NDC & DI', category:'DRF', description:'DRF signed by all applicants/co-applicants.', status:'Active', effectiveDate:'2026-09-01', modified:'08 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:4, stage:'NDC & DI', category:'Internal Checklist', description:'All KYC documents verified and in order.', status:'Active', effectiveDate:'2026-09-01', modified:'09 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:5, stage:'NDC & DI', category:'Internal Checklist', description:'Income documents cross-verified with application form.', status:'Active', effectiveDate:'2026-09-01', modified:'09 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:6, stage:'NDC & DI', category:'Fees and Clearance', description:'Processing fee received and accounted for.', status:'Active', effectiveDate:'2026-09-01', modified:'07 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:7, stage:'NDC & DI', category:'Fees and Clearance', description:'All applicable charges/fees cleared before disbursement.', status:'Active', effectiveDate:'2026-09-01', modified:'07 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:8, stage:'NDC & DI', category:'PEMI/NACH/Security NACH', description:'NACH mandate registered and verified.', status:'Active', effectiveDate:'2026-09-01', modified:'06 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:9, stage:'NDC & DI', category:'PEMI/NACH/Security NACH', description:'PEMI collection confirmed for the interim period.', status:'Active', effectiveDate:'2026-09-01', modified:'06 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:10, stage:'NDC & DI', category:'POP/OTC', description:'POP/OTC charges validated as per sanction terms.', status:'Active', effectiveDate:'2026-09-01', modified:'05 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:11, stage:'DM Prep', category:'DM Document Check', description:'All sanction letter copies attached and signed.', status:'Active', effectiveDate:'2026-09-01', modified:'05 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:12, stage:'DM Prep', category:'DM Document Check', description:'Property valuation report verified and within acceptable range.', status:'Active', effectiveDate:'2026-09-01', modified:'05 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+    { id:13, stage:'DM Prep', category:'Sanction Terms Validation', description:'ROI as per sanction terms and BM rate card.', status:'Active', effectiveDate:'2026-09-01', modified:'05 Oct 2026', modifiedBy:'Admin Admin', applicability:{variant:['HL','LAP','LRD','HEL'],subVariant:['Salaried','SENP','SEP'],esign:['Completed','Pending','NA'],enach:['Registered','Not Registered','NA']}, isNew:false, auditTrail:[{action:'Created',by:'Admin Admin',at:'01 Sep 2026 09:00',detail:'Initial setup'},{action:'Approved',by:'OPS HEAD',at:'01 Sep 2026 14:30',detail:'Approved'}] },
+];
+
+let pendingChanges = [];
+let nextId = 14;
+let nextChangeId = 1;
+
+// ===== VIEW SWITCH =====
+function switchView(view, btn) {
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    btn.classList.add('active');
+    if (view === 'ilens') renderIlensChecklists();
+    if (view === 'master') renderMasterTable();
+    if (view === 'approval') renderApprovals();
+}
+
+// ===== SCREEN 1: iLENS RENDER =====
+function renderIlensChecklists() {
+    const container = document.getElementById('ilens-checklists');
+    const today = new Date().toISOString().split('T')[0];
+    const activeItems = checklistItems.filter(i => i.status === 'Active' && i.stage === 'NDC & DI' && i.effectiveDate <= '2026-10-11');
+    const catNames = [...new Set(activeItems.map(i => i.category))];
+
+    let html = '';
+    catNames.forEach(cat => {
+        const items = activeItems.filter(i => i.category === cat);
+        if (items.length === 0) return;
+        html += `<div class="checklist-accordion">
+            <div class="acc-header" onclick="toggleAccordion(this)">
+                <span>${cat}</span>
+                <span class="arrow">&#10095;</span>
+            </div>
+            <div class="acc-body">
+                <div class="all-verified">
+                    <label><input type="radio" name="allv-${cat.replace(/[^a-zA-Z]/g,'')}"> All Verified</label>
+                </div>`;
+        items.forEach(item => {
+            const newTag = item.isNew ? '<span class="new-tag">NEW</span>' : '';
+            html += `<div class="check-item">
+                <div class="check-text">${item.description}${newTag}</div>
+                <div class="check-options">
+                    <div class="radio-group">
+                        <label><input type="radio" name="chk-${item.id}" checked> Verified</label>
+                        <label><input type="radio" name="chk-${item.id}"> Not Applicable</label>
+                    </div>
+                </div>
+            </div>`;
+        });
+        html += `</div></div>`;
+    });
+    container.innerHTML = html;
+}
+
+function toggleAccordion(el) {
+    el.classList.toggle('open');
+    el.nextElementSibling.classList.toggle('open');
+}
+
+// ===== SCREEN 2: MASTER TABLE =====
+function renderMasterTable() {
+    const tbody = document.getElementById('masterTableBody');
+    const stageF = document.getElementById('filterStage').value;
+    const catF = document.getElementById('filterCategory').value;
+    const statusF = document.getElementById('filterStatus').value;
+    const searchF = document.getElementById('filterSearch').value.toLowerCase();
+
+    // Update category filter options
+    const catSelect = document.getElementById('filterCategory');
+    const curCat = catSelect.value;
+    const stageCats = stageF ? categories.filter(c => c.stage === stageF) : categories;
+    catSelect.innerHTML = '<option value="">All Categories</option>';
+    stageCats.forEach(c => {
+        catSelect.innerHTML += `<option value="${c.name}" ${c.name===curCat?'selected':''}>${c.name}</option>`;
+    });
+
+    // Update modal category dropdown
+    const modalCat = document.getElementById('checkCategory');
+    modalCat.innerHTML = '';
+    categories.forEach(c => {
+        modalCat.innerHTML += `<option value="${c.name}">${c.name} (${c.stage})</option>`;
+    });
+
+    let filtered = checklistItems.filter(item => {
+        if (stageF && item.stage !== stageF) return false;
+        if (catF && item.category !== catF) return false;
+        if (statusF && item.status !== statusF) return false;
+        if (searchF && !item.description.toLowerCase().includes(searchF)) return false;
+        return true;
+    });
+
+    // Check for pending CRs per item
+    const pendingItemIds = new Set(pendingChanges.filter(c => c.approvalStatus === 'Pending').map(c => c.originalItemId).filter(Boolean));
+
+    let html = '';
+    filtered.forEach((item, idx) => {
+        const globalIdx = checklistItems.indexOf(item);
+        const hasPending = pendingItemIds.has(item.id);
+        const appTags = item.applicability.variant.join(', ');
+        html += `<tr${hasPending ? ' style="background:#fffde7;"' : ''}>
+            <td>${idx + 1}</td>
+            <td>${item.stage}</td>
+            <td><strong>${item.category}</strong></td>
+            <td>${item.description}${item.isNew ? ' <span class="new-tag">NEW</span>' : ''}${hasPending ? ' <span class="status-badge pending">CR Pending</span>' : ''}</td>
+            <td style="font-size:11px; color:#666;">${appTags}</td>
+            <td><span class="status-badge ${item.status.toLowerCase()}">${item.status}</span></td>
+            <td style="font-size:11px; color:#666;">${item.effectiveDate}</td>
+            <td style="font-size:11px; color:#888;">${item.modified}<br><span style="font-size:10px;">${item.modifiedBy}</span></td>
+            <td>
+                <div style="display:flex; gap:4px;">
+                    <button class="btn btn-sm btn-icon btn-outline" onclick="editCheckItem(${globalIdx})" title="Edit" ${hasPending?'disabled style="opacity:0.4;cursor:not-allowed;"':''}>&#9998;</button>
+                    <button class="btn btn-sm btn-icon btn-outline-danger" onclick="deleteCheckItem(${globalIdx})" title="Delete" ${hasPending?'disabled style="opacity:0.4;cursor:not-allowed;"':''}>&#128465;</button>
+                    <button class="btn btn-sm btn-icon btn-outline" onclick="showAuditTrail(${globalIdx})" title="Audit Trail" style="border-color:#888; color:#888;">&#128338;</button>
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    if (filtered.length === 0) {
+        html = '<tr><td colspan="9" style="text-align:center; padding:30px; color:#888;">No checklist items found.</td></tr>';
+    }
+    tbody.innerHTML = html;
+}
+
+// ===== AUDIT TRAIL =====
+function showAuditTrail(idx) {
+    const item = checklistItems[idx];
+    document.getElementById('auditModalTitle').textContent = 'Audit Trail - ' + item.category;
+    let html = `<div style="font-size:12px; color:#555; margin-bottom:14px; padding:10px; background:#f8f8f8; border-radius:4px; line-height:1.5;">${item.description}</div>`;
+    html += '<div class="audit-trail">';
+    item.auditTrail.forEach(a => {
+        const tagColor = a.action === 'Created' ? 'background:#e8f5e9;color:#2e7d32;' :
+                         a.action === 'Approved' ? 'background:#e3f2fd;color:#1565c0;' :
+                         a.action === 'Modified' ? 'background:#fff3e0;color:#e65100;' :
+                         a.action === 'Rejected' ? 'background:#fce4ec;color:#c62828;' :
+                         a.action === 'Reverted' ? 'background:#f3e5f5;color:#7b1fa2;' : 'background:#eee;color:#333;';
+        html += `<div class="audit-row">
+            <span class="timestamp">${a.at}</span>
+            <span class="action-tag" style="${tagColor}">${a.action}</span>
+            <span>${a.by}</span>
+            <span style="color:#999;">- ${a.detail}</span>
+        </div>`;
+    });
+    html += '</div>';
+    document.getElementById('auditModalBody').innerHTML = html;
+    openModal('auditModal');
+}
+
+// ===== ADD / EDIT CHECKLIST =====
+function openAddCheckModal() {
+    document.getElementById('checkModalTitle').textContent = 'Add Checklist Item';
+    document.getElementById('editIndex').value = '-1';
+    document.getElementById('checkDescription').value = '';
+    document.getElementById('checkStatus').value = 'Active';
+    document.getElementById('checkStage').value = 'NDC & DI';
+    document.getElementById('checkEffDate').value = '2026-10-12';
+    document.getElementById('charCount').textContent = '0';
+    // Reset chips
+    document.querySelectorAll('#checkModal .chip').forEach(c => c.classList.add('selected'));
+    openModal('checkModal');
+}
+
+function editCheckItem(idx) {
+    const item = checklistItems[idx];
+    document.getElementById('checkModalTitle').textContent = 'Edit Checklist Item';
+    document.getElementById('editIndex').value = idx;
+    document.getElementById('checkStage').value = item.stage;
+    document.getElementById('checkCategory').value = item.category;
+    document.getElementById('checkDescription').value = item.description;
+    document.getElementById('checkStatus').value = item.status;
+    document.getElementById('checkEffDate').value = item.effectiveDate;
+    document.getElementById('charCount').textContent = item.description.length;
+    // Set chips
+    ['chipVariant','chipSubVariant','chipEsign','chipEnach'].forEach(gid => {
+        const key = gid === 'chipVariant' ? 'variant' : gid === 'chipSubVariant' ? 'subVariant' : gid === 'chipEsign' ? 'esign' : 'enach';
+        document.querySelectorAll(`#${gid} .chip`).forEach(c => {
+            c.classList.toggle('selected', item.applicability[key].includes(c.dataset.val));
+        });
+    });
+    openModal('checkModal');
+}
+
+function toggleChip(el) { el.classList.toggle('selected'); }
+
+function getSelectedChips(groupId) {
+    return [...document.querySelectorAll(`#${groupId} .chip.selected`)].map(c => c.dataset.val);
+}
+
+function saveCheckItem() {
+    const idx = parseInt(document.getElementById('editIndex').value);
+    const stage = document.getElementById('checkStage').value;
+    const category = document.getElementById('checkCategory').value;
+    const description = document.getElementById('checkDescription').value.trim();
+    const status = document.getElementById('checkStatus').value;
+    const effDate = document.getElementById('checkEffDate').value;
+
+    if (!description) { showToast('Please enter checklist description.', 'error'); return; }
+    if (!effDate) { showToast('Please select effective date.', 'error'); return; }
+    if (description.length > 500) { showToast('Description exceeds 500 characters.', 'error'); return; }
+
+    const applicability = {
+        variant: getSelectedChips('chipVariant'),
+        subVariant: getSelectedChips('chipSubVariant'),
+        esign: getSelectedChips('chipEsign'),
+        enach: getSelectedChips('chipEnach'),
+    };
+
+    if (applicability.variant.length === 0) { showToast('Select at least one product variant.', 'error'); return; }
+
+    const change = {
+        changeId: nextChangeId++,
+        type: idx === -1 ? 'ADD' : 'MODIFY',
+        stage, category, description, status, effectiveDate: effDate,
+        applicability,
+        originalIndex: idx,
+        originalItemId: idx >= 0 ? checklistItems[idx].id : null,
+        originalData: idx >= 0 ? JSON.parse(JSON.stringify(checklistItems[idx])) : null,
+        submittedBy: 'Admin Admin',
+        submittedOn: '11 Oct 2026 10:55',
+        approvalStatus: 'Pending',
+        remarks: '',
+        approvedBy: null, approvedOn: null,
+    };
+    if (idx === -1) change.newItemId = nextId++;
+
+    pendingChanges.push(change);
+    closeModal('checkModal');
+    updatePendingBadge();
+    showToast('Change request CR-' + String(change.changeId).padStart(4,'0') + ' submitted for Ops approval.', 'info');
+    renderMasterTable();
+}
+
+function deleteCheckItem(idx) {
+    const item = checklistItems[idx];
+    if (!confirm('Request deletion of this checklist item?\n\n"' + item.description.substring(0, 100) + '..."\n\nThis will be sent for Ops approval.')) return;
+
+    const change = {
+        changeId: nextChangeId++,
+        type: 'DELETE',
+        stage: item.stage, category: item.category, description: item.description,
+        status: item.status, effectiveDate: item.effectiveDate,
+        applicability: JSON.parse(JSON.stringify(item.applicability)),
+        originalIndex: idx,
+        originalItemId: item.id,
+        originalData: JSON.parse(JSON.stringify(item)),
+        submittedBy: 'Admin Admin',
+        submittedOn: '11 Oct 2026 10:56',
+        approvalStatus: 'Pending',
+        remarks: '',
+        approvedBy: null, approvedOn: null,
+    };
+    pendingChanges.push(change);
+    updatePendingBadge();
+    showToast('Delete request CR-' + String(change.changeId).padStart(4,'0') + ' submitted.', 'info');
+    renderMasterTable();
+}
+
+// ===== CATEGORY =====
+function openAddCategoryModal() { document.getElementById('newCategoryName').value = ''; openModal('categoryModal'); }
+function addCategory() {
+    const name = document.getElementById('newCategoryName').value.trim();
+    const stage = document.getElementById('newCategoryStage').value;
+    if (!name) { showToast('Enter category name.', 'error'); return; }
+    if (categories.find(c => c.name === name && c.stage === stage)) { showToast('Category already exists for this stage.', 'error'); return; }
+    categories.push({ name, stage });
+    closeModal('categoryModal');
+    showToast('Category "' + name + '" added under ' + stage + '.', 'success');
+    renderMasterTable();
+}
+
+// ===== SCREEN 3: APPROVALS =====
+function renderApprovals() {
+    const container = document.getElementById('approvalCards');
+    const noDiv = document.getElementById('noApprovals');
+    const filter = document.getElementById('approvalFilter').value;
+
+    let filtered = pendingChanges.slice().reverse();
+    if (filter) filtered = filtered.filter(c => c.approvalStatus === filter);
+
+    if (filtered.length === 0) {
+        container.innerHTML = '';
+        noDiv.style.display = 'block';
+        return;
+    }
+    noDiv.style.display = 'none';
+
+    let html = '';
+    filtered.forEach(change => {
+        const cardClass = change.approvalStatus === 'Approved' ? 'approved-card' : change.approvalStatus === 'Rejected' ? 'rejected-card' : '';
+        const typeClass = change.type.toLowerCase();
+
+        // Build preview of sibling items in same category
+        const siblingItems = checklistItems.filter(i => i.category === change.category && i.stage === change.stage && i.status === 'Active');
+
+        html += `<div class="approval-card ${cardClass}">
+            <div class="approval-card-header">
+                <div class="left">
+                    <span class="change-type ${typeClass}">${change.type}</span>
+                    <strong style="font-size:13px;">CR-${String(change.changeId).padStart(4,'0')}</strong>
+                    <span class="status-badge ${change.approvalStatus.toLowerCase()}">${change.approvalStatus}</span>
+                </div>
+                <div style="font-size:11px; color:#888;">Raised by: ${change.submittedBy} | ${change.submittedOn}</div>
+            </div>
+            <div class="approval-card-body">
+                <div class="approval-detail"><span class="lbl">Stage:</span><span>${change.stage}</span></div>
+                <div class="approval-detail"><span class="lbl">Category:</span><span>${change.category}</span></div>
+                <div class="approval-detail"><span class="lbl">Effective From:</span><span>${change.effectiveDate}</span></div>
+                <div class="approval-detail"><span class="lbl">Applicability:</span><span style="font-size:11px;">${change.applicability.variant.join(', ')} | ${change.applicability.subVariant.join(', ')}</span></div>`;
+
+        if (change.type === 'MODIFY' && change.originalData) {
+            html += `<div class="approval-detail"><span class="lbl">Previous Text:</span><span class="old-text">${change.originalData.description}</span></div>`;
+            html += `<div class="approval-detail"><span class="lbl">New Text:</span><span class="new-text">${change.description}</span></div>`;
+        } else {
+            html += `<div class="approval-detail"><span class="lbl">Description:</span><span>${change.description}</span></div>`;
+        }
+
+        // Preview panel — other items in same section
+        if (change.approvalStatus === 'Pending' && siblingItems.length > 0) {
+            html += `<div class="preview-panel">
+                <h4>Other checkpoints in "${change.category}" (${change.stage}):</h4>`;
+            siblingItems.forEach(si => {
+                const isThis = change.originalItemId === si.id;
+                html += `<div class="preview-item ${isThis ? 'highlight' : ''}">
+                    <span class="dot">${isThis ? '&#9658;' : '&#8226;'}</span>
+                    <span>${si.description}${isThis ? ' <em>(this item)</em>' : ''}</span>
+                </div>`;
+            });
+            html += '</div>';
+        }
+
+        if (change.approvalStatus === 'Pending') {
+            html += `<div class="approval-actions">
+                <input type="text" class="remarks-input" id="remarks-${change.changeId}" placeholder="Remarks (mandatory for rejection)">
+                <button class="btn btn-sm btn-success" onclick="approveChange(${change.changeId})">Approve</button>`;
+            if (change.type === 'MODIFY') {
+                html += `<button class="btn btn-sm btn-outline" onclick="revertChange(${change.changeId})">Revert to Previous</button>`;
+            }
+            html += `<button class="btn btn-sm btn-danger" onclick="rejectChange(${change.changeId})">Reject</button>
+            </div>`;
+        } else {
+            html += `<div class="approval-detail" style="margin-top:8px;">
+                <span class="lbl">${change.approvalStatus} by:</span>
+                <span>${change.approvedBy} | ${change.approvedOn}</span>
+            </div>`;
+            if (change.remarks) {
+                html += `<div class="approval-detail"><span class="lbl">Remarks:</span><span>${change.remarks}</span></div>`;
+            }
+        }
+
+        html += `</div></div>`;
+    });
+    container.innerHTML = html;
+}
+
+function approveChange(changeId) {
+    const change = pendingChanges.find(c => c.changeId === changeId);
+    if (!change) return;
+
+    const remarks = document.getElementById('remarks-' + changeId)?.value || '';
+
+    change.approvalStatus = 'Approved';
+    change.approvedBy = 'OPS HEAD (90100001)';
+    change.approvedOn = '11 Oct 2026 11:00';
+    change.remarks = remarks;
+
+    if (change.type === 'ADD') {
+        const newItem = {
+            id: change.newItemId, stage: change.stage, category: change.category,
+            description: change.description, status: change.status,
+            effectiveDate: change.effectiveDate, modified: '11 Oct 2026',
+            modifiedBy: 'Admin Admin', applicability: change.applicability,
+            isNew: true,
+            auditTrail: [
+                { action: 'Created', by: change.submittedBy, at: change.submittedOn, detail: 'New item added' },
+                { action: 'Approved', by: 'OPS HEAD (90100001)', at: '11 Oct 2026 11:00', detail: remarks || 'Approved' },
+            ]
+        };
+        checklistItems.push(newItem);
+    } else if (change.type === 'MODIFY') {
+        const item = checklistItems[change.originalIndex];
+        if (item) {
+            item.auditTrail.push({
+                action: 'Modified', by: change.submittedBy, at: change.submittedOn,
+                detail: 'Changed from: "' + item.description.substring(0, 60) + '..."'
+            });
+            item.auditTrail.push({
+                action: 'Approved', by: 'OPS HEAD (90100001)', at: '11 Oct 2026 11:00', detail: remarks || 'Modification approved'
+            });
+            item.stage = change.stage; item.category = change.category;
+            item.description = change.description; item.status = change.status;
+            item.effectiveDate = change.effectiveDate; item.modified = '11 Oct 2026';
+            item.modifiedBy = change.submittedBy; item.applicability = change.applicability;
+        }
+    } else if (change.type === 'DELETE') {
+        const item = checklistItems[change.originalIndex];
+        if (item) {
+            item.auditTrail.push({
+                action: 'Deleted', by: change.submittedBy, at: change.submittedOn, detail: 'Deletion requested'
+            });
+            item.auditTrail.push({
+                action: 'Approved', by: 'OPS HEAD (90100001)', at: '11 Oct 2026 11:00', detail: remarks || 'Deletion approved'
+            });
+            item.status = 'Inactive'; item.modified = '11 Oct 2026'; item.modifiedBy = change.submittedBy;
+        }
+    }
+
+    updatePendingBadge();
+    renderApprovals();
+    showToast('CR-' + String(changeId).padStart(4,'0') + ' approved. Live in iLens now.', 'success');
+}
+
+function revertChange(changeId) {
+    const change = pendingChanges.find(c => c.changeId === changeId);
+    if (!change || !change.originalData) return;
+
+    const remarks = document.getElementById('remarks-' + changeId)?.value || 'Reverted to previous version';
+
+    change.approvalStatus = 'Approved';
+    change.approvedBy = 'OPS HEAD (90100001)';
+    change.approvedOn = '11 Oct 2026 11:00';
+    change.remarks = 'REVERTED: ' + remarks;
+
+    // Restore original data
+    const item = checklistItems[change.originalIndex];
+    if (item) {
+        item.auditTrail.push({
+            action: 'Reverted', by: 'OPS HEAD (90100001)', at: '11 Oct 2026 11:00',
+            detail: 'Reverted modification. Kept previous version.'
+        });
+    }
+
+    updatePendingBadge();
+    renderApprovals();
+    showToast('CR-' + String(changeId).padStart(4,'0') + ' — reverted to previous version.', 'info');
+}
+
+function rejectChange(changeId) {
+    const change = pendingChanges.find(c => c.changeId === changeId);
+    if (!change) return;
+
+    const remarks = document.getElementById('remarks-' + changeId)?.value || '';
+    if (!remarks.trim()) {
+        showToast('Remarks are mandatory for rejection.', 'error');
+        document.getElementById('remarks-' + changeId)?.focus();
+        return;
+    }
+
+    change.approvalStatus = 'Rejected';
+    change.approvedBy = 'OPS HEAD (90100001)';
+    change.approvedOn = '11 Oct 2026 11:00';
+    change.remarks = remarks;
+
+    // Add to audit trail if modify/delete
+    if (change.originalIndex >= 0) {
+        const item = checklistItems[change.originalIndex];
+        if (item) {
+            item.auditTrail.push({
+                action: 'Rejected', by: 'OPS HEAD (90100001)', at: '11 Oct 2026 11:00',
+                detail: 'CR rejected: ' + remarks
+            });
+        }
+    }
+
+    updatePendingBadge();
+    renderApprovals();
+    showToast('CR-' + String(changeId).padStart(4,'0') + ' rejected.', 'error');
+}
+
+// ===== HELPERS =====
+function updatePendingBadge() {
+    const count = pendingChanges.filter(c => c.approvalStatus === 'Pending').length;
+    const badge = document.getElementById('pendingCount');
+    badge.style.display = count > 0 ? 'inline-flex' : 'none';
+    badge.textContent = count;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function showToast(msg, type) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast show ' + (type || '');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// Char count for description
+document.getElementById('checkDescription')?.addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length;
+});
+
+// ===== INIT =====
+renderIlensChecklists();
+renderMasterTable();
+</script>
+</body>
+</html>
