@@ -3,6 +3,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 const nextConfig = {
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_ADMIN_USER_ID: process.env.NEXT_PUBLIC_ADMIN_USER_ID || '110922760772516553877',
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'raw.githubusercontent.com' },
