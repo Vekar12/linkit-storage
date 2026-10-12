@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DashboardLayout from '@/components/DashboardLayout';
+import LoadingScreen from '@/components/LoadingScreen';
 import ProjectCard from '@/components/ProjectCard';
 import FolderCard from '@/components/FolderCard';
 import FileDropzone from '@/components/FileDropzone';
@@ -426,9 +427,7 @@ export default function Dashboard() {
 
               {/* Grid */}
               {loadingProjects ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
-                </div>
+                <LoadingScreen />
               ) : loadError ? (
                 <div className="li-card text-center py-12">
                   <p className="text-red-500 text-sm font-medium mb-3">Failed to load projects.</p>

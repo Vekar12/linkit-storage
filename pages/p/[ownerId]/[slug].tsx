@@ -23,8 +23,17 @@ export default function PublicViewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Link2 size={28} className="text-primary animate-pulse" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center animate-pulse"
+          style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)', boxShadow: '0 4px 20px rgba(124,58,237,0.3)' }}
+        >
+          <Link2 size={24} className="text-white" />
+        </div>
+        <p className="text-sm text-gray-500">Loading your content...</p>
+        <div className="w-36 h-1 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-primary rounded-full animate-pulse" style={{ width: '60%' }} />
+        </div>
       </div>
     );
   }
