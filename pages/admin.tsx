@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { getAdminStats, getAdminUsers, getAdminActivity } from '@/services/api';
 import { checkAuth } from '@/lib/auth';
 import { getTokenPayload } from '@/lib/jwt';
+import { isAdminUser } from '@/lib/admin';
 import type { AdminStats, AdminUser, AdminActivity } from '@/types';
 
 const typeColors: Record<string, string> = {
@@ -29,7 +30,7 @@ function timeAgo(iso: string) {
 export default function AdminPage() {
   const router = useRouter();
   const payload = getTokenPayload();
-  const isAdmin = payload?.sub === process.env.NEXT_PUBLIC_ADMIN_USER_ID;
+  const isAdmin = isAdminUser(payload?.sub);
 
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);

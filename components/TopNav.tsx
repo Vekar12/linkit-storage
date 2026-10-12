@@ -7,6 +7,7 @@ import { getTokenPayload, type TokenPayload } from '@/lib/jwt';
 import { getNotifications, getUnreadCount, markNotificationsRead, clearNotifications } from '@/services/api';
 import type { Notification } from '@/types';
 import { checkAuth } from '@/lib/auth';
+import { isAdminUser } from '@/lib/admin';
 
 function timeAgo(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -127,8 +128,7 @@ export default function TopNav() {
     }
   };
 
-  const ADMIN_ID = process.env.NEXT_PUBLIC_ADMIN_USER_ID;
-  const isAdmin = !!user && !!ADMIN_ID && user.sub === ADMIN_ID;
+  const isAdmin = !!user && isAdminUser(user.sub);
 
   const currentView = typeof router.query.view === 'string' ? router.query.view : undefined;
   const isActive = (view?: string, href?: string) => {
