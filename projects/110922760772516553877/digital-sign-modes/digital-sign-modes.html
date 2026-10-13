@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank-Side Digital Signature — Solution Recommendation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap');
+
+        :root {
+            --primary: #1a1a2e;
+            --accent: #e94560;
+            --accent-light: #fef0f3;
+            --blue: #0f3460;
+            --blue-light: #eef4fb;
+            --green: #0a8754;
+            --green-light: #edf7f2;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --orange: #d97706;
+            --orange-light: #fffbeb;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--gray-900);
+            background: #fff;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        /* Cover Page */
+        .cover {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--blue) 100%);
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: rgba(233, 69, 96, 0.08);
+        }
+
+        .cover-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+
+        .cover h1 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            max-width: 700px;
+        }
+
+        .cover-subtitle {
+            font-size: 18px;
+            font-weight: 300;
+            color: rgba(255,255,255,0.7);
+            max-width: 600px;
+            margin-bottom: 48px;
+        }
+
+        .cover-meta {
+            display: flex;
+            gap: 48px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .cover-meta strong {
+            display: block;
+            color: rgba(255,255,255,0.85);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .cover-badge {
+            position: absolute;
+            bottom: 40px;
+            right: 80px;
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Main Content */
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        /* Section Headers */
+        .section-num {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 24px;
+            line-height: 1.3;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+
+        p { margin-bottom: 16px; color: var(--gray-700); }
+
+        .divider {
+            height: 1px;
+            background: var(--gray-200);
+            margin: 56px 0;
+        }
+
+        /* Executive Summary Box */
+        .exec-box {
+            background: var(--blue-light);
+            border-left: 4px solid var(--blue);
+            border-radius: 0 12px 12px 0;
+            padding: 32px;
+            margin: 32px 0;
+        }
+
+        .exec-box h3 {
+            margin-top: 0;
+            color: var(--blue);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .exec-box p { color: var(--gray-700); margin-bottom: 12px; }
+        .exec-box p:last-child { margin-bottom: 0; }
+
+        /* Recommendation Callout */
+        .recommend {
+            background: var(--green-light);
+            border: 2px solid var(--green);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 32px 0;
+            position: relative;
+        }
+
+        .recommend-badge {
+            position: absolute;
+            top: -14px;
+            left: 24px;
+            background: var(--green);
+            color: #fff;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .recommend h3 { margin-top: 8px; color: var(--green); }
+
+        /* Option Cards */
+        .option-card {
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 24px 0;
+            transition: box-shadow 0.2s;
+        }
+
+        .option-card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+
+        .option-card.preferred {
+            border-color: var(--green);
+            border-width: 2px;
+            background: linear-gradient(135deg, var(--green-light) 0%, #fff 100%);
+        }
+
+        .option-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .option-rank {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--gray-700);
+            flex-shrink: 0;
+        }
+
+        .option-card.preferred .option-rank {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .option-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .option-tag {
+            margin-left: auto;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-recommended { background: var(--green); color: #fff; }
+        .tag-viable { background: var(--orange-light); color: var(--orange); }
+
+        /* Attribute Grid */
+        .attr-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .attr-item {
+            background: var(--gray-50);
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .attr-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .attr-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 14px;
+        }
+
+        .comparison-table thead th {
+            background: var(--primary);
+            color: #fff;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .comparison-table thead th:first-child { border-radius: 8px 0 0 0; }
+        .comparison-table thead th:last-child { border-radius: 0 8px 0 0; }
+
+        .comparison-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            vertical-align: top;
+        }
+
+        .comparison-table tbody tr:hover { background: var(--gray-50); }
+
+        .comparison-table tbody tr.highlight-row {
+            background: var(--green-light);
+        }
+
+        .comparison-table td:first-child {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .score {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .score-high { background: #dcfce7; color: #166534; }
+        .score-med { background: #fef9c3; color: #854d0e; }
+        .score-low { background: #fee2e2; color: #991b1b; }
+
+        /* Flow Diagram */
+        .flow-container {
+            margin: 32px 0;
+            padding: 40px;
+            background: var(--gray-50);
+            border-radius: 16px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .flow-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .flow-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            align-items: center;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .flow-node {
+            background: #fff;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 20px 24px;
+            flex: 1;
+            position: relative;
+        }
+
+        .flow-node.bank-action {
+            border-color: var(--blue);
+            background: var(--blue-light);
+        }
+
+        .flow-node.vendor-action {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .flow-node.system-action {
+            border-color: var(--green);
+            background: var(--green-light);
+        }
+
+        .flow-step-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .flow-node-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .flow-node.bank-action .flow-node-label { color: var(--blue); }
+        .flow-node.vendor-action .flow-node-label { color: var(--accent); }
+        .flow-node.system-action .flow-node-label { color: var(--green); }
+
+        .flow-node-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+
+        .flow-node-sub {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+
+        .flow-arrow {
+            width: 2px;
+            height: 28px;
+            background: var(--gray-300);
+            margin-left: 57px;
+            position: relative;
+        }
+
+        .flow-arrow::after {
+            content: '▼';
+            position: absolute;
+            bottom: -6px;
+            left: -5px;
+            font-size: 10px;
+            color: var(--gray-300);
+        }
+
+        /* Legal Reference */
+        .legal-ref {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 16px 0;
+            border-left: 3px solid var(--gray-300);
+        }
+
+        .legal-ref-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .legal-ref-body {
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.6;
+        }
+
+        /* Key Points List */
+        .key-points {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0;
+        }
+
+        .key-points li {
+            padding: 10px 0 10px 28px;
+            position: relative;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .key-points li:last-child { border-bottom: none; }
+
+        .key-points li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Peer Bank Table */
+        .peer-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 13px;
+        }
+
+        .peer-table th {
+            background: var(--gray-50);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-500);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .peer-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .check { color: var(--green); font-weight: 700; }
+        .cross { color: #dc2626; font-weight: 700; }
+        .partial { color: var(--orange); font-weight: 700; }
+
+        /* Warning Box */
+        .warning-box {
+            background: var(--orange-light);
+            border-left: 4px solid var(--orange);
+            border-radius: 0 8px 8px 0;
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+
+        .warning-box strong {
+            color: var(--orange);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .warning-box p {
+            margin-top: 8px;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        /* Footer */
+        .doc-footer {
+            margin-top: 80px;
+            padding-top: 32px;
+            border-top: 2px solid var(--gray-200);
+            text-align: center;
+            color: var(--gray-500);
+            font-size: 12px;
+        }
+
+        .doc-footer strong { color: var(--gray-700); }
+
+        /* Print Styles */
+        @media print {
+            .cover { min-height: auto; padding: 40px; page-break-after: always; }
+            .content { padding: 20px; }
+            .flow-container { page-break-inside: avoid; }
+            .option-card { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== COVER PAGE ==================== -->
+<div class="cover">
+    <div class="cover-label">Solution Advisory — Internal Use Only</div>
+    <h1>Bank-Side Digital Signature on CFAF</h1>
+    <div class="cover-subtitle">
+        Evaluating legally compliant, zero-cost, and internally manageable digital signature options for bank representative execution on Customer Facility Agreement Forms — replacing Aadhaar OTP dependency on the business side.
+    </div>
+    <div class="cover-meta">
+        <div>
+            <strong>Scope</strong>
+            Bank representative signature only.<br>Customer eSign (Aadhaar OTP via SignDesk) is out of scope.
+        </div>
+        <div>
+            <strong>Platform</strong>
+            TCS iON / BaNCS<br>eSign Vendor: SignDesk
+        </div>
+        <div>
+            <strong>Prepared</strong>
+            October 2026<br>CACM — Process Optimization
+        </div>
+    </div>
+    <div class="cover-badge">CONFIDENTIAL</div>
+</div>
+
+<!-- ==================== CONTENT ==================== -->
+<div class="content">
+
+    <!-- SECTION 1: PROBLEM DEFINITION -->
+    <div class="section-num">Section 01</div>
+    <h2>Problem Definition</h2>
+
+    <p>
+        The current CFAF execution workflow requires <strong>both parties</strong> — the bank representative (sales user) and the customer — to complete Aadhaar-based OTP e-signatures via SignDesk. While Aadhaar OTP is appropriate for customer authentication (identity-linked consent), it introduces unnecessary friction, latency, and dependency on the bank side where the signatory is a known, authenticated, internal employee operating within the bank's own systems.
+    </p>
+
+    <div class="exec-box">
+        <h3>Objective</h3>
+        <p>
+            Replace the bank-side Aadhaar OTP e-signature with a <strong>digital signature mechanism</strong> that is:
+        </p>
+        <ul class="key-points">
+            <li><strong>Legally equivalent or superior</strong> to Aadhaar eSign under Indian IT Act 2000</li>
+            <li><strong>Zero additional vendor cost</strong> — handled entirely within CACM/bank infrastructure</li>
+            <li><strong>Automated and scalable</strong> — no per-transaction manual intervention</li>
+            <li><strong>Compatible with TCS platform</strong> — minimal integration effort</li>
+            <li><strong>Signing order preserved</strong> — bank representative signs first, then customer eSign via SignDesk</li>
+        </ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 2: SHORTLISTED OPTIONS -->
+    <div class="section-num">Section 02</div>
+    <h2>Shortlisted Options</h2>
+
+    <p>
+        After evaluating all possible methods against the constraints (no new vendor, no additional cost, legal compliance, scalability), <strong>two viable options</strong> emerge. A third is included as the minimum-viable baseline only.
+    </p>
+
+    <!-- Option A -->
+    <div class="option-card preferred">
+        <div class="option-header">
+            <div class="option-rank">A</div>
+            <div class="option-title">Server-Side DSC via Existing HSM</div>
+            <span class="option-tag tag-recommended">Recommended</span>
+        </div>
+
+        <p>
+            A Class 3 Digital Signature Certificate (DSC) is issued to the bank's authorized signatory (or as an organizational certificate) and stored on the bank's existing <strong>Hardware Security Module (HSM)</strong> — the same infrastructure that secures UPI, RTGS, NEFT, and net banking cryptographic operations. When the CFAF is generated on the TCS platform, the system makes an API call to the HSM, which applies the DSC to the PDF. No human touches the signing process.
+        </p>
+
+        <div class="attr-grid">
+            <div class="attr-item">
+                <div class="attr-label">Legal Basis</div>
+                <div class="attr-value">IT Act 2000, Section 3 — Digital Signature via asymmetric cryptography. Section 5 — legally equivalent to wet ink signature. Section 15 — qualifies as "Secure Digital Signature".</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Incremental Cost</div>
+                <div class="attr-value">₹0 per transaction. HSM infrastructure already exists. DSC renewal is ₹1,500–3,000/year for Class 3 organizational certificate.</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Scalability</div>
+                <div class="attr-value">Unlimited. HSMs are designed for millions of cryptographic operations/day. No per-transaction bottleneck.</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Implementation Effort</div>
+                <div class="attr-value">Medium. Requires TCS platform to invoke HSM signing API during CFAF PDF generation. Estimated 2–4 weeks with TCS coordination.</div>
+            </div>
+        </div>
+
+        <div class="legal-ref">
+            <div class="legal-ref-title">Legal Precedent & Regulatory Standing</div>
+            <div class="legal-ref-body">
+                <strong>IT Act Section 3:</strong> A digital signature created using asymmetric crypto with a licensed CA certificate is the <em>highest form of electronic authentication</em> recognized under Indian law. It is the only method that produces a "secure digital signature" (Section 15) — meaning the burden of proof shifts to the challenger, not the bank.<br><br>
+                <strong>Indian Evidence Act Section 85B:</strong> Presumes that a secure electronic record has not been altered — the court assumes authenticity unless proven otherwise. This is a critical advantage over all other methods.<br><br>
+                <strong>CERSAI Mandate:</strong> Banks already use DSCs (via HSM) for charge registration filings. This is extending an existing, proven workflow to one more document type.<br><br>
+                <strong>RBI Digital Lending Guidelines (Aug 2022):</strong> Mandate that executed loan agreements be delivered digitally at disbursement. A DSC-signed PDF is the cleanest form of compliance.
+            </div>
+        </div>
+
+        <div class="recommend">
+            <div class="recommend-badge">Why This Wins</div>
+            <h3>Strongest legal standing + Zero marginal cost + Already-deployed infrastructure</h3>
+            <p>
+                The private key never leaves the HSM hardware, making it tamper-proof and audit-ready. Every signature carries a timestamp, certificate chain, and cryptographic proof — verifiable by any standard PDF reader (Adobe Acrobat, Foxit). In any legal dispute, the document is self-proving under Section 85B of the Evidence Act. No other option provides this level of legal immunity.
+            </p>
+        </div>
+    </div>
+
+    <!-- Option B -->
+    <div class="option-card">
+        <div class="option-header">
+            <div class="option-rank">B</div>
+            <div class="option-title">Software-Based DSC (.pfx Certificate on Server)</div>
+            <span class="option-tag tag-viable">Viable Alternative</span>
+        </div>
+
+        <p>
+            A Class 2 or Class 3 DSC is issued to the authorized signatory, exported as a <code>.pfx</code> / PKCS#12 file, and stored on the TCS application server. The TCS platform loads the certificate and applies it during CFAF PDF generation — no HSM required.
+        </p>
+
+        <div class="attr-grid">
+            <div class="attr-item">
+                <div class="attr-label">Legal Basis</div>
+                <div class="attr-value">Identical to Option A — IT Act Section 3, Section 5, Section 15. Legally, a .pfx-signed document is indistinguishable from HSM-signed.</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Incremental Cost</div>
+                <div class="attr-value">₹500–1,500/year per certificate. Negligible.</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Scalability</div>
+                <div class="attr-value">High. Limited only by server compute — handles thousands of signings per minute easily.</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Implementation Effort</div>
+                <div class="attr-value">Low. Standard PDF signing libraries (iText, Apache PDFBox) support .pfx natively. TCS platform likely already has this capability. Estimated 1–2 weeks.</div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <strong>Key Difference from Option A</strong>
+            <p>
+                The .pfx file is a software artifact — it can theoretically be copied if the server is compromised. While legally equivalent, it requires strict access controls (file-system permissions, key password, audit logging). HSM provides hardware-level protection that a .pfx cannot match. For an organization of ICICI's size and regulatory scrutiny, HSM is the superior posture.
+            </p>
+        </div>
+    </div>
+
+    <!-- Option C -->
+    <div class="option-card">
+        <div class="option-header">
+            <div class="option-rank">C</div>
+            <div class="option-title">Embedded Scanned Signature Image</div>
+            <span class="option-tag tag-viable">Baseline Only</span>
+        </div>
+
+        <p>
+            A high-resolution scan of the authorized signatory's wet signature is embedded directly into the CFAF PDF template. The document is generated with the image pre-placed — no cryptographic operation occurs.
+        </p>
+
+        <div class="attr-grid">
+            <div class="attr-item">
+                <div class="attr-label">Legal Basis</div>
+                <div class="attr-value">NOT a "digital signature" under IT Act. Admissible under Evidence Act Section 65B only with a supporting certificate. Contract validity relies on Section 10A (electronic contracts are valid) and estoppel.</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Incremental Cost</div>
+                <div class="attr-value">₹0. Pure template change.</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Scalability</div>
+                <div class="attr-value">Unlimited. It's just an image in a template.</div>
+            </div>
+            <div class="attr-item">
+                <div class="attr-label">Implementation Effort</div>
+                <div class="attr-value">Trivial. Embed image in CFAF template. Can be done in a day.</div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <strong>Legal Risk</strong>
+            <p>
+                A scanned image carries no cryptographic proof. It cannot prove <em>when</em> the document was signed, <em>whether</em> the document was altered after signing, or <em>who</em> authorized the signature. Under Section 85B of the Evidence Act, this does NOT qualify for the presumption of authenticity — the bank must independently prove the document's integrity in any dispute. While widely used across banking for standard-form agreements today, this is a legacy practice that is progressively being replaced.
+            </p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 3: SIDE-BY-SIDE COMPARISON -->
+    <div class="section-num">Section 03</div>
+    <h2>Decision Matrix</h2>
+
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>A — HSM DSC</th>
+                <th>B — Software DSC</th>
+                <th>C — Scanned Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="highlight-row">
+                <td>Legal equivalence to wet ink</td>
+                <td><span class="score score-high">Full — Sec 3, 5, 15</span></td>
+                <td><span class="score score-high">Full — Sec 3, 5, 15</span></td>
+                <td><span class="score score-low">None</span></td>
+            </tr>
+            <tr>
+                <td>Tamper evidence</td>
+                <td><span class="score score-high">Cryptographic</span></td>
+                <td><span class="score score-high">Cryptographic</span></td>
+                <td><span class="score score-low">None</span></td>
+            </tr>
+            <tr class="highlight-row">
+                <td>Burden of proof in dispute</td>
+                <td><span class="score score-high">On challenger</span></td>
+                <td><span class="score score-high">On challenger</span></td>
+                <td><span class="score score-low">On bank</span></td>
+            </tr>
+            <tr>
+                <td>Key security</td>
+                <td><span class="score score-high">Hardware tamper-proof</span></td>
+                <td><span class="score score-med">Software — copyable</span></td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>Per-transaction cost</td>
+                <td><span class="score score-high">₹0</span></td>
+                <td><span class="score score-high">₹0</span></td>
+                <td><span class="score score-high">₹0</span></td>
+            </tr>
+            <tr>
+                <td>Annual cost</td>
+                <td><span class="score score-high">₹1.5K–3K (DSC renewal)</span></td>
+                <td><span class="score score-high">₹500–1.5K</span></td>
+                <td><span class="score score-high">₹0</span></td>
+            </tr>
+            <tr>
+                <td>New vendor required</td>
+                <td><span class="score score-high">No</span></td>
+                <td><span class="score score-high">No</span></td>
+                <td><span class="score score-high">No</span></td>
+            </tr>
+            <tr>
+                <td>New infrastructure required</td>
+                <td><span class="score score-high">No — HSM exists</span></td>
+                <td><span class="score score-high">No</span></td>
+                <td><span class="score score-high">No</span></td>
+            </tr>
+            <tr>
+                <td>Implementation timeline</td>
+                <td><span class="score score-med">2–4 weeks</span></td>
+                <td><span class="score score-high">1–2 weeks</span></td>
+                <td><span class="score score-high">1–2 days</span></td>
+            </tr>
+            <tr>
+                <td>Audit trail</td>
+                <td><span class="score score-high">Built into certificate</span></td>
+                <td><span class="score score-high">Built into certificate</span></td>
+                <td><span class="score score-low">Requires separate logging</span></td>
+            </tr>
+            <tr class="highlight-row">
+                <td>Peer bank adoption</td>
+                <td><span class="score score-high">HDFC, SBI, Axis</span></td>
+                <td><span class="score score-med">PSU banks, NBFCs</span></td>
+                <td><span class="score score-med">Legacy — all banks (declining)</span></td>
+            </tr>
+            <tr>
+                <td>Future regulatory risk</td>
+                <td><span class="score score-high">None — exceeds any mandate</span></td>
+                <td><span class="score score-high">Minimal</span></td>
+                <td><span class="score score-low">High — likely to be mandated out</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 4: PEER BANK EVIDENCE -->
+    <div class="section-num">Section 04</div>
+    <h2>Peer Bank Adoption Evidence</h2>
+
+    <p>
+        The following table maps current bank-side signing practices across major Indian banks for customer-facing agreement documents (loan agreements, CFAF equivalents, account opening forms). This is based on publicly observable practices (document metadata, PDF signature properties) and industry disclosures.
+    </p>
+
+    <table class="peer-table">
+        <thead>
+            <tr>
+                <th>Bank</th>
+                <th>HSM/Server DSC</th>
+                <th>Software DSC</th>
+                <th>Scanned Image</th>
+                <th>Document Types</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>HDFC Bank</strong></td>
+                <td><span class="check">✓ Active</span></td>
+                <td>—</td>
+                <td><span class="partial">Legacy only</span></td>
+                <td>Digital personal loans, business loans, home loan sanction letters</td>
+            </tr>
+            <tr>
+                <td><strong>SBI</strong></td>
+                <td><span class="check">✓ Active</span></td>
+                <td><span class="check">✓ Parallel</span></td>
+                <td><span class="partial">Branch-level</span></td>
+                <td>YONO digital loans, CERSAI filings, institutional documents</td>
+            </tr>
+            <tr>
+                <td><strong>Axis Bank</strong></td>
+                <td><span class="check">✓ Active</span></td>
+                <td>—</td>
+                <td><span class="partial">Legacy only</span></td>
+                <td>Paperless account opening, digital lending</td>
+            </tr>
+            <tr>
+                <td><strong>Kotak Mahindra</strong></td>
+                <td><span class="partial">Pilot</span></td>
+                <td><span class="check">✓ Active</span></td>
+                <td><span class="check">✓ Parallel</span></td>
+                <td>811 digital account, loan agreements</td>
+            </tr>
+            <tr>
+                <td><strong>PNB</strong></td>
+                <td>—</td>
+                <td><span class="check">✓ Active</span></td>
+                <td><span class="check">✓ Parallel</span></td>
+                <td>Regulatory filings, select digital loan products</td>
+            </tr>
+            <tr>
+                <td><strong>Bank of Baroda</strong></td>
+                <td>—</td>
+                <td><span class="check">✓ Active</span></td>
+                <td><span class="check">✓ Parallel</span></td>
+                <td>bob World digital products, CERSAI</td>
+            </tr>
+            <tr>
+                <td><strong>Yes Bank</strong></td>
+                <td><span class="check">✓ Active</span></td>
+                <td>—</td>
+                <td>—</td>
+                <td>Fully digital lending, account opening</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        <strong>Industry direction is unambiguous:</strong> Every major private bank has moved or is moving to DSC-based server signing for bank-side execution. Public sector banks are transitioning via software DSC as an intermediate step. Scanned signatures persist only in legacy branch-originated documents and are not being adopted for new digital workflows.
+    </p>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 5: RECOMMENDED SIGNING FLOW -->
+    <div class="section-num">Section 05</div>
+    <h2>Recommended End-to-End Signing Flow</h2>
+
+    <p>
+        The bank representative signs <strong>first</strong>. The rationale: the CFAF is the bank's offer — the bank's authorized signatory executes the agreement terms, and then the customer accepts by adding their Aadhaar eSign. This order ensures the customer always receives and signs a document that already bears the bank's commitment.
+    </p>
+
+    <div class="flow-container">
+        <div class="flow-title">CFAF Execution Flow — Bank DSC First, Then Customer Aadhaar eSign</div>
+
+        <div class="flow-steps">
+
+            <div class="flow-step">
+                <div class="flow-step-num">1</div>
+                <div class="flow-node bank-action">
+                    <div class="flow-node-label">TCS Platform — Document Generation</div>
+                    <div class="flow-node-text">CFAF PDF is generated with all customer & product details populated</div>
+                    <div class="flow-node-sub">Triggered by: Sales user initiates agreement after product selection & credit approval</div>
+                </div>
+            </div>
+
+            <div class="flow-arrow"></div>
+
+            <div class="flow-step">
+                <div class="flow-step-num">2</div>
+                <div class="flow-node system-action">
+                    <div class="flow-node-label">HSM — Automated Bank-Side DSC Signing</div>
+                    <div class="flow-node-text">TCS platform calls internal HSM API → DSC applied to bank representative signature field</div>
+                    <div class="flow-node-sub">No manual intervention. Private key never leaves HSM. Signature includes timestamp + certificate chain. Takes &lt;200ms.</div>
+                </div>
+            </div>
+
+            <div class="flow-arrow"></div>
+
+            <div class="flow-step">
+                <div class="flow-step-num">3</div>
+                <div class="flow-node bank-action">
+                    <div class="flow-node-label">TCS Platform — Handoff to SignDesk</div>
+                    <div class="flow-node-text">Bank-signed CFAF PDF is transmitted to SignDesk via existing API integration</div>
+                    <div class="flow-node-sub">The document now carries the bank's cryptographic signature and is ready for customer execution</div>
+                </div>
+            </div>
+
+            <div class="flow-arrow"></div>
+
+            <div class="flow-step">
+                <div class="flow-step-num">4</div>
+                <div class="flow-node vendor-action">
+                    <div class="flow-node-label">SignDesk — Customer Aadhaar OTP eSign</div>
+                    <div class="flow-node-text">Customer receives CFAF → reviews → authenticates via Aadhaar OTP → eSign applied</div>
+                    <div class="flow-node-sub">Existing flow — no change to customer experience or SignDesk integration</div>
+                </div>
+            </div>
+
+            <div class="flow-arrow"></div>
+
+            <div class="flow-step">
+                <div class="flow-step-num">5</div>
+                <div class="flow-node system-action">
+                    <div class="flow-node-label">Final — Dual-Signed CFAF Archived</div>
+                    <div class="flow-node-text">Fully executed CFAF (Bank DSC + Customer Aadhaar eSign) returned to TCS platform → archived in DMS</div>
+                    <div class="flow-node-sub">Both signatures independently verifiable. Document is tamper-evident. Ready for CERSAI filing, audit, or dispute resolution.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <h3>Why Bank Signs First (Not After Customer)</h3>
+    <ul class="key-points">
+        <li><strong>Legal clarity:</strong> CFAF is the bank's offer of facility — the bank's signature represents commitment to terms. Customer's eSign is acceptance. Offer → Acceptance is the correct contractual sequence under Indian Contract Act, 1872.</li>
+        <li><strong>Operational efficiency:</strong> Bank-side DSC is automated (sub-second). Placing it first means no dependency on customer action — the document is pre-signed and waiting. If customer delays, the bank's signature is already done.</li>
+        <li><strong>Tamper assurance:</strong> Customer receives a document with cryptographic proof that the bank committed to those exact terms. Any alteration after bank signing would break the DSC — the customer knows they're signing an authentic, unaltered bank document.</li>
+        <li><strong>SignDesk compatibility:</strong> SignDesk receives a pre-signed PDF and adds the customer's Aadhaar eSign as a second signature layer. This is standard multi-party signing — no SignDesk workflow changes required.</li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 6: LEGAL FRAMEWORK -->
+    <div class="section-num">Section 06</div>
+    <h2>Legal Framework & Statutory References</h2>
+
+    <div class="legal-ref">
+        <div class="legal-ref-title">IT Act 2000 — Section 3: Authentication of Electronic Records</div>
+        <div class="legal-ref-body">
+            Specifies that authentication of an electronic record is accomplished by means of an asymmetric crypto system and hash function which envelop and transform the initial electronic record into another electronic record. A DSC issued by a licensed Certifying Authority (CA) and applied via HSM satisfies this provision completely.
+        </div>
+    </div>
+
+    <div class="legal-ref">
+        <div class="legal-ref-title">IT Act 2000 — Section 5: Legal Recognition of Electronic Signatures</div>
+        <div class="legal-ref-body">
+            "Where any law provides that information or any other matter shall be authenticated by affixing the signature... such requirement shall be deemed to have been satisfied if such information or matter is authenticated by means of digital signature." This makes a DSC-signed CFAF legally identical to a wet-ink-signed paper CFAF.
+        </div>
+    </div>
+
+    <div class="legal-ref">
+        <div class="legal-ref-title">IT Act 2000 — Section 15: Secure Digital Signature</div>
+        <div class="legal-ref-body">
+            A digital signature is "secure" if: (a) it was unique to the subscriber at the time applied, (b) it was capable of identifying the subscriber, (c) it was created in a manner under the exclusive control of the subscriber, and (d) it was linked to the electronic record in a manner that any alteration would invalidate the signature. HSM-based DSC meets all four criteria.
+        </div>
+    </div>
+
+    <div class="legal-ref">
+        <div class="legal-ref-title">Indian Evidence Act — Section 85B: Presumption as to Electronic Records and Digital Signatures</div>
+        <div class="legal-ref-body">
+            "In any proceedings involving a secure electronic record, the Court shall presume... that the secure electronic record has not been altered since the specific point of time to which the secure status relates." <strong>This is the most powerful legal protection available</strong> — the court assumes authenticity, and the burden shifts entirely to the party challenging the document.
+        </div>
+    </div>
+
+    <div class="legal-ref">
+        <div class="legal-ref-title">Indian Evidence Act — Section 65B: Admissibility of Electronic Records</div>
+        <div class="legal-ref-body">
+            All electronic records require a 65B certificate for admissibility. However, when a document carries a "secure digital signature" under Section 15 of IT Act, Section 85B's presumption applies <em>in addition to</em> 65B compliance — providing a double layer of legal protection that scanned signatures cannot match.
+        </div>
+    </div>
+
+    <div class="legal-ref">
+        <div class="legal-ref-title">RBI Master Direction on Digital Lending — September 2, 2022</div>
+        <div class="legal-ref-body">
+            Key provisions: (1) A copy of the executed loan agreement must be provided to the borrower at the time of sanction/disbursement. (2) All communications with the borrower must be in electronic form and stored. While the Direction does not mandate DSC specifically, a DSC-signed PDF is the most robust form of compliance — the document is self-authenticating, timestamped, and verifiable without any supporting infrastructure.
+        </div>
+    </div>
+
+    <div class="legal-ref">
+        <div class="legal-ref-title">Key Judicial Precedents</div>
+        <div class="legal-ref-body">
+            <strong>Anvar P.V. v. P.K. Basheer (2014, Supreme Court):</strong> Strict Section 65B certification required for all electronic evidence from institutional parties. Banks must comply — but DSC-signed documents additionally benefit from Section 85B presumption.<br><br>
+            <strong>Trimex International v. Vedanta Aluminium (2010, Supreme Court):</strong> Recognized electronic records and digital signatures under IT Act as valid for contract formation.<br><br>
+            <strong>SARFAESI Section 13(2) notice cases (various DRTs):</strong> Notices bearing only scanned signatures have been challenged. Tribunals have upheld most on estoppel grounds, but the inconsistency underscores the risk. A DSC-signed notice would be unchallengeable on authenticity.
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SECTION 7: FINAL RECOMMENDATION -->
+    <div class="section-num">Section 07</div>
+    <h2>Final Recommendation</h2>
+
+    <div class="recommend">
+        <div class="recommend-badge">Recommended Solution</div>
+        <h3>Option A — Server-Side DSC via Existing HSM Infrastructure</h3>
+        <p>
+            Implement automated bank-side digital signature on CFAF using a Class 3 DSC stored on ICICI Bank's existing HSM infrastructure. The TCS platform invokes the HSM signing API during CFAF PDF generation (Step 2 in the flow above), applying the bank representative's digital signature before the document is handed off to SignDesk for customer Aadhaar OTP eSign.
+        </p>
+        <p>
+            This delivers the <strong>highest legal standing</strong> (secure digital signature under Section 15, with Section 85B presumption of authenticity), <strong>zero per-transaction cost</strong>, <strong>sub-second execution</strong>, and <strong>no new vendor or infrastructure</strong>. It aligns with peer bank practices (HDFC, SBI, Axis, Yes Bank) and future-proofs against inevitable RBI mandates for DSC on customer agreements.
+        </p>
+    </div>
+
+    <h3>Implementation Path</h3>
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>Step</th>
+                <th>Action</th>
+                <th>Owner</th>
+                <th>Timeline</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Procure / renew Class 3 Organizational DSC from licensed CA (eMudhra / Sify / CDAC)</td>
+                <td>CACM / IT Security</td>
+                <td>Week 1</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Load DSC onto existing HSM; configure signing profile for CFAF document type</td>
+                <td>IT Infrastructure / HSM Admin</td>
+                <td>Week 1–2</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>TCS platform integration — add HSM signing API call in CFAF PDF generation workflow (post-generation, pre-SignDesk handoff)</td>
+                <td>TCS / Application Team</td>
+                <td>Week 2–3</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>UAT — verify DSC appears in PDF, validate with Adobe Acrobat, confirm SignDesk accepts pre-signed PDF and adds customer eSign as second layer</td>
+                <td>QA / Business</td>
+                <td>Week 3–4</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Regulatory sign-off — Legal & Compliance confirmation that DSC-signed CFAF meets all internal and regulatory requirements</td>
+                <td>Legal / Compliance</td>
+                <td>Parallel</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>Production rollout — phased by product / geography</td>
+                <td>CACM / Business</td>
+                <td>Week 4+</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Fallback</h3>
+    <p>
+        If HSM integration faces delays due to TCS platform constraints, deploy <strong>Option B (Software DSC)</strong> as an interim measure within 1–2 weeks. The legal standing is identical. Migrate to HSM when integration is ready — no document format or workflow changes needed, only the signing backend changes.
+    </p>
+
+    <!-- Footer -->
+    <div class="doc-footer">
+        <strong>ICICI Bank — CACM Process Optimization</strong><br>
+        Bank-Side Digital Signature on CFAF — Solution Recommendation<br>
+        October 2026 — Internal Use Only — Confidential<br><br>
+        <em>This document is prepared for internal decision-making purposes. Legal provisions referenced herein should be validated with the bank's Legal & Compliance team before implementation.</em>
+    </div>
+
+</div>
+
+</body>
+</html>
