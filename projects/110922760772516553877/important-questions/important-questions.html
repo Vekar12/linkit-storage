@@ -1,0 +1,674 @@
+<h1>ICICI Bank — Interview Prep Questions (MECE Structure)</h1>
+<blockquote>
+<p>For each initiative: 3 layers of depth (Basic → Execution → Strategic)
+Plus: Critical numbers you MUST know before the interview
+Designed for: PM / APM / Product-Ops interviews</p>
+</blockquote>
+<hr>
+<h2>ROLE &amp; CONTEXT (asked first in every interview)</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is your current role at ICICI Bank?</li>
+<li>What does the Tech Interface team do?</li>
+<li>What is the disbursement module? How does it fit in the overall loan lifecycle?</li>
+<li>What are the 5 products you manage? Can you briefly explain each?</li>
+<li>What does &quot;post-sanction&quot; mean? What happens before and after your module?</li>
+<li>Who are your stakeholders? What does each one do in the disbursement journey?</li>
+<li>What is iLens? What is Track My Application (TMA)?</li>
+<li>What is FinOne Neo? How is it different from iLens?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>Walk me through a typical day in your role.</li>
+<li>How do you prioritize which product/module to work on in a given month?</li>
+<li>How do you identify gaps? What data sources do you use?</li>
+<li>How do you write requirements for the platforms team? What does a requirement doc look like?</li>
+<li>How do you decide between building one solution vs. A/B testing two?</li>
+<li>How do you handle disagreements with the platforms team on feasibility or timelines?</li>
+<li>What metrics do you track daily/weekly/monthly?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>How do you decide priority between 5 different products competing for your bandwidth?</li>
+<li>What framework do you use for prioritization (RICE, ICE, MoSCoW, or something else)?</li>
+<li>If you had to pick the single most impactful thing you&#39;ve done, what would it be and why?</li>
+<li>How do you measure success for your module overall? What is your North Star metric?</li>
+<li>What is the biggest challenge of working at the intersection of business and tech in a bank?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Total monthly case volume (~1L+) and breakdown by product (60K PL, 12-15K HL, 30K Auto, 1-2K EL, 4-5K BIL)</li>
+<li><input disabled="" type="checkbox"> Average disbursement value per product (INR Cr)</li>
+<li><input disabled="" type="checkbox"> Total monthly disbursement value across all products</li>
+<li><input disabled="" type="checkbox"> Number of people on your team / platforms team</li>
+<li><input disabled="" type="checkbox"> Number of stakeholder groups and approximate user count on iLens</li>
+<li><input disabled="" type="checkbox"> How many requirements/features you ship per month on average</li>
+</ul>
+<hr>
+<h2>1. HOME LOAN DISBURSEMENT JOURNEY OPTIMIZATION (eSign)</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is eSign? Why is it needed in the disbursement journey?</li>
+<li>What is the Docket Login stage? What purpose did it serve?</li>
+<li>What is the FinOne Maker stage? Why was it originally there?</li>
+<li>What is Partial eSign? How is it different from full eSign?</li>
+<li>Why do NRI customers need a separate eSign vendor?</li>
+<li>What does &quot;eSign deactivation access&quot; mean? Why would a sales user need to deactivate eSign?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How did you identify that these two stages were redundant? What data pointed to it?</li>
+<li>What was the user flow BEFORE the two-stage removal? Draw it step by step.</li>
+<li>What is the user flow AFTER? How many steps were removed?</li>
+<li>How does Partial eSign technically work? What happens when eSign fails — what does the user see?</li>
+<li>How did you evaluate and select the additional NRI vendor? What criteria did you use?</li>
+<li>Who approved the removal of these stages? What was the sign-off process?</li>
+<li>Were there any risks in removing these stages? How did you mitigate them?</li>
+<li>How long did this project take from identification to go-live?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>Why was eSign completion rate low in the first place? Root cause analysis?</li>
+<li>The eSign rate improved by 6% — what was the base rate before? What is the current absolute rate?</li>
+<li>6% improvement on ~15K HL cases/month — what does that translate to in terms of cases unblocked?</li>
+<li>Did you consider any other approaches before deciding on stage removal?</li>
+<li>What was the impact on TAT (turnaround time) after the two stages were removed?</li>
+<li>If you had to improve eSign rate by another 5%, what would you do next?</li>
+<li>How do you track eSign performance? What dashboard/tool do you use?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> eSign rate BEFORE improvement (exact %)</li>
+<li><input disabled="" type="checkbox"> eSign rate AFTER improvement (exact %)</li>
+<li><input disabled="" type="checkbox"> Number of HL cases impacted per month (~12-15K)</li>
+<li><input disabled="" type="checkbox"> How many cases were getting stuck at Docket Login / FinOne Maker stage monthly</li>
+<li><input disabled="" type="checkbox"> TAT reduction (in hours/days) after stage removal</li>
+<li><input disabled="" type="checkbox"> Number of eSign vendors currently live vs. in pipeline</li>
+<li><input disabled="" type="checkbox"> NRI case volume per month</li>
+</ul>
+<hr>
+<h2>2. MORTGAGE ENHANCEMENT PROJECT (20% Manual Touchpoint Reduction)</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is the Mortgage Enhancement Project? What was its overall goal?</li>
+<li>What are &quot;manual touchpoints&quot; in the disbursement module?</li>
+<li>What kind of fields were being manually entered? Give 2-3 examples.</li>
+<li>Who was entering these fields — credit, ops, or sales users?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How did you identify which fields were redundant?</li>
+<li>How many total fields existed before vs. after?</li>
+<li>What automation was introduced? Was it API-based, rule-based, or pre-population from another system?</li>
+<li>Which user group (credit/ops/sales) saw the biggest reduction?</li>
+<li>How did you validate that removing these fields wouldn&#39;t break downstream processes?</li>
+<li>Did you do a phased rollout or a big bang launch?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>20% reduction in touchpoints — what was the absolute number of fields/steps removed?</li>
+<li>What was the TAT before and after this change?</li>
+<li>How did you measure that the automation was working correctly post-launch?</li>
+<li>Were there any errors or issues post-launch? How did you handle them?</li>
+<li>How did you prioritize WHICH fields to remove first?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Total number of manual fields/touchpoints BEFORE</li>
+<li><input disabled="" type="checkbox"> Number removed (to get to 20%)</li>
+<li><input disabled="" type="checkbox"> TAT before and after (in minutes/hours)</li>
+<li><input disabled="" type="checkbox"> Number of users impacted (ops/sales/credit headcount)</li>
+<li><input disabled="" type="checkbox"> Error rate before vs. after automation</li>
+</ul>
+<hr>
+<h2>3. OPERATIONAL CHECKLIST OPTIMIZATION</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is the operational checklist? What purpose does it serve?</li>
+<li>Who uses this checklist — ops users only, or others?</li>
+<li>What kind of checks are on this list? Give examples.</li>
+<li>What does &quot;20 minutes per operation&quot; mean? Per case?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How did you identify which checks were unnecessary?</li>
+<li>How many checks existed before vs. after?</li>
+<li>Were any checks automated vs. simply removed?</li>
+<li>How did you get buy-in from the ops team to remove checks they were used to doing?</li>
+<li>Was there any compliance or audit requirement for certain checks?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>Y% reduction in manual checks — what is Y? What was the base?</li>
+<li>20 minutes saved per operation — across how many operations per day per user?</li>
+<li>What is the total time saved per day/month across all ops users?</li>
+<li>Did the error rate change after reducing checks?</li>
+<li>How did you ensure quality didn&#39;t drop after removing checks?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Number of checks before vs. after</li>
+<li><input disabled="" type="checkbox"> Y% — exact percentage reduction</li>
+<li><input disabled="" type="checkbox"> 20 min saved × number of operations per user per day = total daily saving</li>
+<li><input disabled="" type="checkbox"> Number of ops users impacted</li>
+<li><input disabled="" type="checkbox"> Error/rejection rate before vs. after</li>
+</ul>
+<hr>
+<h2>4. POST-DISBURSEMENT INSURANCE JOURNEY</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is the post-disbursement insurance journey? Why is insurance linked to a loan?</li>
+<li>What types of insurance are offered (life, property, etc.)?</li>
+<li>Who are the insurance partners? (Lombard, Prudential, others?)</li>
+<li>What does &quot;self-funded&quot; vs. &quot;bank-funded&quot; mean in the context of insurance premium?</li>
+<li>Why is the INR 25,000 threshold used? Is it a regulatory requirement or a business decision?</li>
+<li>What was the physical process BEFORE this digital journey was built?</li>
+<li>What is an &quot;insurance booklet&quot;? What happens after it is generated?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>Walk me through the entire digital journey step by step — from trigger to completion.</li>
+<li>What does the sales user see on their screen? What fields do they fill?</li>
+<li>What does the customer see on TMA? What actions do they take?</li>
+<li>How does the insurance partner receive and consume the booklet?</li>
+<li>What front-end changes were made in iLens for this journey?</li>
+<li>Were any APIs built or integrated for this? With which systems?</li>
+<li>How did you handle cases where TMA consent is not given by the customer?</li>
+<li>What happens if the insurance partner rejects the booklet?</li>
+<li>How long did it take to build this from requirement to go-live?</li>
+<li>How did you coordinate between the bank, platforms team, and insurance partners?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>Why did the bank decide to digitize this journey now? What was the business driver?</li>
+<li>What percentage of disbursed loans have insurance attached?</li>
+<li>What is the revenue/premium value this journey processes monthly?</li>
+<li>How did you decide the INR 25,000 threshold — was there data analysis behind it?</li>
+<li>What is the adoption rate of this digital journey vs. the old physical process?</li>
+<li>If you had to increase insurance attach rate, what would you change?</li>
+<li>How does this compare to how other banks (SBI, HDFC) handle post-disbursement insurance?</li>
+<li>What was the biggest challenge in building this journey?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Number of insurance cases processed through this journey per month</li>
+<li><input disabled="" type="checkbox"> Insurance attach rate (% of disbursed loans that have insurance)</li>
+<li><input disabled="" type="checkbox"> Premium volume processed monthly (INR)</li>
+<li><input disabled="" type="checkbox"> Self-funded vs. bank-funded split (%)</li>
+<li><input disabled="" type="checkbox"> Time taken for end-to-end journey completion (before physical vs. now digital)</li>
+<li><input disabled="" type="checkbox"> Number of insurance partners integrated</li>
+<li><input disabled="" type="checkbox"> Customer consent rate on TMA</li>
+</ul>
+<hr>
+<h2>5. INSURANCE LEAD CAPTURE AT SOURCING</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is &quot;lead capture at sourcing&quot;? Why capture insurance intent so early?</li>
+<li>How is this different from the post-disbursement insurance journey (Point 4)?</li>
+<li>What does the customer worklist look like? What options are shown?</li>
+<li>What happens to the captured lead? Who receives it?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>At what exact stage in the HL journey does this task appear?</li>
+<li>How did you decide which insurance partners to show as options?</li>
+<li>What data is captured from the customer at this stage?</li>
+<li>How is the lead delivered to the insurance partner — API, email, batch file?</li>
+<li>How does the status update work post-disbursement? Is it automated or manual?</li>
+<li>What front-end changes were required in the sourcing module?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>What was the conversion rate before this feature (insurance penetration on HL)?</li>
+<li>What is the conversion rate now (X%)?</li>
+<li>How did you measure that early lead capture improves final conversion?</li>
+<li>Is there a correlation between sourcing-stage intent and actual insurance purchase?</li>
+<li>What feedback did the insurance partners give about lead quality?</li>
+<li>If the conversion improvement is X%, what does that translate to in revenue?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Conversion rate before vs. after (X%)</li>
+<li><input disabled="" type="checkbox"> Number of leads captured per month</li>
+<li><input disabled="" type="checkbox"> Lead-to-conversion ratio</li>
+<li><input disabled="" type="checkbox"> Number of insurance partners available as options</li>
+<li><input disabled="" type="checkbox"> Average time from lead capture to insurance purchase</li>
+</ul>
+<hr>
+<h2>6. CUSTOMER-FACING DISBURSEMENT (INFORMATION GATHERING FORM)</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is the Information Gathering Form (IGF)?</li>
+<li>What problem was it solving? Why were customers unaware of required documents?</li>
+<li>What is Track My Application (TMA)? How does a customer access it?</li>
+<li>What documents are typically required for disbursement? Give examples.</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>Walk me through the customer experience — from sanction to IGF submission.</li>
+<li>What information is displayed on the IGF screen?</li>
+<li>How does the system know which documents to show for which loan type?</li>
+<li>What front-end design decisions did you make for this screen?</li>
+<li>How did you ensure the document list is accurate and up to date?</li>
+<li>What happens after the customer submits the IGF?</li>
+<li>How did you handle cases where customers don&#39;t have all documents ready?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>How did you identify this gap? Was there data (e.g., rejection rates, delay metrics) or qualitative feedback?</li>
+<li>What was the average disbursement TAT before IGF vs. after?</li>
+<li>What percentage of customers now initiate disbursement via TMA vs. through sales?</li>
+<li>How did sales users react to this change? Did it reduce their workload?</li>
+<li>Did first-time-right rates improve after IGF? By how much?</li>
+<li>What is the completion rate of the IGF form?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Disbursement TAT before vs. after (in days)</li>
+<li><input disabled="" type="checkbox"> % of customers using self-serve vs. sales-assisted disbursement</li>
+<li><input disabled="" type="checkbox"> Document rejection rate before vs. after</li>
+<li><input disabled="" type="checkbox"> IGF form completion rate</li>
+<li><input disabled="" type="checkbox"> Number of document types shown per product</li>
+</ul>
+<hr>
+<h2>7. BULK UPLOAD FOR LOGIN FEES KNOCKOFF</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What are &quot;login fees&quot;? Why are they collected?</li>
+<li>What does &quot;knockoff&quot; mean in this context?</li>
+<li>What was the manual per-case process before?</li>
+<li>What is the role of Razorpay in this process?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How does the Razorpay MIS get generated? What fields does it contain?</li>
+<li>How does the bulk upload work in FinOne? What is the file format?</li>
+<li>Is there any validation before the bulk knockoff is applied?</li>
+<li>What happens if there&#39;s a mismatch between the MIS and FinOne records?</li>
+<li>How many cases are typically processed in one bulk upload?</li>
+<li>Is there still one manual step (the user uploading)? Why wasn&#39;t this fully automated?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>How many cases were processed per-case manually before? What was the time per case?</li>
+<li>What is the total time saved per month/quarter after this change?</li>
+<li>Why wasn&#39;t a real-time API built instead of a bulk upload?</li>
+<li>What is the error rate of bulk upload vs. manual entry?</li>
+<li>How many users were freed up by this change?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Number of cases processed per month via bulk upload</li>
+<li><input disabled="" type="checkbox"> Time per case (manual) vs. time per batch (bulk)</li>
+<li><input disabled="" type="checkbox"> Number of ops users previously dedicated to this task</li>
+<li><input disabled="" type="checkbox"> Error rate before vs. after</li>
+<li><input disabled="" type="checkbox"> Average login fees amount per product</li>
+</ul>
+<hr>
+<h2>8. QUERY MANAGEMENT — KNOWLEDGE BYTE INITIATIVE</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What kinds of queries/escalations were coming in? Give examples.</li>
+<li>Who was handling them before vServ was set up?</li>
+<li>What is vServ? How does it work?</li>
+<li>What is the ticketing tool? What does the user see when they click it?</li>
+<li>What is the chatbot? How is it different from an AI chatbot?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How many queries were coming in per day/week before this initiative?</li>
+<li>How did you build the business case for a dedicated team?</li>
+<li>How many people are on the vServ team?</li>
+<li>How does the ticketing tool auto-generate a screenshot? What technology is used?</li>
+<li>What is the ticket workflow — from creation to resolution?</li>
+<li>How was the chatbot&#39;s query database built? Who curated the Q&amp;A?</li>
+<li>What does &quot;75% term-match threshold&quot; mean technically? How does the matching work?</li>
+<li>What happens when the chatbot can&#39;t match a query (below 75%)?</li>
+<li>How do you keep the chatbot&#39;s Q&amp;A database updated?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>How did you measure the impact of this initiative on core team bandwidth?</li>
+<li>What percentage of queries are now resolved by chatbot vs. vServ vs. escalation to your team?</li>
+<li>Ticket TAT reduced from 4hrs to 2hrs — what drove this reduction? More people or better process?</li>
+<li>What is the CSAT or satisfaction score from users after query resolution?</li>
+<li>If you had budget for an AI-powered chatbot, how would you approach it differently?</li>
+<li>What was the biggest pushback you got when proposing this initiative?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Number of queries per day/week/month BEFORE</li>
+<li><input disabled="" type="checkbox"> Number of queries per day/week/month AFTER (reaching your team)</li>
+<li><input disabled="" type="checkbox"> % resolved by chatbot vs. vServ vs. escalated</li>
+<li><input disabled="" type="checkbox"> Ticket TAT before (4hrs) and after (2hrs)</li>
+<li><input disabled="" type="checkbox"> vServ team size</li>
+<li><input disabled="" type="checkbox"> Number of Q&amp;A pairs in the chatbot database</li>
+<li><input disabled="" type="checkbox"> Query volume reduction % on core team</li>
+</ul>
+<hr>
+<h2>9. SYSTEM PERFORMANCE — iLENS DATA ARCHIVAL</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>Why was iLens slow? What was causing the load?</li>
+<li>How old is the iLens application?</li>
+<li>What does &quot;archival&quot; mean? Where do archived cases go?</li>
+<li>Can users still access archived data? How?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How did you decide the &quot;2 years&quot; threshold? Why not 1 year or 3 years?</li>
+<li>How many cases were archived in total?</li>
+<li>What was the archival process? Was there downtime?</li>
+<li>How are the year-wise zip files structured? Who manages the server?</li>
+<li>Were there any data integrity concerns during archival?</li>
+<li>Did you need DBA support or did the platforms team handle it?</li>
+<li>What database is iLens running on?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>7-10s → 1.8s — how did you measure this? What tool/method?</li>
+<li>What is the total number of active cases in iLens now vs. before archival?</li>
+<li>Is there a recurring archival process now, or was it one-time?</li>
+<li>Were there other approaches considered (indexing, database optimization, caching)?</li>
+<li>What was the impact on user satisfaction/productivity?</li>
+<li>Did this reduce any infrastructure costs?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Search time before (7-10s) and after (1.8s)</li>
+<li><input disabled="" type="checkbox"> Total cases archived (number)</li>
+<li><input disabled="" type="checkbox"> Total cases remaining in active database</li>
+<li><input disabled="" type="checkbox"> Database size before vs. after (GB/TB)</li>
+<li><input disabled="" type="checkbox"> Number of iLens users impacted</li>
+<li><input disabled="" type="checkbox"> Any infrastructure cost savings</li>
+</ul>
+<hr>
+<h2>10. eNACH MODULE — NLI PAGE REMOVAL</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is eNACH? Why is it needed in the loan journey?</li>
+<li>What was the NLI page? What was its original purpose?</li>
+<li>What are the 4 latency lags you identified?</li>
+<li>What does the flow look like now after NLI removal?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How did you identify that NLI was causing failure-identification issues?</li>
+<li>What data showed that cases were getting stuck at this point?</li>
+<li>How was the direct redirection implemented? Any API changes?</li>
+<li>Were there any dependencies on the NLI page that needed to be handled?</li>
+<li>How did the vendor react to the NLI page removal?</li>
+<li>Was there a testing/UAT phase? How long?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>What was the failure rate at the NLI stage before removal?</li>
+<li>How many cases were getting stuck per month?</li>
+<li>After removal, how quickly can you now identify where a case is stuck?</li>
+<li>What is the overall eNACH success rate now vs. before?</li>
+<li>Were there any unintended consequences of removing the NLI page?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Number of cases stuck at NLI page per month (before)</li>
+<li><input disabled="" type="checkbox"> eNACH success rate before vs. after</li>
+<li><input disabled="" type="checkbox"> Average time to identify a stuck case before vs. after</li>
+<li><input disabled="" type="checkbox"> Number of the 4 latency lags resolved</li>
+<li><input disabled="" type="checkbox"> eNACH volume per month across products</li>
+</ul>
+<hr>
+<h2>11. EDUCATION LOAN — RECEIPT ID CREATION API</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is the Receipt ID Creation API? What problem does it solve?</li>
+<li>What are login fees in Education Loan? Why are they collected?</li>
+<li>What is Razorpay&#39;s role in this flow?</li>
+<li>What is the difference between iLens and FinOne Neo? Why are they disconnected?</li>
+<li>What is a Payment ID vs. Receipt ID vs. UTR vs. LAN?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>Walk me through the OLD flow — step by step, from customer payment to knockoff.</li>
+<li>Walk me through the NEW flow — step by step.</li>
+<li>How does the API post the Payment ID to FinOne Neo? What is the integration method (REST, SOAP, batch)?</li>
+<li>How does the LAN linking work? Is it automatic or triggered?</li>
+<li>What happens if the API fails? Is there a fallback?</li>
+<li>How was this API developed? Did you write the spec? Who built it?</li>
+<li>What was the UAT process? How did you validate end-to-end?</li>
+<li>How does the QR code generation work for sales users?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>How many manual steps were eliminated by this API?</li>
+<li>What was the time taken per case in the old flow vs. new flow?</li>
+<li>How many EL cases per month benefit from this API (~1-2K)?</li>
+<li>What is the error rate of manual entry vs. API-based posting?</li>
+<li>Why wasn&#39;t iLens-FinOne Neo integration done before? What was the blocker?</li>
+<li>Could this API approach be extended to other products (PL, HL, BIL)?</li>
+<li>What was the ops team&#39;s reaction to this change?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Time per case (manual old flow) vs. (API new flow)</li>
+<li><input disabled="" type="checkbox"> Number of ops users previously dedicated to this task</li>
+<li><input disabled="" type="checkbox"> EL login fees volume per month (INR)</li>
+<li><input disabled="" type="checkbox"> Error/mismatch rate before vs. after</li>
+<li><input disabled="" type="checkbox"> Number of manual steps eliminated</li>
+<li><input disabled="" type="checkbox"> API response time / success rate</li>
+</ul>
+<hr>
+<h2>12. SECURE DATA SHARING — INSURANCE PARTNER PIPELINE</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What data was being shared with insurance partners? Why?</li>
+<li>Who are the insurance partners — Lombard (general) and Prudential (life)?</li>
+<li>What is PII? What kind of customer PII was in these dumps?</li>
+<li>What is an SFTP server? Why is it more secure than email?</li>
+<li>What is &quot;AI Automation&quot; in ICICI&#39;s context? (Internal scheduler service)</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>What did the OLD process look like — who downloaded what, from where, and sent it how?</li>
+<li>How is iLens data stored in the DWH now?</li>
+<li>How does the FinOne scheduler work? What triggers it?</li>
+<li>How does the AI Automation service connect the source path to SFTP?</li>
+<li>Why was Lombard given direct SFTP access but Prudential needed a workaround?</li>
+<li>What does the linear script on the SFTP admin do exactly?</li>
+<li>How frequently is data pushed — real-time, hourly, daily?</li>
+<li>What security protocols are in place on the SFTP?</li>
+<li>Was there an audit or compliance requirement that triggered this change?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>What was the compliance risk if the old process continued? Any regulatory implications?</li>
+<li>How did you get buy-in to change a process that &quot;was working&quot;?</li>
+<li>What is the volume of data shared per day/week?</li>
+<li>How did you validate that the automated pipeline is complete and accurate?</li>
+<li>Is there monitoring/alerting if the pipeline fails?</li>
+<li>Could this pipeline approach be extended to other partners or data flows?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Number of records shared per day/week</li>
+<li><input disabled="" type="checkbox"> Number of people who previously had access to raw data downloads</li>
+<li><input disabled="" type="checkbox"> Time spent per day on manual download + email process</li>
+<li><input disabled="" type="checkbox"> Number of insurance partners on the pipeline</li>
+<li><input disabled="" type="checkbox"> Pipeline uptime/success rate</li>
+<li><input disabled="" type="checkbox"> Any compliance audit results before vs. after</li>
+</ul>
+<hr>
+<h2>13. AUTO LOAN — eSIGN JOURNEY DECOUPLING</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What are eNACH, eSign, and Stamp Duty? What does each one do?</li>
+<li>Why were they configured as a linear chain? What was the original design thinking?</li>
+<li>What does &quot;decoupling&quot; mean in this context?</li>
+<li>Which 11 states don&#39;t support e-stamping? Why?</li>
+<li>What is physical stamping? How does the process work for those 11 states?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>What was the exact sequence in the linear chain? Draw the before-and-after flow.</li>
+<li>When one service failed, what did the user see? What was the error handling?</li>
+<li>How were the services decoupled technically? Separate APIs, parallel calls, or async?</li>
+<li>How do you handle states where e-stamping isn&#39;t available — does the flow skip it?</li>
+<li>How was the rollout done — all states at once or phased?</li>
+<li>What was the testing approach — how did you test all 11 state scenarios?</li>
+<li>How long did this project take from identification to go-live?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>46% → 96% is a massive jump — what does this mean in absolute case numbers per month?</li>
+<li>What was the failure distribution — how many failures were eSign vs. eNACH vs. stamp duty?</li>
+<li>After decoupling, what is the individual success rate for each service?</li>
+<li>What was the revenue impact of unlocking 50% more cases for digital completion?</li>
+<li>How did you present this problem and solution to leadership? What framework did you use?</li>
+<li>Are there plans to bring e-stamping to the remaining 11 states?</li>
+<li>How does HDFC/SBI handle this same problem?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> eSign rate before (46%) and after (96%)</li>
+<li><input disabled="" type="checkbox"> Auto Loan volume per month (~30K)</li>
+<li><input disabled="" type="checkbox"> Cases unblocked per month (50% of 30K = ~15K additional digital completions)</li>
+<li><input disabled="" type="checkbox"> Failure split: eSign vs. eNACH vs. stamp duty (% each)</li>
+<li><input disabled="" type="checkbox"> The 11 states and their volume share</li>
+<li><input disabled="" type="checkbox"> Individual service success rates post-decoupling</li>
+<li><input disabled="" type="checkbox"> Project timeline (weeks/months)</li>
+</ul>
+<hr>
+<h2>14. MASTER-BASED CONFIGURATION</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What kind of changes were being made through the development cycle? Give examples.</li>
+<li>What does &quot;master-based configuration&quot; mean? How does it work?</li>
+<li>What is the ops user interface for making these changes?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How many such config changes were requested per month before this?</li>
+<li>What was the approval/deployment process before (requirement → dev → test → deploy)?</li>
+<li>How did you design the master-based setup — what is configurable and what is not?</li>
+<li>What guardrails exist to prevent ops users from making incorrect changes?</li>
+<li>Were there any changes that could NOT be converted to master-based?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>1 month → 2 minutes — what was the bottleneck in the 1-month cycle?</li>
+<li>How many ops hours per month were freed up on the platforms/tech side?</li>
+<li>How did you decide what to make configurable vs. what stays hardcoded?</li>
+<li>Has there been any incident of incorrect configuration by ops?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Number of config change requests per month (before)</li>
+<li><input disabled="" type="checkbox"> Average time per change (before: 1 month, after: 1-2 min)</li>
+<li><input disabled="" type="checkbox"> Number of configurable items now in the master</li>
+<li><input disabled="" type="checkbox"> Dev/tech hours saved per month</li>
+</ul>
+<hr>
+<h2>15. OTP REDUCTION IN DISBURSEMENT</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>Why were there 6-7 OTPs in the journey? What was each one for?</li>
+<li>Which stages required OTPs?</li>
+<li>Why is OTP reduction important for customer experience?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How did you audit the OTP triggers? What did you find?</li>
+<li>Which OTPs were removed vs. consolidated?</li>
+<li>Were there any security or compliance concerns with reducing OTPs?</li>
+<li>How did the compliance/risk team react to this proposal?</li>
+<li>Was this change across all products or specific ones?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>What was the drop-off rate at OTP stages before vs. after?</li>
+<li>Did you measure customer satisfaction improvement?</li>
+<li>6-7 → 3 — what are the 3 remaining OTPs for?</li>
+<li>How does this compare to industry standard (other banks)?</li>
+<li>Is there a plan to reduce further, perhaps via biometric or silent auth?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Number of OTPs before (6-7) and after (3)</li>
+<li><input disabled="" type="checkbox"> Drop-off rate at OTP stages before vs. after</li>
+<li><input disabled="" type="checkbox"> Which 3 OTPs remain and why</li>
+<li><input disabled="" type="checkbox"> Number of products this applies to</li>
+<li><input disabled="" type="checkbox"> Customer complaint volume related to OTPs before vs. after</li>
+</ul>
+<hr>
+<h2>16. A/B TESTING — NOI VENDOR SELECTION</h2>
+<h3>Layer 1: Basic</h3>
+<ul>
+<li>What is NOI (No Objection Information)? Why is it needed?</li>
+<li>What is the NOI survey? What does it involve?</li>
+<li>Why was this specific to Maharashtra?</li>
+<li>Who were the 2 vendors? What were their offerings?</li>
+</ul>
+<h3>Layer 2: Execution</h3>
+<ul>
+<li>How did you design the A/B test? What was the split (50-50, 70-30)?</li>
+<li>How long did the test run? What was the sample size?</li>
+<li>What metrics did you compare — just completion rate or others too?</li>
+<li>How did you control for external variables (user type, case type, region)?</li>
+<li>What was Vendor A&#39;s rate vs. Vendor B&#39;s rate?</li>
+<li>How did you make the final decision — was it purely data or other factors (cost, reliability)?</li>
+</ul>
+<h3>Layer 3: Strategic</h3>
+<ul>
+<li>Could this A/B testing approach be applied to other vendor selections?</li>
+<li>Have you done A/B tests for any other feature or flow?</li>
+<li>What is the NOI volume in Maharashtra per month?</li>
+<li>What was the cost difference between the two vendors?</li>
+<li>Is the A/B testing framework now reusable for your team?</li>
+</ul>
+<h3>Critical Numbers You Must Know</h3>
+<ul>
+<li><input disabled="" type="checkbox"> Vendor A completion rate vs. Vendor B completion rate</li>
+<li><input disabled="" type="checkbox"> Sample size of the test</li>
+<li><input disabled="" type="checkbox"> Duration of the test</li>
+<li><input disabled="" type="checkbox"> NOI volume in Maharashtra per month</li>
+<li><input disabled="" type="checkbox"> Cost per NOI survey per vendor</li>
+<li><input disabled="" type="checkbox"> Overall NOI completion rate before vs. after vendor selection</li>
+</ul>
+<hr>
+<h2>CROSS-CUTTING QUESTIONS (asked about your overall experience)</h2>
+<h3>Product Thinking</h3>
+<ul>
+<li>What is the biggest product decision you&#39;ve made at ICICI? What was the trade-off?</li>
+<li>Tell me about a time you had to say NO to a stakeholder request. Why and how?</li>
+<li>How do you handle competing priorities from credit, ops, and sales teams?</li>
+<li>Describe a feature you built that failed or didn&#39;t meet expectations. What did you learn?</li>
+<li>How do you decide between a quick fix and a long-term solution?</li>
+</ul>
+<h3>Technical Depth</h3>
+<ul>
+<li>How do iLens and FinOne Neo communicate? What integration methods exist?</li>
+<li>What is the tech stack of iLens? (Database, front-end, API layer)</li>
+<li>How do you handle system downtime or disruptions in the disbursement journey?</li>
+<li>What is the difference between a real-time API and a scheduler-based integration?</li>
+<li>Explain how SFTP works and why it is more secure than email for data sharing.</li>
+</ul>
+<h3>Stakeholder Management</h3>
+<ul>
+<li>How do you manage expectations when the platforms team says a feature will take 2 months but business needs it in 2 weeks?</li>
+<li>Tell me about a cross-functional conflict you resolved.</li>
+<li>How do you communicate technical constraints to non-technical business stakeholders?</li>
+<li>How do you get buy-in from ops users for process changes they might resist?</li>
+</ul>
+<h3>Metrics &amp; Data</h3>
+<ul>
+<li>What dashboards do you use? What tools (Excel, SQL, Tableau, internal)?</li>
+<li>How do you set targets for metrics like eSign %, TAT, digital conversion?</li>
+<li>How do you identify that a metric is declining? What is your alerting mechanism?</li>
+<li>Walk me through how you would diagnose a sudden drop in eSign completion rate.</li>
+</ul>
+<h3>Situational</h3>
+<ul>
+<li>If Auto Loan eSign drops from 96% to 70% overnight, what do you do?</li>
+<li>If the platforms team pushes back on your highest-priority feature, how do you handle it?</li>
+<li>If a new RBI regulation requires adding 2 more verification steps, how do you minimize customer friction?</li>
+<li>You have bandwidth for only 1 project this quarter — EL Receipt API or Insurance Journey. Which do you pick and why?</li>
+</ul>
