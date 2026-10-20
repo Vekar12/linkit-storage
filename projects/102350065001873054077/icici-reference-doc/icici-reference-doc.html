@@ -1,0 +1,143 @@
+<h1>ICICI Bank — Manager | Exhaustive Work Document</h1>
+<hr>
+<h2>1. Home Loan Disbursement Journey Optimization</h2>
+<ul>
+<li>Executed a <strong>two-stage removal</strong> in the HL disbursement journey — eliminated the <strong>Docket Login stage</strong> and the <strong>FinOne Maker stage</strong> — streamlining the disbursement workflow.</li>
+<li>Introduced <strong>Partial eSign functionality</strong> for all users wherever eSign fails, enabling completion of signing for applicable sections without requiring a full re-attempt.</li>
+<li>Onboarded an <strong>additional eSign vendor specifically for NRI customers</strong> (currently in deployment pipeline) to improve coverage for NRI cases.</li>
+<li>Enabled <strong>eSign deactivation access for all sales users</strong>, removing dependency on backend/tech teams for case-level interventions.</li>
+<li><strong>Impact</strong>: eSign completion rate improved by <strong>6%</strong> across the HL journey.</li>
+</ul>
+<hr>
+<h2>2. HL Disbursement Module — Automation &amp; Manual Field Elimination</h2>
+<ul>
+<li>Identified and removed redundant manual input fields across the <strong>disbursement module</strong> (module ownership).</li>
+<li>Introduced automation for data population where manual entry was previously required.</li>
+<li><strong>Impact</strong>: Achieved a <strong>20% reduction</strong> in manual touchpoints; TAT reduced by X%.</li>
+</ul>
+<hr>
+<h2>3. Operational Checklist Optimization</h2>
+<ul>
+<li>Reduced the number of manual checks required in the operational checklist by Y%.</li>
+<li><strong>Impact</strong>: Saved approximately <strong>20 minutes per operation per user</strong>, freeing operational bandwidth at scale.</li>
+</ul>
+<hr>
+<h2>4. Post-Disbursement Insurance Journey (Built End-to-End)</h2>
+<ul>
+<li>Designed and built an <strong>insurance journey within iLens</strong>, triggered post-loan-disbursement.</li>
+<li>Sales users can select the insurance partner, fill in required details, and submit — the request flows directly to the customer&#39;s <strong>Track My Application (TMA)</strong> for consent and approval.</li>
+<li>Upon TMA approval, the insurance booklet is generated and consumed at the insurance partner&#39;s end.</li>
+<li><strong>Replaced an entirely physical/offline process</strong> with a digital workflow.</li>
+<li>Introduced <strong>self-funded vs. bank-funded logic</strong>:<ul>
+<li>Premium <strong>&lt; INR 25,000</strong> → automatically routed as <strong>self-funded</strong>.</li>
+<li>Premium <strong>&gt; INR 25,000</strong> → <strong>bank-funded</strong> option provided, with TMA consent from the customer.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>5. Insurance Lead Capture in Parent HL Sourcing Journey</h2>
+<ul>
+<li>Built functionality within the parent Home Loan journey to capture insurance intent <strong>at the initial sourcing stage itself</strong>.</li>
+<li>A task is created in the customer&#39;s worklist where they can select from available insurance partner options.</li>
+<li>The selected lead is captured and delivered to the insurance partner.</li>
+<li>Post-disbursement, the case status is automatically updated, and the customer is contacted by the partner for initial screening.</li>
+<li><strong>Impact</strong>: Created an integrated, end-to-end insurance funnel embedded within the loan lifecycle.</li>
+</ul>
+<hr>
+<h2>6. Customer-Facing Disbursement Journey (Information Gathering Form)</h2>
+<ul>
+<li>Identified a critical gap: customers were unaware of the documents required in original format before initiating disbursement. Information was exchanged via WhatsApp/email through sales users and manually entered — leading to delays, errors, and poor customer experience.</li>
+<li>Built a <strong>customer-initiated disbursement flow on Track My Application (TMA)</strong>:<ul>
+<li>Post-sanction, customers can initiate disbursement directly.</li>
+<li>An <strong>Information Gathering Form (IGF)</strong> screen displays all required documents, account details for debit, and disbursement amount — <strong>before</strong> submission.</li>
+</ul>
+</li>
+<li><strong>Impact</strong>: Established <strong>transparency in the disbursement process</strong>, eliminated manual relay through sales, and empowered customers to prepare documents proactively.</li>
+</ul>
+<hr>
+<h2>7. Bulk Upload for Login Fees Knockoff (Pan-India Process Elimination)</h2>
+<ul>
+<li>Eliminated the <strong>per-case manual knockoff process</strong> for login fees that was followed across all of India.</li>
+<li>Developed a <strong>bulk upload functionality in FinOne</strong>: the <strong>Razorpay team</strong> publishes an MIS, a single user uploads it into FinOne, and knockoff is applied to all applicable cases automatically.</li>
+<li><strong>Impact</strong>: Replaced a repetitive, case-by-case manual process with a single bulk operation, significantly reducing operational effort Pan-India.</li>
+</ul>
+<hr>
+<h2>8. Query Management Overhaul — Knowledge Byte Initiative</h2>
+<ul>
+<li>Identified that escalations and queries were being handled directly by the product/front-end team, causing a severe <strong>bandwidth bottleneck</strong>.</li>
+<li>Raised a requirement and established a <strong>dedicated query-handling team (vServ)</strong> with a single contact number for all sales/operations queries.</li>
+<li>Introduced two in-system tools:<ul>
+<li><strong>Ticketing Tool</strong>: On encountering a technical error, users press the ticketing button — a screenshot is auto-generated, they describe the issue, and a ticket is raised. <strong>TAT reduced from 4 hours to 2 hours.</strong></li>
+<li><strong>Chatbot</strong>: A Python script-based chatbot pre-loaded with frequent/process-related queries. Uses a <strong>75% term-match threshold</strong> to suggest relevant answers and options. (Deterministic script with curated Q&amp;A, not an AI model.)</li>
+</ul>
+</li>
+<li><strong>Impact</strong>: Deflected a significant volume of queries away from the core team, improved resolution speed, and created a self-service layer.</li>
+</ul>
+<hr>
+<h2>9. System Performance — iLens Data Archival</h2>
+<ul>
+<li>The iLens application (5+ years old) had every historical application active in the main database, causing significant system load.</li>
+<li>Average search time for one HL application: <strong>7–10 seconds</strong>.</li>
+<li>Executed a <strong>data archival strategy</strong>: all cases older than 2 years were archived out of the main database.</li>
+<li>Archived data stored in the <strong>DWH (Data Warehouse) server</strong>; year-wise zip files created and stored on the server with access provided to iLens users for extraction.</li>
+<li><strong>Impact</strong>: Application search time reduced from <strong>7–10 seconds to ~1.8 seconds</strong>.</li>
+</ul>
+<hr>
+<h2>10. eNACH Module — NLI Page Removal</h2>
+<ul>
+<li>Identified 4 latency lags in the eNACH module&#39;s flow to reach final banking details.</li>
+<li>Removed the <strong>NLI intermediary page</strong> that sat between TMA and the bank&#39;s portal (previously, the flow went TMA → NLI page → vendor page → bank portal).</li>
+<li>Enabled <strong>direct redirection</strong> from TMA (after consent) to the corresponding bank&#39;s ID.</li>
+<li><strong>Impact</strong>: Eliminated a failure point that made <strong>identifying and pinpointing where cases were stuck extremely difficult</strong>, enabling faster debugging and resolution.</li>
+</ul>
+<hr>
+<h2>11. Education Loan — Receipt ID Creation API (Login Fees Automation)</h2>
+<ul>
+<li>Built a <strong>Receipt ID Creation API</strong> that completely terminated the manual login fees check module from the operations user&#39;s worklist.</li>
+<li>New flow:<ul>
+<li>Payment enabled directly from iLens — a task is created in the customer&#39;s worklist, or the sales user generates a QR from iLens.</li>
+<li>Customer pays via UPI, credit card, or other modes (powered by Razorpay).</li>
+<li>The API <strong>posts the Payment ID along with the EL application number directly into FinOne Neo</strong>.</li>
+<li>FinOne Neo marks the payment as received.</li>
+<li>Upon loan account number (LAN) generation, the EL reference number is linked to the LAN, and the payment is marked as <strong>settled</strong>.</li>
+</ul>
+</li>
+<li>Previously, operations had to manually wait for Razorpay&#39;s payment ID to convert to a receipt with UTR + AXN number, then manually enter it into FinOne Neo — with no system integration between iLens and FinOne Neo.</li>
+<li><strong>Impact</strong>: Eliminated an entire manual reconciliation and entry process, drastically reducing operational bandwidth consumption.</li>
+</ul>
+<hr>
+<h2>12. Secure Data Sharing Automation (Insurance Partners)</h2>
+<ul>
+<li>Previously, iLens and FinOne data dumps were manually downloaded by individuals and shared via email to insurance companies — a <strong>significant data security and compliance risk</strong> (contained customer PII).</li>
+<li>Redesigned the pipeline:<ul>
+<li>iLens data stored in the <strong>Data Warehouse (DWH)</strong>.</li>
+<li>FinOne data extracted via an <strong>automated scheduler</strong> (no manual download) and placed in a designated path.</li>
+<li><strong>AI Automation</strong> (ICICI&#39;s internal scheduler-based integration service) picks data from the source path and pushes it to an <strong>SFTP server</strong>.</li>
+<li>SFTP access provided to <strong>ICICI Lombard</strong> directly.</li>
+<li>For <strong>ICICI Prudential</strong>, built a workaround: a linear script on the SFTP admin triggers an automatic push to Prudential&#39;s SFTP whenever new data arrives.</li>
+</ul>
+</li>
+<li><strong>Impact</strong>: Eliminated manual data handling, removed email-based sharing of sensitive customer data, and ensured compliance with data security protocols.</li>
+</ul>
+<hr>
+<h2>13. Auto Loan — eSign Journey Decoupling</h2>
+<ul>
+<li>At launch, the Auto Loan journey had <strong>eNACH, eSign, and Stamp Duty</strong> configured as a <strong>linear/sequential chain</strong> — failure in any one step caused the entire eSign to fail.</li>
+<li>Additionally, <strong>11 states</strong> (including Bihar, Haryana, Jharkhand) do not support e-stamping, requiring physical stamping only — which caused blanket failures in those regions.</li>
+<li><strong>Decoupled all three services</strong> into independent, parallel processes.</li>
+<li><strong>Impact</strong>: eSign completion rate increased from <strong>46% to over 96%</strong> for the Auto Loan journey.</li>
+</ul>
+<hr>
+<h2>14. Master-Based Configuration for Incremental Changes</h2>
+<ul>
+<li>Identified that small UI/config changes (e.g., checklist updates) required the product team to raise a requirement, go through a development cycle, and deploy — taking up to <strong>1 month</strong>.</li>
+<li>Converted these to <strong>master-based configurations</strong>, handing ownership to the operations team.</li>
+<li><strong>Impact</strong>: Changes that previously took <strong>1 month</strong> can now be executed in <strong>1–2 minutes</strong> by operations directly, without any tech dependency.</li>
+</ul>
+<hr>
+<h2>15. OTP Reduction in Disbursement Journey</h2>
+<ul>
+<li>Audited the disbursement journey and found customers were prompted for OTPs <strong>6–7 times</strong> on average.</li>
+<li>Rationalized OTP triggers across the flow.</li>
+<li><strong>Impact</strong>: Reduced average OTP prompts from <strong>6–7 to 3</strong>, improving customer experience and reducing drop-offs.</li>
+</ul>
